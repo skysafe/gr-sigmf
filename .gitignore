@@ -1,0 +1,27 @@
+# CMake build dir
+build/
+
+# scripts
+scripts/
+
+# SigMF files
+*.sigmf-data
+*.sigmf-meta
+
+# Visual Studio Code config directory
+.vscode/
+
+# Python 
+*.pyc
+
+.cache
+
+# Example files
+/examples/*.py
+
+# Eclipse config files
+.cproject
+.project
+.pydevproject
+.settings/
+
