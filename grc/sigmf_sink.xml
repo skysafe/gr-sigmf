@@ -10,9 +10,9 @@
 #set $field_key = $getVar('field_' + str($i) + '_key')
 #set $field_type = $getVar('field_' + str($i) + '_type')
 #if $field_type() == 'string'
-self.$(id).global_meta().set('$field_key()', '$field_val()')
+self.$(id).set_global_meta('$field_key()', '$field_val()')
 #else 
-self.$(id).global_meta().set('$field_key()', $field_val())
+self.$(id).set_global_meta('$field_key()', $field_val())
 #end if
 #end for
   </make>

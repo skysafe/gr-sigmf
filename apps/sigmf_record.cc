@@ -309,7 +309,8 @@ main(int argc, char *argv[])
       }
     }
     if(document.IsString()) {
-      file_sink->global_meta().set(key, document.GetString());
+      std::string str_val(document.GetString());
+      file_sink->set_global_meta(key, str_val);
       std::cout << document.GetString() << std::endl;
     }
   }

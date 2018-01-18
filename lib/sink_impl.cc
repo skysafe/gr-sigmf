@@ -191,6 +191,36 @@ namespace gr {
       return "";
     }
 
+    void 
+    sink_impl::set_global_meta(std::string key, int64_t val) {
+      d_global.set(key, val);
+    }
+
+    void 
+    sink_impl::set_global_meta(std::string key, uint64_t val) {
+      d_global.set(key, val);
+    }
+
+    void 
+    sink_impl::set_global_meta(std::string key, double val){
+      d_global.set(key, val);
+    }
+
+    void 
+    sink_impl::set_global_meta(std::string key, std::string val) {
+      d_global.set(key, val);
+    }
+    
+    void 
+    sink_impl::set_global_meta(std::string key, bool val) {
+      d_global.set(key, val);
+    }
+
+    void 
+    sink_impl::set_global_meta_null(std::string key) {
+      d_global.set(key, pmt::get_PMT_NIL());
+    }
+
     bool
     sink_impl::open(const std::string &filename)
     {
@@ -311,12 +341,6 @@ namespace gr {
     {
       close();
       return true;
-    }
-
-    gr::sigmf::meta_namespace &
-    sink_impl::global_meta()
-    {
-      return d_global;
     }
 
     void
