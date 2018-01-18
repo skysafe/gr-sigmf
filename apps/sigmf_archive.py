@@ -35,7 +35,7 @@ The available commands are:
         parser = argparse.ArgumentParser(
             description='Archive files')
         parser.add_argument('files', nargs="+")
-        parser.add_argument('--remove-files', type='store_true')
+        parser.add_argument('--remove-files', action='store_true')
 
         args = parser.parse_args(sys.argv[2:])
         file_list = args.files
@@ -45,7 +45,7 @@ The available commands are:
         for k, g in groupby(file_list, lambda f: os.path.splitext(f)[0]):
             group_list = list(g)
             if (len(group_list) == 1):
-                base, ext = os.path.splitext(group_list)
+                base, ext = os.path.splitext(group_list[0])
                 if ext == ".sigmf-meta":
                     other_file = base + ".sigmf-data"
                 else:
@@ -65,7 +65,7 @@ The available commands are:
         for f in final_file_list:
             base_name = os.path.split(f)[1]
             base_name_sans_ext, ext = os.path.splitext(base_name)
-            tfile_path = "{0}/{0}.{1}".format(base_name_sans_ext, ext)
+            tfile_path = "{0}/{0}{1}".format(base_name_sans_ext, ext)
             tfile.add(f, tfile_path)
 
         # Remove the originals if requested
@@ -79,7 +79,7 @@ The available commands are:
         parser = argparse.ArgumentParser(
             description='Extract files')
         parser.add_argument('files', nargs="+")
-        parser.add_argument('--remove-files', type='store_true')
+        parser.add_argument('--remove-files', action='store_true')
         args = parser.parse_args(sys.argv[2:])
         file_list = args.files
 
@@ -91,7 +91,7 @@ The available commands are:
                     members, lambda m: re.search(
                         r"([^\/]+)\/\1\.sigmf-(meta|data)", m.name)):
                 for f in g:
-                    tf.extract(f)
+                    tf.extract(f, path=os.path.split(tar_file)[0])
 
         # Delete archive if asked
         if (args.remove_files):

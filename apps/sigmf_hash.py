@@ -59,7 +59,7 @@ class FilePair(object):
                 print("Hash match")
 
     def update(self):
-        with open(self.meta_file, "w") as mf:
+        with open(self.meta_file, "r+") as mf:
             meta = json.load(mf)
             computed_hash = hash_file(self.data_file)
             meta["global"]["core:sha512"] = computed_hash
@@ -95,7 +95,7 @@ The available commands are:
         for k, g in groupby(raw_list, lambda f: os.path.splitext(f)[0]):
             group_list = list(g)
             if (len(group_list) == 1):
-                base, ext = os.path.splitext(group_list)
+                base, ext = os.path.splitext(group_list[0])
                 if ext == ".sigmf":
                     final_file_list.append(Archive(group_list[0]))
                     continue
