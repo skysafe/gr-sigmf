@@ -216,6 +216,9 @@ function(GR_PYTHON_INSTALL)
             if(WIN32 AND NOT pyfile_ext)
                 set(pyfile_name "${pyfile_name}.py")
             endif()
+            
+            get_filename_component(pyfile_name ${pyfile_name} NAME_WE)
+			string(REGEX REPLACE "_" "-" pyfile_name ${pyfile_name})
 
             install(PROGRAMS ${pyexefile} RENAME ${pyfile_name}
                 DESTINATION ${GR_PYTHON_INSTALL_DESTINATION}

@@ -82,8 +82,8 @@ install(TARGETS sigmf-record DESTINATION bin)
 ####################################################
 GR_PYTHON_INSTALL(
     PROGRAMS
-    sigmf-archive
-    sigmf-hash
+    sigmf_archive.py
+    sigmf_hash.py
     DESTINATION ${GR_RUNTIME_DIR}
     COMPONENT "sigmf_python"
 )
