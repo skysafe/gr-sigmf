@@ -10,7 +10,7 @@
     <name>File</name>
     <key>filename</key>
     <value></value>
-    <type>file_save</type>
+    <type>file_open</type>
   </param>
   
   <param>
