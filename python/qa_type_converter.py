@@ -237,7 +237,7 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # expected
         expected_source = sigmf.source(path, "ri16", False, False)
-        convert = blocks.short_to_float(1, 1)
+        convert = blocks.short_to_float(1, 32767)
         expected_sink = blocks.vector_sink_f(1)
 
         # actual

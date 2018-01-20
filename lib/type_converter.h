@@ -32,6 +32,9 @@
 static const int64_t MAX_INT = 2147483647;  //  (2^31)-1
 static const int64_t MIN_INT = -2147483647; // -(2^31)-1
 
+static const int64_t MAX_SHORT = 32767;  //  (2^15)-1
+static const int64_t MIN_SHORT = -32767; // -(2^15)-1
+
 namespace gr {
   namespace sigmf {
 
@@ -292,7 +295,7 @@ namespace gr {
         reserve(item_size * count);
         size_t items_read = std::fread(d_temp_buf, item_size, count, fp);
         volk_16i_s32f_convert_32f(reinterpret_cast<float *>(buf),
-                                  reinterpret_cast<const int16_t *>(d_temp_buf), 1, items_read);
+                                  reinterpret_cast<const int16_t *>(d_temp_buf), MAX_SHORT, items_read);
         return items_read;
       }
     };
