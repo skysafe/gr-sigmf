@@ -113,7 +113,6 @@ namespace gr {
       std::vector<meta_namespace> d_captures;
       std::vector<meta_namespace> d_annotations;
 
-      void on_meta_message(pmt::pmt_t msg);
       void on_command_message(pmt::pmt_t msg);
 
       void write_meta();
@@ -144,12 +143,18 @@ namespace gr {
       std::string get_data_path();
       std::string get_meta_path();
 
-      void set_global_meta(std::string key, int64_t val);
-      void set_global_meta(std::string key, uint64_t val);
-      void set_global_meta(std::string key, double val);
-      void set_global_meta(std::string key, std::string val);
-      void set_global_meta(std::string key, bool val);
-      void set_global_meta_null(std::string key);
+      void set_global_meta(std::string key, pmt::pmt_t val);
+      void set_annotation_meta(uint64_t sample_start,
+                                       uint64_t sample_count,
+                                       std::string key,
+                                       pmt::pmt_t val);
+
+      // void set_global_meta(std::string key, int64_t val);
+      // void set_global_meta(std::string key, uint64_t val);
+      // void set_global_meta(std::string key, double val);
+      // void set_global_meta(std::string key, std::string val);
+      // void set_global_meta(std::string key, bool val);
+      // void set_global_meta_null(std::string key);
 
       // Where all the action really happens
       int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
