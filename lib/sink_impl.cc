@@ -437,6 +437,7 @@ namespace gr {
           if(!found_packet_len) {
             anno_ns.set("core:sample_count", 0);
           }
+          anno_ns.set("core:sample_start", offset);
 
           // add the annotation object to the list
           d_annotations.push_back(anno_ns);
