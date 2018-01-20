@@ -337,7 +337,7 @@ namespace gr {
       // sort annotations
       std::sort(d_annotations.begin(), d_annotations.end(), [](const meta_namespace &a, const meta_namespace &b) {
         // TODO: This may need to become a more complex sort if the spec changes based on https://github.com/gnuradio/SigMF/issues/90
-        return a.get("core:sample_start") < b.get("core:sample_start");
+        return pmt::to_uint64(a.get("core:sample_start")) < pmt::to_uint64(b.get("core:sample_start"));
       });
 
       writer.String("annotations");
