@@ -178,7 +178,7 @@ namespace gr {
 
       } else {
         GR_LOG_ERROR(d_logger,
-                     boost::format("invalid command string received in dict: %s") % msg);
+                     boost::format("Invalid command string received in dict: %s") % msg);
         return;
       }
     }
