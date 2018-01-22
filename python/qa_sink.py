@@ -166,6 +166,7 @@ class qa_sink(gr_unittest.TestCase):
                 metadata["captures"][i + 1]["core:sample_rate"],
                 i * 500)
 
+    # NOTE: This test fails every once in a while
     def test_tags_to_annotation_segments(self):
         samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
