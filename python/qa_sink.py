@@ -212,9 +212,3 @@ class qa_sink(gr_unittest.TestCase):
 
         # TODO: write a test to make sure that calling the open and close
         # methods works correctly
-
-    def test_append(self):
-        pass
-
-        # TODO: write a test to ensure that the append option in the ctor
-        # does the right thing
