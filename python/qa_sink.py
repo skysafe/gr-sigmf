@@ -42,6 +42,36 @@ class tag_injector(gr.sync_block):
         return len(output_items[0])
 
 
+class sample_counter(gr.sync_block):
+    def __init__(self):
+        gr.sync_block.__init__(
+            self,
+            name="sample_counter",
+            in_sig=[numpy.complex64],
+            out_sig=[numpy.complex64],
+        )
+        self.count = 0
+
+    def work(self, input_items, output_items):
+        output_items[0][:] = input_items[0]
+        self.count += len(output_items[0])
+        return len(output_items[0])
+
+
+class msg_sender(gr.sync_block):
+    def __init__(self):
+        gr.sync_block.__init__(
+            self,
+            name="msg_sender",
+            in_sig=None,
+            out_sig=None
+        )
+        self.message_port_register_out(pmt.intern("out"))
+
+    def send_msg(self, msg_to_send):
+        self.message_port_pub(pmt.intern("out"), pmt.to_pmt(msg_to_send))
+
+
 class qa_sink(gr_unittest.TestCase):
 
     def setUp(self):
@@ -212,3 +242,111 @@ class qa_sink(gr_unittest.TestCase):
 
         # TODO: write a test to make sure that calling the open and close
         # methods works correctly
+
+    def test_pmt_to_annotation(self):
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               data_file,
+                               samp_rate,
+                               "testing annotation segment tags",
+                               "me",
+                               "No License",
+                               "wave source",
+                               False)
+
+        injector = tag_injector()
+        sender = msg_sender()
+        counter = sample_counter()
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, counter)
+        tb.connect(counter, file_sink)
+        tb.msg_connect(sender, "out", file_sink, "command")
+
+        tb.start()
+        # sleep so the streamed annotation isn't the first one
+        sleep(.1)
+        # Inject one tag
+        injector.inject_tag = {"test:a": 1}
+        # Wait again so that we know the tag got processed
+        sleep(.1)
+        # Then tell it to add 2 more via pmts,
+        # one before the injected tag
+        sender.send_msg({
+            "command": "set_annotation_meta",
+            "sample_start": 1,
+            "sample_count": 10,
+            "key": "test:b",
+            "val": 22})
+        # and one after
+        sender.send_msg({
+            "command": "set_annotation_meta",
+            "sample_start": counter.count + 1,
+            "sample_count": 10,
+            "key": "test:c",
+            "val": True})
+        sleep(.25)
+        tb.stop()
+        tb.wait()
+        metadata = json.load(open(json_file, "r"))
+        # should be 3 annotations
+        self.assertEqual(len(metadata["annotations"]), 3)
+        # And they should be these and in this order
+        self.assertEqual(metadata["annotations"][0]["test:b"], 22)
+        self.assertEqual(metadata["annotations"][1]["test:a"], 1)
+        self.assertEqual(metadata["annotations"][2]["test:c"], True)
+
+    def test_msg_annotation_meta_merging(self):
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               data_file,
+                               samp_rate,
+                               "testing annotation segment tags",
+                               "me",
+                               "No License",
+                               "wave source",
+                               False)
+        sender = msg_sender()
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.msg_connect(sender, "out", file_sink, "command")
+
+        tb.start()
+        sender.send_msg({
+            "command": "set_annotation_meta",
+            "sample_start": 1,
+            "sample_count": 10,
+            "key": "test:a",
+            "val": 1})
+
+        sender.send_msg({
+            "command": "set_annotation_meta",
+            "sample_start": 1,
+            "sample_count": 10,
+            "key": "test:b",
+            "val": 2})
+
+        sender.send_msg({
+            "command": "set_annotation_meta",
+            "sample_start": 1,
+            "sample_count": 100,
+            "key": "test:c",
+            "val": 3})
+        sleep(.25)
+        tb.stop()
+        tb.wait()
+        metadata = json.load(open(json_file, "r"))
+
+        # should be 2 annotations
+        self.assertEqual(len(metadata["annotations"]), 2)
+        # First should have both test:a and test:b
+        self.assertEqual(metadata["annotations"][0]["core:sample_count"], 10)
+        self.assertEqual(metadata["annotations"][0]["test:a"], 1)
+        self.assertEqual(metadata["annotations"][0]["test:b"], 2)
+        # Second should just have c
+        self.assertEqual(metadata["annotations"][1]["core:sample_count"], 100)
+        self.assertEqual(metadata["annotations"][1]["test:c"], 3)
