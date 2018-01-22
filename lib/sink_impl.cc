@@ -103,10 +103,6 @@ namespace gr {
       open(filename.c_str());
       d_temp_tags.reserve(32);
 
-      // metadata message port
-      message_port_register_in(META);
-      set_msg_handler(META, boost::bind(&sink_impl::on_meta_message, this, _1));
-
       // command message port
       message_port_register_in(COMMAND);
       set_msg_handler(COMMAND, boost::bind(&sink_impl::on_command_message, this, _1));
@@ -119,20 +115,6 @@ namespace gr {
     {
       close();
     }
-
-    void
-    sink_impl::on_meta_message(pmt::pmt_t msg)
-    {
-      if(d_debug) {
-        std::cout << "Received metadata message" << std::endl;
-      }
-    }
-
-    // Make a new capture segment at a given sample with some set of accompanying metadata
-    // void 
-    // sink_impl::ad
-    // void
-    // sink_impl::add_annotation()
 
     void
     sink_impl::on_command_message(pmt::pmt_t msg)
@@ -162,6 +144,38 @@ namespace gr {
         }
       } else if(command_str == "close") {
         close();
+      } else if(command_str == "set_annotation_meta") {
+        // Need to get sample_start, sample_count, key, and value 
+        auto sample_start = pmt::dict_ref(msg, pmt::mp("sample_start"), pmt::get_PMT_NIL());
+        auto sample_count = pmt::dict_ref(msg, pmt::mp("sample_count"), pmt::get_PMT_NIL());
+        auto key = pmt::dict_ref(msg, pmt::mp("key"), pmt::get_PMT_NIL());
+        auto val = pmt::dict_ref(msg, pmt::mp("val"), pmt::get_PMT_NIL());
+
+        if (pmt::eqv(sample_start, pmt::get_PMT_NIL())) {
+          GR_LOG_ERROR(d_logger, boost::format("Sample start key not found in dict: %s") % msg);
+          return;
+        } else if (pmt::eqv(sample_count, pmt::get_PMT_NIL())) {
+          GR_LOG_ERROR(d_logger, boost::format("Sample count key not found in dict: %s") % msg);
+          return;
+        } else if (pmt::eqv(key, pmt::get_PMT_NIL())) {
+          GR_LOG_ERROR(d_logger, boost::format("Data key not found in dict: %s") % msg);
+          return;
+        }
+
+        set_annotation_meta(pmt::to_uint64(sample_start), pmt::to_uint64(sample_count), pmt::symbol_to_string(key), val);
+
+      } else if(command_str == "set_global_meta") {
+        // Just need key and value
+        auto key = pmt::dict_ref(msg, pmt::mp("key"), pmt::get_PMT_NIL());
+        auto val = pmt::dict_ref(msg, pmt::mp("val"), pmt::get_PMT_NIL());
+
+        if (pmt::eqv(key, pmt::get_PMT_NIL())) {
+          GR_LOG_ERROR(d_logger, boost::format("Data key not found in dict: %s") % msg);
+          return;
+        }
+
+        set_global_meta(pmt::symbol_to_string(key), val);
+
       } else {
         GR_LOG_ERROR(d_logger,
                      boost::format("Invalid command string received in dict: %s") % msg);
@@ -191,34 +205,30 @@ namespace gr {
       return "";
     }
 
-    void 
-    sink_impl::set_global_meta(std::string key, int64_t val) {
+    void
+    sink_impl::set_global_meta(std::string key, pmt::pmt_t val) {
       d_global.set(key, val);
     }
 
-    void 
-    sink_impl::set_global_meta(std::string key, uint64_t val) {
-      d_global.set(key, val);
-    }
-
-    void 
-    sink_impl::set_global_meta(std::string key, double val){
-      d_global.set(key, val);
-    }
-
-    void 
-    sink_impl::set_global_meta(std::string key, std::string val) {
-      d_global.set(key, val);
-    }
-    
-    void 
-    sink_impl::set_global_meta(std::string key, bool val) {
-      d_global.set(key, val);
-    }
-
-    void 
-    sink_impl::set_global_meta_null(std::string key) {
-      d_global.set(key, pmt::get_PMT_NIL());
+    void
+    sink_impl::set_annotation_meta(uint64_t sample_start, uint64_t sample_count, std::string key, pmt::pmt_t val)
+    {
+      auto existing_annotation = std::find_if(d_annotations.begin(), d_annotations.end(), [sample_start, sample_count](const meta_namespace &ns) -> bool { 
+        return ns.has("core:sample_start") &&
+          pmt::to_uint64(ns.get("core:sample_start")) == sample_start &&
+          ns.has("core:sample_count") &&
+          pmt::to_uint64(ns.get("core:sample_count")) == sample_count;
+      });
+      if (existing_annotation == d_annotations.end()) {
+        // then make a new one
+        auto new_ns = meta_namespace::build_annotation_segment(sample_start, sample_count);
+        new_ns.set(key, val);
+        // This may cause the annotations list to become unordered, but we'll make sure we sort it before serialization
+        d_annotations.push_back(new_ns);
+      } else {
+        // use that one
+        existing_annotation->set(key, val);
+      }
     }
 
     bool
@@ -323,6 +333,12 @@ namespace gr {
         (*it).serialize(writer);
       }
       writer.EndArray();
+
+      // sort annotations
+      std::sort(d_annotations.begin(), d_annotations.end(), [](const meta_namespace &a, const meta_namespace &b) {
+        // TODO: This may need to become a more complex sort if the spec changes based on https://github.com/gnuradio/SigMF/issues/90
+        return pmt::to_uint64(a.get("core:sample_start")) < pmt::to_uint64(b.get("core:sample_start"));
+      });
 
       writer.String("annotations");
       writer.StartArray();

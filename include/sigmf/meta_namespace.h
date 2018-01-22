@@ -43,8 +43,10 @@ namespace gr {
 
     class SIGMF_API meta_namespace {
       public:
+
       static meta_namespace
       build_global_object(std::string datatype, std::string version = "0.0.1");
+
       static meta_namespace build_capture_segment(uint64_t sample_start);
       static meta_namespace build_annotation_segment(uint64_t sample_start, uint64_t sample_count);
 
@@ -78,19 +80,19 @@ namespace gr {
       void set(const std::string &key, pmt::pmt_t val);
 
       // TODO: refactor this with some templates...
-      pmt::pmt_t get(const std::string &key);
-      pmt::pmt_t get(const std::string &key, pmt::pmt_t default_val);
-      pmt::pmt_t get(pmt::pmt_t key, pmt::pmt_t default_val);
-      pmt::pmt_t get();
+      pmt::pmt_t get(const std::string &key) const;
+      pmt::pmt_t get(const std::string &key, pmt::pmt_t default_val) const;
+      pmt::pmt_t get(pmt::pmt_t key, pmt::pmt_t default_val) const;
+      pmt::pmt_t get() const;
 
-      std::string get_str(const std::string &key);
+      std::string get_str(const std::string &key) const;
 
-      bool has(const std::string &key);
+      bool has(const std::string &key) const;
 
       void del(const std::string &key);
 
-      std::set<std::string> keys();
-      std::set<pmt::pmt_t> pmt_keys();
+      std::set<std::string> keys() const;
+      std::set<pmt::pmt_t> pmt_keys() const;
 
       template <typename Writer>
       void

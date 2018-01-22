@@ -111,7 +111,7 @@ namespace gr {
     }
 
     meta_namespace
-    build_annotation_segment(uint64_t sample_start, uint64_t sample_count)
+    meta_namespace::build_annotation_segment(uint64_t sample_start, uint64_t sample_count)
     {
       meta_namespace ns;
       ns.set("core:sample_start", sample_start);
@@ -148,25 +148,25 @@ namespace gr {
     }
 
     pmt::pmt_t
-    meta_namespace::get(const std::string &key)
+    meta_namespace::get(const std::string &key) const
     {
       return pmt::dict_ref(d_data, pmt::mp(key), pmt::get_PMT_NIL());
     }
 
     pmt::pmt_t
-    meta_namespace::get(const std::string &key, pmt::pmt_t default_val)
+    meta_namespace::get(const std::string &key, pmt::pmt_t default_val) const
     {
       return pmt::dict_ref(d_data, pmt::mp(key), default_val);
     }
 
     pmt::pmt_t
-    meta_namespace::get()
+    meta_namespace::get() const
     {
       return d_data;
     }
 
     std::string
-    meta_namespace::get_str(const std::string &key)
+    meta_namespace::get_str(const std::string &key) const
     {
       pmt::pmt_t ref = pmt::dict_ref(d_data, pmt::mp(key), pmt::get_PMT_NIL());
       if(pmt::eqv(ref, pmt::get_PMT_NIL())) {
@@ -178,13 +178,13 @@ namespace gr {
     }
 
     bool
-    meta_namespace::has(const std::string &key)
+    meta_namespace::has(const std::string &key) const
     {
       return pmt::dict_has_key(d_data, pmt::mp(key));
     }
 
     std::set<std::string>
-    meta_namespace::keys()
+    meta_namespace::keys() const
     {
       pmt::pmt_t keys_pmt = pmt::dict_keys(d_data);
       std::set<std::string> keys;

@@ -59,12 +59,19 @@ namespace gr {
       virtual std::string get_data_path() = 0;
       virtual std::string get_meta_path() = 0;
 
-      virtual void set_global_meta(std::string key, int64_t val) = 0;
-      virtual void set_global_meta(std::string key, uint64_t val) = 0;
-      virtual void set_global_meta(std::string key, double val) = 0;
-      virtual void set_global_meta(std::string key, std::string val) = 0;
-      virtual void set_global_meta(std::string key, bool val) = 0;
-      virtual void set_global_meta_null(std::string key) = 0;
+      virtual void set_global_meta(std::string key, pmt::pmt_t val) = 0;
+      virtual void set_annotation_meta(uint64_t sample_start,
+                                       uint64_t sample_count,
+                                       std::string key,
+                                       pmt::pmt_t val) = 0;
+
+
+      // virtual void set_global_meta(std::string key, int64_t val) = 0;
+      // virtual void set_global_meta(std::string key, uint64_t val) = 0;
+      // virtual void set_global_meta(std::string key, double val) = 0;
+      // virtual void set_global_meta(std::string key, std::string val) = 0;
+      // virtual void set_global_meta(std::string key, bool val) = 0;
+      // virtual void set_global_meta_null(std::string key) = 0;
 
       virtual bool open(const char *filename) = 0;
       virtual void close() = 0;
