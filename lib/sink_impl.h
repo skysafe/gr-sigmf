@@ -149,13 +149,6 @@ namespace gr {
                                        std::string key,
                                        pmt::pmt_t val);
 
-      // void set_global_meta(std::string key, int64_t val);
-      // void set_global_meta(std::string key, uint64_t val);
-      // void set_global_meta(std::string key, double val);
-      // void set_global_meta(std::string key, std::string val);
-      // void set_global_meta(std::string key, bool val);
-      // void set_global_meta_null(std::string key);
-
       // Where all the action really happens
       int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
