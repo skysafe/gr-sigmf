@@ -274,7 +274,7 @@ namespace gr {
       }
 
       d_updated = true;
-      return d_new_fp != 0;
+      return d_new_fp != nullptr;
     }
 
     void
@@ -285,13 +285,16 @@ namespace gr {
         // hold mutex for duration of this block
         gr::thread::scoped_lock guard(d_mutex);
 
-        if(d_fp) fclose(d_fp);
+        if(d_fp){
+        	std::fclose(d_fp);
+        }
 
         // install new file pointer
         d_fp = d_new_fp;
         d_data_path = d_new_data_path;
         d_meta_path = d_new_meta_path;
-        d_new_fp = 0;
+
+        d_new_fp = nullptr;
         d_updated = false;
       }
     }
@@ -302,9 +305,9 @@ namespace gr {
       // hold mutex for duration of this function
       gr::thread::scoped_lock guard(d_mutex);
 
-      if(d_fp) {
-        fclose(d_fp);
-        d_fp = NULL;
+      if(d_fp != nullptr) {
+        std::fclose(d_fp);
+        d_fp = nullptr;
         write_meta();
       }
     }
@@ -316,7 +319,7 @@ namespace gr {
         std::cout << "meta_path = " << d_meta_path << std::endl;
       }
 
-      FILE *fp = fopen(d_meta_path.c_str(), "w");
+      FILE *fp = std::fopen(d_meta_path.c_str(), "w");
       char write_buf[65536];
       rapidjson::FileWriteStream file_stream(fp, write_buf, sizeof(write_buf));
 
@@ -349,7 +352,7 @@ namespace gr {
       writer.EndArray();
 
       writer.EndObject();
-      fclose(fp);
+      std::fclose(fp);
     }
 
     bool
