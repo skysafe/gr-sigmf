@@ -91,15 +91,10 @@ namespace gr {
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(0), d_new_fp(0), d_append(append), d_itemsize(type_to_size(type)),
-      d_type(type), d_debug(debug)
+	  d_type(type), d_samp_rate(samp_rate), d_description(description), d_author(author),
+	  d_license(license), d_hardware(hardware), d_debug(debug), d_meta_written(false)
     {
-      d_global = meta_namespace::build_global_object(type);
-      d_global.set("core:sample_rate", samp_rate);
-      d_global.set("core:description", description);
-      d_global.set("core:author", author);
-      d_global.set("core:license", license);
-      d_global.set("core:hw", hardware);
-      d_captures.push_back(meta_namespace::build_capture_segment(0));
+      reset_meta();
       open(filename.c_str());
       d_temp_tags.reserve(32);
 
