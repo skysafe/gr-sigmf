@@ -93,12 +93,23 @@ namespace gr {
 
       bool d_debug;
 
+      // True if the metadata for the current file has been written
+      bool d_meta_written;
+
+
       boost::mutex d_mutex;
       size_t d_itemsize;
       std::vector<tag_t> d_temp_tags;
 
       // Base type, not full format specifier. We need endianness for that.
       std::string d_type;
+
+      // Stored basic global metadata, we'll need these
+      double d_samp_rate;
+      std::string d_description;
+      std::string d_author;
+      std::string d_license;
+      std::string d_hardware;
 
       boost::filesystem::path d_data_path;
       boost::filesystem::path d_meta_path;
@@ -112,6 +123,8 @@ namespace gr {
       meta_namespace d_global;
       std::vector<meta_namespace> d_captures;
       std::vector<meta_namespace> d_annotations;
+
+      void reset_meta();
 
       void on_command_message(pmt::pmt_t msg);
 
