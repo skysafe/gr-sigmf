@@ -125,7 +125,7 @@ class qa_sink(gr_unittest.TestCase):
         tb = gr.top_block()
         tb.connect(src, file_sink)
         tb.run()
-        tb.wait
+        tb.wait()
 
         # check that data file equals data
         read_data = []
