@@ -108,7 +108,19 @@ namespace gr {
      */
     sink_impl::~sink_impl()
     {
+    }
+
+    bool
+    sink_impl::stop() {
       close();
+
+      if (d_fp) {
+        std::fclose(d_fp);
+        write_meta();
+        d_fp = nullptr;
+      }
+
+      return true;
     }
 
     void
@@ -317,10 +329,9 @@ namespace gr {
       // hold mutex for duration of this function
       gr::thread::scoped_lock guard(d_mutex);
 
-      if(d_fp != nullptr) {
-        std::fclose(d_fp);
-        d_fp = nullptr;
-        write_meta();
+      if(d_new_fp != nullptr) {
+        std::fclose(d_new_fp);
+        d_new_fp = nullptr;
       }
       d_updated = true;
     }
@@ -336,6 +347,9 @@ namespace gr {
       }
 
       FILE *fp = std::fopen(d_meta_path.c_str(), "w");
+      if (fp == nullptr) {
+        std::perror("Error opening d_meta_path");
+      }
       char write_buf[65536];
       rapidjson::FileWriteStream file_stream(fp, write_buf, sizeof(write_buf));
 
@@ -372,13 +386,6 @@ namespace gr {
       d_meta_written = true;
     }
 
-    bool
-    sink_impl::stop()
-    {
-      close();
-      write_meta();
-      return true;
-    }
 
     void
     sink_impl::add_tag_to_capture_segment(const tag_t *tag, meta_namespace &capture_segment)
