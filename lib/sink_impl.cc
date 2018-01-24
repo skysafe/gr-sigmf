@@ -116,14 +116,14 @@ namespace gr {
       std::cout << "reset_meta()" << std::endl;
       d_global = meta_namespace::build_global_object(d_type);
       d_global.set("core:sample_rate", d_samp_rate);
-	  d_global.set("core:description", d_description);
-	  d_global.set("core:author", d_author);
-	  d_global.set("core:license", d_license);
-	  d_global.set("core:hw", d_hardware);
-	  d_captures.clear();
-	  d_captures.push_back(meta_namespace::build_capture_segment(0));
-	  d_annotations.clear();
-	}
+      d_global.set("core:description", d_description);
+      d_global.set("core:author", d_author);
+      d_global.set("core:license", d_license);
+      d_global.set("core:hw", d_hardware);
+      d_captures.clear();
+      d_captures.push_back(meta_namespace::build_capture_segment(0));
+      d_annotations.clear();
+  }
 
     void
     sink_impl::on_command_message(pmt::pmt_t msg)
