@@ -296,12 +296,15 @@ namespace gr {
 
         if(d_fp){
         	std::fclose(d_fp);
+        	write_meta();
+        	reset_meta();
         }
 
         // install new file pointer
         d_fp = d_new_fp;
         d_data_path = d_new_data_path;
         d_meta_path = d_new_meta_path;
+        d_meta_written = d_new_fp == nullptr ? true : false;
 
         d_new_fp = nullptr;
         d_updated = false;
@@ -319,6 +322,7 @@ namespace gr {
         d_fp = nullptr;
         write_meta();
       }
+      d_updated = true;
     }
 
     void
@@ -326,6 +330,9 @@ namespace gr {
     {
       if(d_debug) {
         std::cout << "meta_path = " << d_meta_path << std::endl;
+      }
+      if(d_meta_written) {
+        return;
       }
 
       FILE *fp = std::fopen(d_meta_path.c_str(), "w");
@@ -362,12 +369,14 @@ namespace gr {
 
       writer.EndObject();
       std::fclose(fp);
+      d_meta_written = true;
     }
 
     bool
     sink_impl::stop()
     {
       close();
+      write_meta();
       return true;
     }
 

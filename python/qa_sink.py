@@ -125,6 +125,7 @@ class qa_sink(gr_unittest.TestCase):
         tb = gr.top_block()
         tb.connect(src, file_sink)
         tb.run()
+        tb.wait
 
         # check that data file equals data
         read_data = []
@@ -238,10 +239,58 @@ class qa_sink(gr_unittest.TestCase):
             self.assertEqual(metadata["annotations"][i]["test:c"], 2.33)
 
     def test_write_methods(self):
-        pass
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file_1, json_file_1 = self.temp_file_names()
+        data_file_2, json_file_2 = self.temp_file_names()
+        print("data_file_1 = " + data_file_1)
+        print("data_file_2 = " + data_file_2)
+        print("Creating sink with inital file")
+        file_sink = sigmf.sink("cf32",
+                               data_file_1,
+                               samp_rate,
+                               "testing write methods",
+                               "me",
+                               "No License",
+                               "wave source",
+                               False)
 
-        # TODO: write a test to make sure that calling the open and close
-        # methods works correctly
+        counter = sample_counter()
+        tb = gr.top_block()
+        tb.connect(src, counter)
+        tb.connect(counter, file_sink)
+        tb.start()
+        print("first call to set meta")
+        file_sink.set_global_meta("test:a", pmt.to_pmt(1))
+        sleep(.2)
+        print("Opening second file")
+        file_sink.open(data_file_2)
+        sleep(.2)
+        print("second call to set meta")
+        file_sink.set_global_meta("test:b", pmt.to_pmt(2))
+        sleep(.2)
+        print("Closing")
+        file_sink.close()
+        sleep(.2)
+        count_1 = counter.count
+        sleep(.1)
+        count_2 = counter.count
+        tb.stop()
+        tb.wait()
+
+        # flow graph should still be running after flle
+        # close, but dropping all packets on the floor
+        self.assertGreater(count_2, count_1)
+
+        # The metadata of the two files should be different
+        meta_1 = json.load(open(json_file_1, "r"))
+        meta_2 = json.load(open(json_file_2, "r"))
+        self.assertEqual(meta_1["global"]["test:a"], 1)
+        self.assertTrue("test:b" not in meta_1["global"])
+
+        # import pdb; pdb.set_trace()
+        self.assertEqual(meta_2["global"]["test:b"], 2)
+        self.assertTrue("test:a" not in meta_2["global"])
 
     def test_pmt_to_annotation(self):
         samp_rate = 200000
