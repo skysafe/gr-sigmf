@@ -25,3 +25,5 @@ scripts/
 .pydevproject
 .settings/
 
+# Vim 
+*.swp
