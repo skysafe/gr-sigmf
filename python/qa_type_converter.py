@@ -4,7 +4,6 @@ import shutil
 import os
 from sigmf import sigmf_swig as sigmf
 import numpy as np
-# import matplotlib.pyplot as plt
 
 
 class qa_type_converter(gr_unittest.TestCase):
@@ -126,30 +125,28 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # expected
         expected_source = sigmf.source(path, "rf32", False, False)
-        convert = blocks.float_to_char(1, 1)
-        expected_sink = blocks.vector_sink_b(1)
+        convert1 = blocks.float_to_short(1, 1)
+        expected_sink = blocks.vector_sink_s(1)
 
         # actual
         actual_source = sigmf.source(path, "ri8", False, False)
-        actual_sink = blocks.vector_sink_b(1)
+        convert2 = blocks.char_to_float(1, 1)
+        actual_sink = blocks.vector_sink_f(1)
 
         tb1 = gr.top_block()
-        tb1.connect(expected_source, convert)
-        tb1.connect(convert, expected_sink)
+        tb1.connect(expected_source, convert1)
+        tb1.connect(convert1, expected_sink)
         tb1.run()
         tb1.wait()
 
         tb2 = gr.top_block()
-        tb2.connect(actual_source, actual_sink)
+        tb2.connect(actual_source, convert2)
+        tb2.connect(convert2, actual_sink)
         tb2.run()
         tb2.wait()
 
         e = expected_sink.data()
         a = actual_sink.data()
-
-        # plt.plot(e)
-        # plt.plot(a)
-        # plt.show()
 
         np.testing.assert_almost_equal(e, a)
 
