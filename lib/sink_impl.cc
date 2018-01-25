@@ -125,7 +125,7 @@ namespace gr {
 
     void
     sink_impl::reset_meta() {
-      std::cout << "reset_meta()" << std::endl;
+      // std::cout << "reset_meta()" << std::endl;
       d_global = meta_namespace::build_global_object(d_type);
       d_global.set("core:sample_rate", d_samp_rate);
       d_global.set("core:description", d_description);
@@ -340,7 +340,7 @@ namespace gr {
     sink_impl::write_meta()
     {
       if(d_debug) {
-        std::cout << "meta_path = " << d_meta_path << std::endl;
+        // std::cout << "meta_path = " << d_meta_path << std::endl;
       }
       if(d_meta_written) {
         return;

@@ -32,8 +32,11 @@
 static const int64_t MAX_INT = 2147483647;  //  (2^31)-1
 static const int64_t MIN_INT = -2147483647; // -(2^31)-1
 
-static const int64_t MAX_SHORT = 32767;  //  (2^15)-1
-static const int64_t MIN_SHORT = -32767; // -(2^15)-1
+static const int64_t MAX_SHORT = 32767;		//  (2^15)-1
+static const int64_t MIN_SHORT = -32767;	// -(2^15)-1
+
+static const int64_t MAX_CHAR = 127;		//  (2^7)-1
+static const int64_t MIN_CHAT = -127;		// -(2^7)-1
 
 namespace gr {
   namespace sigmf {
@@ -142,8 +145,8 @@ namespace gr {
       operator()(char *buf, size_t item_size, size_t count, FILE *fp)
       {
         reserve(item_size * count);
-        size_t items_read = std::fread(d_temp_buf, item_size, count, fp);
-        volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(buf),
+        size_t items_read = std::fread(d_temp_buf, item_size, count, fp);         
+		volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(buf),
                                  reinterpret_cast<const float *>(d_temp_buf), 1, items_read);
         return items_read;
       }
@@ -165,7 +168,7 @@ namespace gr {
         reserve(item_size * count);
         size_t items_read = std::fread(d_temp_buf, item_size, count, fp);
         volk_32i_s32f_convert_32f(reinterpret_cast<float *>(buf),
-                                  reinterpret_cast<const int32_t *>(d_temp_buf), 1, items_read);
+                                  reinterpret_cast<const int32_t *>(d_temp_buf), MAX_INT, items_read);
         return items_read;
       }
     };
@@ -418,7 +421,7 @@ namespace gr {
         reserve(item_size * count);
         size_t items_read = std::fread(d_temp_buf, item_size, count, fp);
         volk_8i_s32f_convert_32f(reinterpret_cast<float *>(buf),
-                                 reinterpret_cast<const int8_t *>(d_temp_buf), 1, items_read);
+                                 reinterpret_cast<const int8_t *>(d_temp_buf), MAX_CHAR, items_read);
         return items_read;
       }
     };

@@ -4,6 +4,7 @@ import shutil
 import os
 from sigmf import sigmf_swig as sigmf
 import numpy as np
+# import matplotlib.pyplot as plt
 
 
 class qa_type_converter(gr_unittest.TestCase):
@@ -145,6 +146,11 @@ class qa_type_converter(gr_unittest.TestCase):
 
         e = expected_sink.data()
         a = actual_sink.data()
+
+        # plt.plot(e)
+        # plt.plot(a)
+        # plt.show()
+
         np.testing.assert_almost_equal(e, a)
 
     def test_ri32_to_rf32(self):
@@ -153,7 +159,7 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # expected
         expected_source = sigmf.source(path, "ri32", False, False)
-        convert = blocks.int_to_float(1, 1)
+        convert = blocks.int_to_float(1, 2147483647)
         expected_sink = blocks.vector_sink_f(1)
 
         # actual
@@ -319,7 +325,7 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # expected
         expected_source = sigmf.source(path, "ri8", False, False)
-        convert = blocks.char_to_float(1, 1)
+        convert = blocks.char_to_float(1, 127)
         expected_sink = blocks.vector_sink_f(1)
 
         # actual
