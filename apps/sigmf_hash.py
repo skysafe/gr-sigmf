@@ -1,6 +1,6 @@
 import argparse
 import json
-# import tarfile
+import tarfile
 import os.path
 import sys
 import hashlib
@@ -11,16 +11,15 @@ from itertools import groupby
 BUF_SIZE = 65536
 
 
-def hash_file(file_to_hash):
+def hash_file(file_to_hash, length):
     sha512 = hashlib.sha512()
-
-    with open(file_to_hash, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            # md5.update(data)
-            # sha1.update(data)
+    data_to_read = length
+    while True:
+        data = f.read(min(data_to_read, BUF_SIZE))
+        data_to_read -= len(data)
+        if not data:
+            break
+        sha512.updat(data)
     return "{0}".format(sha512.hexdigest())
 
 
@@ -29,12 +28,43 @@ class Archive(object):
         self.archive_path = archive_path
 
     def check(self):
+        # TODO: This assumes a single recording per archive
+        # Find the recording members in the tar file
+        with tarfile.open(self.archive_path, "r:") as tar:
+            data_member = None
+            meta_member = None
+            for member in tar.getmembers():
+                if member.name.endswith("sigmf-data"):
+                    data_member = member
+                if member.name.endswith("sigmf-meta"):
+                    meta_member = member
 
-        # TODO: implement me
-        pass
+        # Use the undocumented features of the tarfile
+        if meta_member and data_member:
+            meta_size = meta_member.size
+            meta_offset = meta_member.offset_data
+            data_size = data_member.size
+            data_offset = data_member.offset_data
+            with open(self.archive_path, "r") as archive:
+                archive.seek(meta_offset)
+                meta_string = archive.read(meta_size)
+                meta = json.loads(meta_string)
+                try:
+                    cur_hash = meta["global"]["core:sha512"]
+                except KeyError:
+                    print("No hash in file %s" % self.archive_path)
+                    return
+                archive.seek(data_offset)
+                computed_hash = hash_file(archive, data_size)
+            if cur_hash == computed_hash:
+                print("Hash match")
+            else:
+                print("Hash doesn't match")
+        else:
+            print("couldn't find members")
+            return
 
     def update(self):
-
         # TODO: implement me
         pass
 
@@ -52,9 +82,11 @@ class FilePair(object):
             except KeyError:
                 print("No hash in file %s" % self.data_file)
                 return
-            computed_hash = hash_file(self.data_file)
+            df_size = os.path.getsize(self.data_file)
+            with open(self.data_file, "r") as df:
+                computed_hash = hash_file(self.df, df_size)
             if cur_hash != computed_hash:
-                print("Hashe doesn't match")
+                print("Hash doesn't match")
             else:
                 print("Hash match")
 
