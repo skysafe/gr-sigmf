@@ -3,6 +3,7 @@ from gnuradio import gr_unittest
 import os
 import shutil
 import apps_test_helper
+import json
 
 
 class qa_hash(gr_unittest.TestCase):
@@ -23,6 +24,7 @@ class qa_hash(gr_unittest.TestCase):
 
         filename = os.path.join(self.test_dir, "temp")
         data_file = filename + apps_test_helper.SIGMF_DATASET_EXT
+        meta_file = filename + apps_test_helper.SIGMF_METADATA_EXT
 
         apps_test_helper.run_flowgraph(data_file)
 
@@ -34,3 +36,8 @@ class qa_hash(gr_unittest.TestCase):
         proc = runner.run("check " + data_file)
         out, err = proc.communicate()
         assert out == "Hash match\n"
+
+        meta = open(meta_file, "r")
+        data = json.loads(meta.read())
+
+        assert 'core:sha512' in data['global']
