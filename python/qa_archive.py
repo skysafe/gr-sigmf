@@ -6,9 +6,6 @@ import apps_test_helper
 import tarfile
 import numpy as np
 
-SIGMF_DATASET_EXT = ".sigmf-data"
-SIGMF_METADATA_EXT = ".sigmf-meta"
-
 
 class qa_archive(gr_unittest.TestCase):
 
@@ -29,7 +26,7 @@ class qa_archive(gr_unittest.TestCase):
         filename = "temp"
 
         file_path = os.path.join(self.test_dir, filename)
-        data_file = file_path + SIGMF_DATASET_EXT
+        data_file = file_path + apps_test_helper.SIGMF_DATASET_EXT
         archive_file = file_path + ".sigmf"
 
         apps_test_helper.run_flowgraph(data_file)
@@ -42,7 +39,8 @@ class qa_archive(gr_unittest.TestCase):
                                      mode="r", format=tarfile.PAX_FORMAT)
         files = sigmf_tarfile.getmembers()
 
-        file_extensions = {SIGMF_DATASET_EXT, SIGMF_METADATA_EXT}
+        file_extensions = {apps_test_helper.SIGMF_DATASET_EXT,
+                           apps_test_helper.SIGMF_METADATA_EXT}
         for f in files:
 
             # layout
@@ -53,9 +51,9 @@ class qa_archive(gr_unittest.TestCase):
             assert f_dir == filename
             f_name, f_ext = os.path.splitext(f.name)
             assert f_ext in file_extensions
-            if f.name.endswith(SIGMF_METADATA_EXT):
+            if f.name.endswith(apps_test_helper.SIGMF_METADATA_EXT):
                 m_file = f
-            elif f.name.endswith(SIGMF_DATASET_EXT):
+            elif f.name.endswith(apps_test_helper.SIGMF_DATASET_EXT):
                 d_file = f
             assert os.path.split(f_name)[1] == f_dir
 
@@ -72,13 +70,15 @@ class qa_archive(gr_unittest.TestCase):
         # content
         meta_expected = open(os.path.join(
                              self.test_dir,
-                             filename + SIGMF_METADATA_EXT), "r")
+                             filename + apps_test_helper.SIGMF_METADATA_EXT),
+                             "r")
         meta_actual = open(os.path.join(self.test_dir, m_file.name), "r")
         assert meta_expected.read() == meta_actual.read()
 
         data_expected = open(os.path.join(
                              self.test_dir,
-                             filename + SIGMF_DATASET_EXT), "r")
+                             filename + apps_test_helper.SIGMF_DATASET_EXT),
+                             "r")
         data_actual = open(os.path.join(self.test_dir, d_file.name), "r")
         print(str(np.fromstring(data_expected.read())))
         print(str(np.fromstring(data_actual.read())))

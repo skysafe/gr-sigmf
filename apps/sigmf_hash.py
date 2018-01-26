@@ -18,11 +18,12 @@ def hash_file(file_to_hash, length):
     sha512 = hashlib.sha512()
     data_to_read = length
     while True:
-        data = file_to_hash.read(min(data_to_read, BUF_SIZE))
-        data_to_read -= len(data)
-        if not data:
-            break
-        sha512.updat(data)
+        with open(file_to_hash, "r") as f:
+            data = f.read(min(data_to_read, BUF_SIZE))
+            data_to_read -= len(data)
+            if not data:
+                break
+            sha512.update(data)
     return "{0}".format(sha512.hexdigest())
 
 
@@ -124,7 +125,7 @@ class FilePair(object):
     def update(self):
         with open(self.meta_file, "r+") as mf:
             meta = json.load(mf)
-            computed_hash = hash_file(self.data_file)
+            computed_hash = hash_file(self.data_file, len(self.data_file))
             meta["global"]["core:sha512"] = computed_hash
             mf.seek(0)
             json.dump(meta, mf)

@@ -22,7 +22,7 @@ class qa_hash(gr_unittest.TestCase):
         runner = apps_test_helper.AppRunner(self.test_dir, "sigmf_hash.py")
 
         filename = os.path.join(self.test_dir, "temp")
-        data_file = filename + ".sigmf-data"
+        data_file = filename + apps_test_helper.SIGMF_DATASET_EXT
 
         apps_test_helper.run_flowgraph(data_file)
 

@@ -4,6 +4,9 @@ import os
 import fnmatch
 from sigmf import sigmf_swig as sigmf
 
+SIGMF_METADATA_EXT = ".sigmf-meta"
+SIGMF_DATASET_EXT = ".sigmf-data"
+
 
 def locate(pattern, root=os.curdir):
     for path, dirs, files in os.walk(os.path.abspath(root)):
