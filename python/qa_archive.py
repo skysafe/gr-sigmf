@@ -80,5 +80,6 @@ class qa_archive(gr_unittest.TestCase):
                              filename + apps_test_helper.SIGMF_DATASET_EXT),
                              "r")
         data_actual = open(os.path.join(self.test_dir, d_file.name), "r")
-        print(str(np.fromstring(data_expected.read())))
-        print(str(np.fromstring(data_actual.read())))
+        de = np.fromstring(data_expected.read()).all()
+        da = np.fromstring(data_actual.read()).all()
+        assert de == da

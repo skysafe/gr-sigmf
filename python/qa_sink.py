@@ -243,9 +243,6 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file_1, json_file_1 = self.temp_file_names()
         data_file_2, json_file_2 = self.temp_file_names()
-        print("data_file_1 = " + data_file_1)
-        print("data_file_2 = " + data_file_2)
-        print("Creating sink with inital file")
         file_sink = sigmf.sink("cf32",
                                data_file_1,
                                samp_rate,
@@ -260,16 +257,12 @@ class qa_sink(gr_unittest.TestCase):
         tb.connect(src, counter)
         tb.connect(counter, file_sink)
         tb.start()
-        print("first call to set meta")
         file_sink.set_global_meta("test:a", pmt.to_pmt(1))
         sleep(.2)
-        print("Opening second file")
         file_sink.open(data_file_2)
         sleep(.2)
-        print("second call to set meta")
         file_sink.set_global_meta("test:b", pmt.to_pmt(2))
         sleep(.2)
-        print("Closing")
         file_sink.close()
         sleep(.2)
         count_1 = counter.count
