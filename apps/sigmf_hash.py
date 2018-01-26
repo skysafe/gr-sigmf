@@ -84,7 +84,7 @@ class FilePair(object):
                 return
             df_size = os.path.getsize(self.data_file)
             with open(self.data_file, "r") as df:
-                computed_hash = hash_file(self.df, df_size)
+                computed_hash = hash_file(df, df_size)
             if cur_hash != computed_hash:
                 print("Hash doesn't match")
             else:
