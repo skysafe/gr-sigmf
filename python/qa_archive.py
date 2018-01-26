@@ -3,6 +3,11 @@ from gnuradio import gr_unittest
 import os
 import shutil
 import apps_test_helper
+import tarfile
+import numpy as np
+
+SIGMF_DATASET_EXT = ".sigmf-data"
+SIGMF_METADATA_EXT = ".sigmf-meta"
 
 
 class qa_archive(gr_unittest.TestCase):
@@ -21,9 +26,11 @@ class qa_archive(gr_unittest.TestCase):
 
         runner = apps_test_helper.AppRunner(self.test_dir, "sigmf_archive.py")
 
-        filename = os.path.join(self.test_dir, "temp")
-        data_file = filename + ".sigmf-data"
-        archive_file = filename + ".sigmf"
+        filename = "temp"
+
+        file_path = os.path.join(self.test_dir, filename)
+        data_file = file_path + SIGMF_DATASET_EXT
+        archive_file = file_path + ".sigmf"
 
         apps_test_helper.run_flowgraph(data_file)
 
@@ -31,6 +38,47 @@ class qa_archive(gr_unittest.TestCase):
         proc = runner.run("archive " + data_file)
         out, err = proc.communicate()
 
+        sigmf_tarfile = tarfile.open(archive_file,
+                                     mode="r", format=tarfile.PAX_FORMAT)
+        files = sigmf_tarfile.getmembers()
+
+        file_extensions = {SIGMF_DATASET_EXT, SIGMF_METADATA_EXT}
+        for f in files:
+
+            # layout
+            assert tarfile.TarInfo.isfile(f)
+            f_dir = os.path.split(f.name)[0]
+
+            # names and extensions
+            assert f_dir == filename
+            f_name, f_ext = os.path.splitext(f.name)
+            assert f_ext in file_extensions
+            if f.name.endswith(SIGMF_METADATA_EXT):
+                m_file = f
+            elif f.name.endswith(SIGMF_DATASET_EXT):
+                d_file = f
+            assert os.path.split(f_name)[1] == f_dir
+
+            # permissions
+            # assert f.mode == 0o644
+
+        # type
+        assert sigmf_tarfile.format == tarfile.PAX_FORMAT
+
         # extract
         proc = runner.run("extract " + archive_file)
         out, err = proc.communicate()
+
+        # content
+        meta_expected = open(os.path.join(
+                             self.test_dir,
+                             filename + SIGMF_METADATA_EXT), "r")
+        meta_actual = open(os.path.join(self.test_dir, m_file.name), "r")
+        assert meta_expected.read() == meta_actual.read()
+
+        data_expected = open(os.path.join(
+                             self.test_dir,
+                             filename + SIGMF_DATASET_EXT), "r")
+        data_actual = open(os.path.join(self.test_dir, d_file.name), "r")
+        print(str(np.fromstring(data_expected.read())))
+        print(str(np.fromstring(data_actual.read())))
