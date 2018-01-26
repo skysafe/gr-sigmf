@@ -115,9 +115,10 @@ class FilePair(object):
                 print("No hash in file %s" % self.data_file)
                 return
             df_size = os.path.getsize(self.data_file)
-            with open(self.data_file, "r") as df:
-                computed_hash = hash_file(df, df_size)
+            computed_hash = hash_file(self.data_file, df_size)
             if cur_hash != computed_hash:
+                print(str(cur_hash))
+                print(str(computed_hash))
                 print("Hash doesn't match")
             else:
                 print("Hash match")
@@ -125,7 +126,8 @@ class FilePair(object):
     def update(self):
         with open(self.meta_file, "r+") as mf:
             meta = json.load(mf)
-            computed_hash = hash_file(self.data_file, len(self.data_file))
+            df_size = os.path.getsize(self.data_file)
+            computed_hash = hash_file(self.data_file, df_size)
             meta["global"]["core:sha512"] = computed_hash
             mf.seek(0)
             json.dump(meta, mf)
