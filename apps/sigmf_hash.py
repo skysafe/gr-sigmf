@@ -1,10 +1,13 @@
 import argparse
 import json
 import tarfile
-import os.path
+import tempfile
+import os
 import sys
 import hashlib
 from itertools import groupby
+import fnmatch
+import shutil
 
 # TODO: Finish archive support
 
@@ -21,6 +24,15 @@ def hash_file(file_to_hash, length):
             break
         sha512.updat(data)
     return "{0}".format(sha512.hexdigest())
+
+
+def find(pattern, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, pattern):
+                result.append(os.path.join(root, name))
+    return result
 
 
 class Archive(object):
@@ -65,8 +77,27 @@ class Archive(object):
             return
 
     def update(self):
-        # TODO: implement me
-        pass
+        # TODO: This assumes a single recording per archive
+        # Make a temp folder
+        temp_dir = tempfile.mkdtemp()
+        # Untar the archive
+        archive_tar = tarfile.open(self.archive_path)
+        archive_tar.extractall(path=temp_dir)
+        meta_file = find("*.sigmf-meta", temp_dir)
+        data_file = find("*.sigmf-data", temp_dir)
+        # Then reuse the filepair stuff from below
+        file_pair = FilePair([meta_file, data_file])
+        file_pair.update()
+        # retar the archive
+        temp_tar_path = os.path.join(temp_dir, "temp.sigmf")
+        new_tar = tarfile.open(temp_tar_path, "w:")
+        new_tar.add(meta_file)
+        new_tar.add(data_file)
+        new_tar.close()
+        # Copy it over the existing archive
+        shutil.copy2(temp_tar_path, self.archive_path)
+        # Clean up the temp directory
+        shutil.rmtree(temp_dir)
 
 
 class FilePair(object):
