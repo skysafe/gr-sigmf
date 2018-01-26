@@ -15,7 +15,7 @@ def hash_file(file_to_hash, length):
     sha512 = hashlib.sha512()
     data_to_read = length
     while True:
-        data = f.read(min(data_to_read, BUF_SIZE))
+        data = file_to_hash.read(min(data_to_read, BUF_SIZE))
         data_to_read -= len(data)
         if not data:
             break
