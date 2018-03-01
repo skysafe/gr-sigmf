@@ -90,9 +90,10 @@ namespace gr {
     : gr::sync_block("sink",
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
-      d_fp(0), d_new_fp(0), d_append(append), d_itemsize(type_to_size(type)),
-	  d_type(type), d_samp_rate(samp_rate), d_description(description), d_author(author),
-	  d_license(license), d_hardware(hardware), d_debug(debug), d_meta_written(false)
+      d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_itemsize(type_to_size(type)),
+      d_type(type), d_samp_rate(samp_rate), d_description(description), d_author(author),
+      d_license(license), d_hardware(hardware), d_debug(debug), d_meta_written(false),
+      d_recording_start_offset(0)
     {
       reset_meta();
       open(filename.c_str());
@@ -273,6 +274,11 @@ namespace gr {
     {
       gr::thread::scoped_lock guard(d_mutex); // hold mutex for duration of this function
 
+      if ((filename != nullptr) && (filename[0] == '\0')) {
+        // Then it's empty string and we can just return now
+        return false;
+      }
+
       d_new_data_path = to_data_path(filename);
       d_new_meta_path = meta_path_from_data(d_new_data_path);
 
@@ -321,6 +327,7 @@ namespace gr {
         	write_meta();
         	reset_meta();
         }
+        d_recording_start_offset = nitems_read(0);
 
         // install new file pointer
         d_fp = d_new_fp;
@@ -450,6 +457,7 @@ namespace gr {
       }
       for(tag_map_t::iterator it = tag_map.begin(); it != tag_map.end(); it++) {
         uint64_t offset = it->first;
+        uint64_t adjusted_offset = offset - d_recording_start_offset;
         tag_vec_it tag_begin = it->second.begin();
         tag_vec_it tag_end = it->second.end();
         // split the list into capture tags and annotation tags
@@ -491,7 +499,7 @@ namespace gr {
           if(!found_packet_len) {
             anno_ns.set("core:sample_count", 0);
           }
-          anno_ns.set("core:sample_start", offset);
+          anno_ns.set("core:sample_start", adjusted_offset);
 
           // add the annotation object to the list
           d_annotations.push_back(anno_ns);

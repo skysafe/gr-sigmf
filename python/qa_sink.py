@@ -30,6 +30,7 @@ class tag_injector(gr.sync_block):
             out_sig=[numpy.complex64],
         )
         self.inject_tag = None
+        self.injected_offset = None
 
     def work(self, input_items, output_items):
         output_items[0][:] = input_items[0]
@@ -38,6 +39,7 @@ class tag_injector(gr.sync_block):
             for key, val in self.inject_tag.items():
                 self.add_item_tag(
                     0, offset, pmt.to_pmt(key), pmt.to_pmt(val))
+            self.injected_offset = offset
             self.inject_tag = None
         return len(output_items[0])
 
@@ -440,3 +442,111 @@ class qa_sink(gr_unittest.TestCase):
         # check that data was recorded
         data_size = os.path.getsize(data_file)
         assert data_size > 0
+
+    def test_not_intially_open_annotation_tag_offsets(self):
+        '''Test that if a sink is created without a file initially open,
+        and then a file is opened, that annotation stream tags will have the
+        correct offsets, i.e. they should be set from when the
+        file was opened, not when the flowgraph started'''
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+
+        description = "This is a test of the sigmf sink."
+        author = "Just some person"
+        file_license = "CC-0"
+        hardware = "Sig Source"
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               "",
+                               samp_rate,
+                               description,
+                               author,
+                               file_license,
+                               hardware,
+                               False)
+
+        injector = tag_injector()
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        time.sleep(.1)
+        file_sink.open(data_file)
+        time.sleep(.1)
+        injector.inject_tag = {"test:a": 1}
+        time.sleep(.1)
+        tb.stop()
+        tb.wait()
+        injected_offset = injector.injected_offset
+
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            assert meta["global"]["core:description"] == description
+            assert meta["global"]["core:author"] == author
+            assert meta["global"]["core:license"] == file_license
+            assert meta["global"]["core:hw"] == hardware
+
+            # Check annotations meta
+            # The sample_start should be less than what it was injected
+            # at, since no file was open at first, so the internal offsets
+            # were off
+            assert (meta["annotations"][0]
+                    ["core:sample_start"] < injected_offset)
+
+    def test_not_intially_open_capture_tag_offsets(self):
+        '''Test that if a sink is created without a file initially open,
+        and then a file is opened, that capture stream tags will have the
+        correct offsets, i.e. they should be set from when the
+        file was opened, not when the flowgraph started'''
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+
+        description = "This is a test of the sigmf sink."
+        author = "Just some person"
+        file_license = "CC-0"
+        hardware = "Sig Source"
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               "",
+                               samp_rate,
+                               description,
+                               author,
+                               file_license,
+                               hardware,
+                               False)
+
+        injector = tag_injector()
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        time.sleep(.1)
+        file_sink.open(data_file)
+        time.sleep(.1)
+        injector.inject_tag = {"rx_freq": 900e6}
+        time.sleep(.1)
+        tb.stop()
+        tb.wait()
+        injected_offset = injector.injected_offset
+
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            assert meta["global"]["core:description"] == description
+            assert meta["global"]["core:author"] == author
+            assert meta["global"]["core:license"] == file_license
+            assert meta["global"]["core:hw"] == hardware
+
+            # Check capture meta
+            # The sample_start should be less than what it was injected
+            # at, since no file was open at first, so the internal offsets
+            # were off
+            assert (meta["captures"][0]
+                    ["core:sample_start"] < injected_offset)

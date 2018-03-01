@@ -91,11 +91,15 @@ namespace gr {
       // True if there is a new fp to switch to
       bool d_updated;
 
+
       bool d_debug;
 
       // True if the metadata for the current file has been written
       bool d_meta_written;
 
+      // The offset of the start of the current recording from
+      // what the block believes 
+      uint64_t d_recording_start_offset;
 
       boost::mutex d_mutex;
       size_t d_itemsize;
