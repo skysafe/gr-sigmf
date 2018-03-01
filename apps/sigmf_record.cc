@@ -185,25 +185,25 @@ main(int argc, char *argv[])
   // Need to tell clang-format to not format this
   // clang-format off
   main_options.add_options()
-    ("help,h", "show help message")
-    ("args,a", po::value<std::string>(&device_args)->default_value(""),"Argument string for usrp")
-    ("cpu-format", po::value<std::string>(&cpu_format_str)->default_value("fc32"),"Format of saved data")
-    ("wire-format", po::value<std::string>(&wire_format_str)->default_value(""),"Format of otw data")
-    ("center-freq,f", po::value<double>(&center_freq)->required(),"Center frequency in hertz")
-    ("sample-rate,s", po::value<double>(&sample_rate)->required(),"Sample rate in samples/second")
-    ("gain,g", po::value<double>(&gain), "Gain in db")
-    ("normalized-gain", po::value<double>(&normalized_gain),"Normalized gain")
-    ("antenna", po::value<std::string>(&antenna),"Antenna for usrp")
-    ("bandwidth", po::value<double>(&bandwidth),"Bandwidth for usrp")
-    ("subdev-spec",po::value<std::string>(&subdev_spec),"Subdev spec for usrp")
-    ("description", po::value<std::string>(&description)->default_value(""),"Description of this recording")
-    ("author", po::value<std::string>(&author),"Author for this recording")
+    ("help,h", "Show help message")
+    ("args,a", po::value<std::string>(&device_args)->default_value(""), "Argument string for UHD")
+    ("cpu-format", po::value<std::string>(&cpu_format_str)->default_value("fc32"), "Format of saved data")
+    ("wire-format", po::value<std::string>(&wire_format_str)->default_value(""), "Format of OTW data")
+    ("center-freq,f", po::value<double>(&center_freq)->default_value(0), "Center frequency in hertz")
+    ("sample-rate,s", po::value<double>(&sample_rate)->default_value(100e6/16), "Sample rate in samples/second")
+    ("gain,g", po::value<double>(&gain)->default_value(0), "Gain in db")
+    ("normalized-gain", po::value<double>(&normalized_gain), "Normalized gain")
+    ("antenna", po::value<std::string>(&antenna), "Antenna to select on USRP")
+    ("bandwidth", po::value<double>(&bandwidth), "Bandwidth to select on USRP")
+    ("subdev-spec",po::value<std::string>(&subdev_spec), "Subdev spec for USRP")
+    ("description", po::value<std::string>(&description)->default_value(""), "Description of this recording")
+    ("author", po::value<std::string>(&author), "Author for this recording")
     ("license", po::value<std::string>(&license), "License for this recoridng")
-    ("hardware", po::value<std::string>(&hardware)->default_value(""),"Set hardware for this recording (if left empty, then usrp will be queried)")
-    ("duration", po::value<double>(&duration_seconds),"If set, then only capture for this many seconds")
-    ("overwrite", po::bool_switch(&overwrite)->default_value(false),"Overwrite output file")
+    ("hardware", po::value<std::string>(&hardware)->default_value(""), "Set hardware for this recording (if left empty, then USRP will be queried)")
+    ("duration", po::value<double>(&duration_seconds), "If set, then only capture for this many seconds")
+    ("overwrite", po::bool_switch(&overwrite)->default_value(false), "Overwrite output file")
     ("global-meta", po::value<std::vector<std::string> >(&extra_global_meta), "Additional global metadata")
-    ("output-file", po::value<std::string>(&output_filename)->default_value(""),"File to write to");
+    ("output-file", po::value<std::string>(&output_filename)->default_value(""), "File to write to");
   // clang-format on
   po::positional_options_description positional_options;
   positional_options.add("output-file", 1);
@@ -228,14 +228,9 @@ main(int argc, char *argv[])
   }
 
   if(vm.count("gain") && vm.count("normalized-gain")) {
-    std::cerr << "Can't set gain and normalized gain!\n";
+    std::cerr << "Can't set gain and normalized gain at the same time!\n";
     return -1;
   }
-  if(!vm.count("gain") && !vm.count("normalized-gain")) {
-    std::cerr << "No gain supplied!\n";
-    return -1;
-  }
-
 
   // Make a usrp source
   uhd::device_addr_t device_addr(device_args);
