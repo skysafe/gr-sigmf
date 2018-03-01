@@ -23,7 +23,6 @@
 
 #include <gnuradio/sync_block.h>
 #include <sigmf/api.h>
-#include <sigmf/api.h>
 #include <sigmf/meta_namespace.h>
 
 namespace gr {

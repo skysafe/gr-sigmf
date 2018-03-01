@@ -40,6 +40,7 @@
 #include <rapidjson/writer.h>
 
 #include "app_utils.h"
+#include "sigmf/sigmf_utils.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -268,17 +269,16 @@ main(int argc, char *argv[])
 
   std::string sigmf_format = uhd_format_to_sigmf_format(cpu_format_str);
 
+  if(!overwrite && fs::exists(gr::sigmf::to_data_path(output_filename))) {
+    std::cerr << "Output file exists and overwrite flag is not set";
+    return -1;
+  }
+
   // make a sink block
   gr::sigmf::sink::sptr file_sink(
     gr::sigmf::sink::make(sigmf_format, output_filename, sample_rate, description, author,
                           license, hardware != "" ? hardware : generate_hw_name(usrp_info)));
 
-  // Have to wait until here to check for existing files because the sink my change the
-  // data file name
-  if(!overwrite && fs::exists(file_sink->get_data_path())) {
-    std::cerr << "Output file exists and overwrite flag is not set";
-    return -1;
-  }
 
   // Add any extra global metadata
   for(int i = 0; i < extra_global_meta.size(); i++) {

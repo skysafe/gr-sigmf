@@ -19,10 +19,12 @@
  */
 
 #pragma once
+
+#include <sigmf/api.h>
 #include <boost/filesystem/path.hpp>
 namespace gr {
   namespace sigmf {
-    boost::filesystem::path to_data_path(const std::string &filename);
+    boost::filesystem::path to_data_path(const std::string &filename) SIGMF_API;
     boost::filesystem::path meta_path_from_data(boost::filesystem::path data_path);
     enum endian_t { LITTLE = 0, BIG = 1 };
     struct format_detail_t {
