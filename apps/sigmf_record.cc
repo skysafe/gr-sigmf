@@ -191,6 +191,7 @@ main(int argc, char *argv[])
     ("cpu-format", po::value<std::string>(&cpu_format_str)->default_value("fc32"), "Format of saved data")
     ("wire-format", po::value<std::string>(&wire_format_str)->default_value(""), "Format of OTW data")
     ("freq,f", po::value<double>(&center_freq)->default_value(0), "Center frequency in hertz")
+    ("int-n", "Tune USRP LO in integer-N PLL mode")
     ("sample-rate,s", po::value<double>(&sample_rate)->default_value(100e6/16), "Sample rate in samples/second")
     ("gain,g", po::value<double>(&gain)->default_value(0), "Gain in db")
     ("normalized-gain", po::value<double>(&normalized_gain), "Normalized gain")
@@ -246,6 +247,11 @@ main(int argc, char *argv[])
   std::cout << boost::format("Actual RX Rate: %f MSps...") % (usrp_source->get_samp_rate()/1e6) << std::endl << std::endl;
 
   std::cout << boost::format("Setting RX Freq: %f MHz...") % (center_freq/1e6) << std::endl;
+  uhd::tune_request_t tune_request(center_freq);
+  if(vm.count("int-n")) {
+    std::cout << "Configuring PLL in integer-N mode..." << std::endl;
+    tune_request.args = uhd::device_addr_t("mode_n=integer");
+  }
   usrp_source->set_center_freq(center_freq);
   std::cout << boost::format("Actual RX Freq: %f MHz...") % (usrp_source->get_center_freq()/1e6) << std::endl << std::endl;
 
