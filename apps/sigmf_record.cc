@@ -235,18 +235,28 @@ main(int argc, char *argv[])
     return -1;
   }
 
-  // Make a usrp source
+  std::cout << std::endl;
+  std::cout << boost::format("Creating the usrp device with: %s...") % device_args << std::endl;
   uhd::device_addr_t device_addr(device_args);
   uhd::stream_args_t stream_args(cpu_format_str, wire_format_str);
   gr::uhd::usrp_source::sptr usrp_source(gr::uhd::usrp_source::make(device_addr, stream_args));
 
-  // Required params
-  usrp_source->set_center_freq(center_freq);
+  std::cout << boost::format("Setting RX Rate: %f MSps...") % (sample_rate/1e6) << std::endl;
   usrp_source->set_samp_rate(sample_rate);
+  std::cout << boost::format("Actual RX Rate: %f MSps...") % (usrp_source->get_samp_rate()/1e6) << std::endl << std::endl;
+
+  std::cout << boost::format("Setting RX Freq: %f MHz...") % (center_freq/1e6) << std::endl;
+  usrp_source->set_center_freq(center_freq);
+  std::cout << boost::format("Actual RX Freq: %f MHz...") % (usrp_source->get_center_freq()/1e6) << std::endl << std::endl;
+
   if(vm.count("gain")) {
+    std::cout << boost::format("Setting RX Gain: %f dB...") % gain << std::endl;
     usrp_source->set_gain(gain);
+    std::cout << boost::format("Actual RX Gain: %f dB...") % usrp_source->get_gain() << std::endl << std::endl;
   } else if(vm.count("normalized-gain")) {
+    std::cout << boost::format("Setting RX Normalized Gain: %f dB...") % normalized_gain << std::endl;
     usrp_source->set_normalized_gain(normalized_gain);
+    std::cout << boost::format("Actual RX Normalized Gain: %f dB...") % usrp_source->get_normalized_gain() << std::endl << std::endl;
   }
 
   // Optional params
@@ -254,7 +264,9 @@ main(int argc, char *argv[])
     usrp_source->set_antenna(antenna);
   }
   if(vm.count("bandwidth")) {
+    std::cout << boost::format("Setting RX Bandwidth: %f MHz...") % (bandwidth/1e6) << std::endl;
     usrp_source->set_bandwidth(bandwidth);
+    std::cout << boost::format("Actual RX Bandwidth: %f MHz...") % (usrp_source->get_bandwidth()/1e6) << std::endl << std::endl;
   }
   if(vm.count("subdev-spec")) {
     usrp_source->set_subdev_spec(subdev_spec);
