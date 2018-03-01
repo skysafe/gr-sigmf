@@ -217,8 +217,10 @@ main(int argc, char *argv[])
   po::notify(vm);
 
   if(vm.count("help")) {
-    std::cout << main_options << "\n";
-    return 1;
+    std::cout << "Capture a SigMF recording via a UHD device." << std::endl << std::endl;
+    std::cout << boost::format("Usage: %s [options] <filename>") % argv[0] << std::endl << std::endl;
+    std::cout << main_options << std::endl;
+    return ~0;
   }
 
   // TODO: DO i need to make this check? or can I just let stuff explode...
