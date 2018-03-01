@@ -78,6 +78,27 @@ target_link_libraries(sigmf-record
 install(TARGETS sigmf-record DESTINATION bin)
 
 ####################################################
+############### sigmf-play #########################
+####################################################
+
+set(SIGMF_PLAY_SRCFILES
+    "sigmf_play.cc"
+)
+
+add_executable(sigmf-play
+    ${SIGMF_PLAY_SRCFILES}
+)
+
+target_link_libraries(sigmf-play 
+    ${UHD_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GNURADIO_ALL_LIBRARIES}
+    gnuradio-sigmf
+    )
+
+install(TARGETS sigmf-play DESTINATION bin)
+
+####################################################
 ############### Python-based apps ##################
 ####################################################
 GR_PYTHON_INSTALL(
