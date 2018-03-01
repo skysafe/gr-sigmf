@@ -65,6 +65,7 @@ namespace gr {
                                        std::string key,
                                        pmt::pmt_t val) = 0;
 
+      virtual void set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val) = 0;
 
       // virtual void set_global_meta(std::string key, int64_t val) = 0;
       // virtual void set_global_meta(std::string key, uint64_t val) = 0;

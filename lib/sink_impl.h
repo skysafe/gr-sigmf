@@ -162,6 +162,8 @@ namespace gr {
                                        std::string key,
                                        pmt::pmt_t val);
 
+      void set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val);
+
       // Where all the action really happens
       int work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 

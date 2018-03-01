@@ -166,7 +166,7 @@ namespace gr {
       } else if(command_str == "close") {
         close();
       } else if(command_str == "set_annotation_meta") {
-        // Need to get sample_start, sample_count, key, and value 
+        // Need to get sample_start, sample_count, key, and value
         auto sample_start = pmt::dict_ref(msg, pmt::mp("sample_start"), pmt::get_PMT_NIL());
         auto sample_count = pmt::dict_ref(msg, pmt::mp("sample_count"), pmt::get_PMT_NIL());
         auto key = pmt::dict_ref(msg, pmt::mp("key"), pmt::get_PMT_NIL());
@@ -232,9 +232,19 @@ namespace gr {
     }
 
     void
+    sink_impl::set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val) {
+      try {
+        auto capture = d_captures.at(index);
+        capture.set(key, val);
+      } catch (const std::out_of_range &e) {
+        GR_LOG_ERROR(d_logger, "Invalid capture index");
+      }
+    }
+
+    void
     sink_impl::set_annotation_meta(uint64_t sample_start, uint64_t sample_count, std::string key, pmt::pmt_t val)
     {
-      auto existing_annotation = std::find_if(d_annotations.begin(), d_annotations.end(), [sample_start, sample_count](const meta_namespace &ns) -> bool { 
+      auto existing_annotation = std::find_if(d_annotations.begin(), d_annotations.end(), [sample_start, sample_count](const meta_namespace &ns) -> bool {
         return ns.has("core:sample_start") &&
           pmt::to_uint64(ns.get("core:sample_start")) == sample_start &&
           ns.has("core:sample_count") &&
