@@ -297,7 +297,6 @@ main(int argc, char *argv[])
         document.Parse(val_with_quotes.c_str());
         if(document.HasParseError()) {
           std::cerr << "Error parsing metadata value\n";
-          std::cout << "damn";
           return -1;
         }
       } else {
@@ -308,7 +307,6 @@ main(int argc, char *argv[])
     if(document.IsString()) {
       std::string str_val(document.GetString());
       file_sink->set_global_meta(key, pmt::mp(str_val));
-      std::cout << document.GetString() << std::endl;
     }
   }
 
@@ -333,7 +331,6 @@ main(int argc, char *argv[])
 
   // run the flow graph
   tb->start();
-  std::cout << "Start returned" << std::endl;
   quit_future.wait();
   tb->stop();
   tb->wait();
