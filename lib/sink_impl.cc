@@ -124,17 +124,33 @@ namespace gr {
       return true;
     }
 
+    std::string
+    sink_impl::iso_8601_ts() {
+      posix::ptime t = posix::microsec_clock::universal_time();
+      return posix::to_iso_extended_string(t) + "Z";
+    }
+
     void
     sink_impl::reset_meta() {
       // std::cout << "reset_meta()" << std::endl;
       d_global = meta_namespace::build_global_object(d_type);
       d_global.set("core:sample_rate", d_samp_rate);
-      d_global.set("core:description", d_description);
-      d_global.set("core:author", d_author);
-      d_global.set("core:license", d_license);
-      d_global.set("core:hw", d_hardware);
+      
+      if (!d_description.empty()) {
+        d_global.set("core:description", d_description);
+      }
+      if (!d_author.empty()) {
+        d_global.set("core:author", d_author);
+      }
+      if (!d_license.empty()) {
+        d_global.set("core:license", d_license);
+      }
+      if (!d_hardware.empty()) {
+        d_global.set("core:hw", d_hardware);
+      }
       d_captures.clear();
       d_captures.push_back(meta_namespace::build_capture_segment(0));
+      d_captures[0].set("core:datetime", iso_8601_ts());
       d_annotations.clear();
   }
 

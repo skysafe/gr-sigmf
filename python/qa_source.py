@@ -232,8 +232,9 @@ class qa_source (gr_unittest.TestCase):
         tb.connect(collector, sink)
         tb.run()
 
-        self.assertEqual(collector.tags[0]["key"], "TEST")
-        self.assertEqual(collector.tags[0]["offset"], 0)
+        zero_offset_tags = [t for t in collector.tags if t["offset"] == 0]
+        test_tag = [t for t in zero_offset_tags if t["key"] == "TEST"]
+        self.assertEqual(len(test_tag), 1)
 
     def test_capture_segments_to_tags(self):
         data, meta_json, filename, meta_file = self.make_file("capture_segs")
@@ -266,8 +267,10 @@ class qa_source (gr_unittest.TestCase):
         tb.run()
 
         # There should be 3 tags
-        self.assertEqual(collector.tags[0]["key"], "TEST")
-        self.assertEqual(collector.tags[0]["offset"], 0)
+        print(collector.tags)
+        zero_offset_tags = [t for t in collector.tags if t["offset"] == 0]
+        test_tag = [t for t in zero_offset_tags if t["key"] == "TEST"]
+        self.assertEqual(len(test_tag), 1)
         collector.assertTagExists(5, "core:frequency", 2.4e9)
         collector.assertTagExists(10, "core:frequency", 2.44e9)
 
@@ -327,4 +330,5 @@ class qa_source (gr_unittest.TestCase):
         tb.wait()
 
         for tag in collector.tags:
-            self.assertEqual(tag["key"], "test")
+            if tag["key"] != "core:datetime":
+                self.assertEqual(tag["key"], "test")

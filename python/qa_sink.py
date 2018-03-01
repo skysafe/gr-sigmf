@@ -3,6 +3,7 @@ import struct
 import json
 import math
 import time
+from datetime import datetime
 from time import sleep
 import tempfile
 import shutil
@@ -550,3 +551,86 @@ class qa_sink(gr_unittest.TestCase):
             # were off
             assert (meta["captures"][0]
                     ["core:sample_start"] < injected_offset)
+
+    def test_dont_set_empty_global_meta(self):
+        '''Don't set global metadata from args if they're empty'''
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+
+        description = ""
+        author = ""
+        file_license = ""
+        hardware = ""
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               data_file,
+                               samp_rate,
+                               description,
+                               author,
+                               file_license,
+                               hardware,
+                               False)
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        tb.wait()
+
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            assert "core:description" not in meta["global"]
+            assert "core:author" not in meta["global"]
+            assert "core:license" not in meta["global"]
+            assert "core:hw" not in meta["global"]
+
+    def test_capture_datetime_on_start(self):
+        '''If a file is open to start then it should have a datetime
+        set and that datetime should be sort of accurate'''
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+
+        description = ""
+        author = ""
+        file_license = ""
+        hardware = ""
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               data_file,
+                               samp_rate,
+                               description,
+                               author,
+                               file_license,
+                               hardware,
+                               False)
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        tb.wait()
+
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+            print(meta)
+            meta_dt_str = meta["captures"][0]["core:datetime"]
+            meta_dt = datetime.strptime(
+                meta_dt_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+            print(meta_dt)
+            assert (datetime.utcnow() - meta_dt).total_seconds() < 2
+            # Check global meta
+            assert "core:description" not in meta["global"]
+            assert "core:author" not in meta["global"]
+            assert "core:license" not in meta["global"]
+            assert "core:hw" not in meta["global"]
+
