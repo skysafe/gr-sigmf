@@ -7,7 +7,7 @@
 include(LibFindMacros)
 
 # Use pkg-config to get hints about paths
-libfind_pkg_check_modules(RapidJson_PKGCONF rapidjson)
+libfind_pkg_check_modules(RapidJson_PKGCONF RapidJSON)
 
 # Main include dir
 find_path(RapidJson_INCLUDE_DIR
