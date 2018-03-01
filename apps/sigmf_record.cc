@@ -261,6 +261,7 @@ main(int argc, char *argv[])
 
   // Optional params
   if(vm.count("antenna")) {
+    std::cout << boost::format("Setting antenna to: %s") % antenna << std::endl << std::endl;
     usrp_source->set_antenna(antenna);
   }
   if(vm.count("bandwidth")) {
@@ -269,6 +270,7 @@ main(int argc, char *argv[])
     std::cout << boost::format("Actual RX Bandwidth: %f MHz...") % (usrp_source->get_bandwidth()/1e6) << std::endl << std::endl;
   }
   if(vm.count("subdev-spec")) {
+    std::cout << boost::format("Setting subdev spec to: %s") % subdev_spec << std::endl << std::endl;
     usrp_source->set_subdev_spec(subdev_spec);
   }
 
@@ -282,7 +284,7 @@ main(int argc, char *argv[])
   std::string sigmf_format = uhd_format_to_sigmf_format(cpu_format_str);
 
   if(!overwrite && fs::exists(gr::sigmf::to_data_path(output_filename))) {
-    std::cerr << "Output file exists and overwrite flag is not set";
+    std::cerr << "Error: specified output file already exists. To overwrite it, set the --overwrite flag." << std::endl;
     return -1;
   }
 
@@ -291,6 +293,9 @@ main(int argc, char *argv[])
     gr::sigmf::sink::make(sigmf_format, output_filename, sample_rate, description, author,
                           license, hardware != "" ? hardware : generate_hw_name(usrp_info)));
 
+  std::cout << "Writing SigMF recording to:" << std::endl;
+  std::cout << "  Samples: " << file_sink->get_data_path() << std::endl;
+  std::cout << "  Metadata: " << file_sink->get_meta_path() << std::endl;
 
   // Add any extra global metadata
   for(int i = 0; i < extra_global_meta.size(); i++) {
@@ -339,7 +344,7 @@ main(int argc, char *argv[])
 
   // Handle the interrupt signal
   std::signal(SIGINT, &sig_int_handler);
-  std::cout << "Press Ctrl + C to stop streaming..." << std::endl;
+  std::cout << std::endl << "Press Ctrl + C to stop streaming..." << std::endl;
 
   // run the flow graph
   tb->start();
