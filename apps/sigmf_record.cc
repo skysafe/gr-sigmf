@@ -133,12 +133,14 @@ std::string
 generate_hw_name(const uhd::dict<std::string, std::string> &usrp_info)
 {
   std::stringstream ss;
+  ss << "Ettus ";
   ss << usrp_info["mboard_id"];
-  if(usrp_info.has_key("mboard_serial")) {
-    std::string serial = usrp_info["mboard_serial"];
-    if(serial != "") {
-      ss << "/ " << serial;
+  std::vector<std::string> info_keys = usrp_info.keys();
+  for(std::string &key: info_keys) {
+    if (key == "mboard_id") {
+      continue;
     }
+    ss << " / " << key << ": " << usrp_info[key];
   }
   return ss.str();
 }
