@@ -392,3 +392,51 @@ class qa_sink(gr_unittest.TestCase):
         # Second should just have c
         self.assertEqual(metadata["annotations"][1]["core:sample_count"], 100)
         self.assertEqual(metadata["annotations"][1]["test:c"], 3)
+
+    def test_initally_empty_file_write(self):
+        '''Test that if the file is initially empty and then open is
+        called, everything works as expected'''
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+
+        description = "This is a test of the sigmf sink."
+        author = "Just some person"
+        file_license = "CC-0"
+        hardware = "Sig Source"
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               "",
+                               samp_rate,
+                               description,
+                               author,
+                               file_license,
+                               hardware,
+                               False)
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.start()
+        time.sleep(.5)
+        file_sink.open(data_file)
+        time.sleep(.5)
+        tb.stop()
+        tb.wait()
+
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            assert meta["global"]["core:description"] == description
+            assert meta["global"]["core:author"] == author
+            assert meta["global"]["core:license"] == file_license
+            assert meta["global"]["core:hw"] == hardware
+
+            # Check captures meta
+            assert meta["captures"][0]["core:sample_start"] == 0
+
+        # check that data was recorded
+        data_size = os.path.getsize(data_file)
+        assert data_size > 0
