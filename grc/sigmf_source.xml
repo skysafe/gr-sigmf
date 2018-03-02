@@ -19,19 +19,9 @@
     <key>type</key>
     <type>enum</type>
     <option>
-      <name>Complex Float 64</name>
-      <key>fc64</key>
-      <opt>sigmf_type:cf64</opt>
-    </option>
-    <option>
       <name>Complex Float 32</name>
       <key>fc32</key>
       <opt>sigmf_type:cf32</opt>
-    </option>
-    <option>
-      <name>Complex Integer 64</name>
-      <key>sc64</key>
-      <opt>sigmf_type:ci64</opt>
     </option>
     <option>
       <name>Complex Integer 32</name>
