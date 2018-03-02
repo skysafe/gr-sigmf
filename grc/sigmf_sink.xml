@@ -99,7 +99,7 @@ self.$(id).set_global_meta('$field_key()', $field_val())
   <param>
     <name>License</name>
     <key>license</key>
-    <value>CC-BY-SA</value>
+    <value></value>
     <type>string</type>
   </param>
   <param>
