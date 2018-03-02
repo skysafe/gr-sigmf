@@ -109,7 +109,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Vector Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                description,
@@ -160,7 +160,7 @@ class qa_sink(gr_unittest.TestCase):
         samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                "testing capture segment tags",
@@ -204,7 +204,7 @@ class qa_sink(gr_unittest.TestCase):
         samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                "testing annotation segment tags",
@@ -246,7 +246,7 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file_1, json_file_1 = self.temp_file_names()
         data_file_2, json_file_2 = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file_1,
                                samp_rate,
                                "testing write methods",
@@ -292,7 +292,7 @@ class qa_sink(gr_unittest.TestCase):
         samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                "testing annotation segment tags",
@@ -347,7 +347,7 @@ class qa_sink(gr_unittest.TestCase):
         samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                "testing annotation segment tags",
@@ -407,7 +407,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                "",
                                samp_rate,
                                description,
@@ -455,7 +455,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                "",
                                samp_rate,
                                description,
@@ -509,7 +509,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                "",
                                samp_rate,
                                description,
@@ -563,7 +563,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                "",
                                samp_rate,
                                description,
@@ -617,7 +617,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = ""
         hardware = ""
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                description,
@@ -656,7 +656,7 @@ class qa_sink(gr_unittest.TestCase):
         file_license = ""
         hardware = ""
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file,
                                samp_rate,
                                description,

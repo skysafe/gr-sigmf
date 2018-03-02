@@ -4,7 +4,8 @@
   <key>sigmf_sink</key>
   <category>[SigMF]</category>
   <import>import sigmf</import>
-  <make>sigmf.sink("$type.sigmf_type", $filename, $samp_rate, $description, $author, $license, $hardware, $debug)
+  <import>import sys</import>
+  <make>sigmf.sink("$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $filename, $samp_rate, $description, $author, $license, $hardware, $debug)
 #for $i in range(1, int($num_extra_fields()) + 1)
 #set $field_val = $getVar('field_' + str($i) + '_value')
 #set $field_key = $getVar('field_' + str($i) + '_key')

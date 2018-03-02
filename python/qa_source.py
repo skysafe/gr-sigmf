@@ -86,7 +86,7 @@ class qa_source (gr_unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    def make_file(self, filename, N=1000, type="cf32"):
+    def make_file(self, filename, N=1000, type="cf32_le"):
         if (not filename.startswith("/")):
             filename = os.path.join(self.test_dir, filename)
         samp_rate = 200000
