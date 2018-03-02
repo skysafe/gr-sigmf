@@ -95,7 +95,7 @@ namespace gr {
       d_license(license), d_hardware(hardware), d_debug(debug), d_meta_written(false),
       d_recording_start_offset(0)
     {
-      reset_meta();
+      init_meta();
       open(filename.c_str());
       d_temp_tags.reserve(32);
 
@@ -130,6 +130,12 @@ namespace gr {
       return posix::to_iso_extended_string(t) + "Z";
     }
 
+    void 
+    sink_impl::init_meta() {
+      reset_meta();
+      d_captures.push_back(meta_namespace::build_capture_segment(0));
+    }
+
     void
     sink_impl::reset_meta() {
       // std::cout << "reset_meta()" << std::endl;
@@ -148,9 +154,6 @@ namespace gr {
       if (!d_hardware.empty()) {
         d_global.set("core:hw", d_hardware);
       }
-      d_captures.clear();
-      d_captures.push_back(meta_namespace::build_capture_segment(0));
-      d_captures[0].set("core:datetime", iso_8601_ts());
       d_annotations.clear();
   }
 
@@ -339,9 +342,9 @@ namespace gr {
         gr::thread::scoped_lock guard(d_mutex);
 
         if(d_fp){
-        	std::fclose(d_fp);
-        	write_meta();
-        	reset_meta();
+          std::fclose(d_fp);
+          write_meta();
+          reset_meta();
         }
         d_recording_start_offset = nitems_read(0);
 
@@ -350,6 +353,30 @@ namespace gr {
         d_data_path = d_new_data_path;
         d_meta_path = d_new_meta_path;
         d_meta_written = d_new_fp == nullptr ? true : false;
+
+        if (d_fp != nullptr) {
+          // Need to check if we've received any capture
+          // metadata in the meantime
+          meta_namespace first_segment = meta_namespace::build_capture_segment(0);
+          // Iterate through all current capture segments in reverse
+          for(std::vector<meta_namespace>::reverse_iterator rev_it = d_captures.rbegin();
+              rev_it != d_captures.rend(); rev_it++) {
+            meta_namespace &segment = *rev_it;
+            std::set<std::string> segment_keys = segment.keys();
+            for(const std::string &key : segment_keys) {
+              // If we haven't seen this key yet, add it to the new first segment
+              if(!first_segment.has(key)) {
+                first_segment.set(key, segment.get(key));
+              }
+            }
+          }
+          d_captures.clear();
+          d_captures.push_back(first_segment);
+
+          // If we updated to something that isn't nullptr, then 
+          // set the start date on the new capture stream
+          d_captures[0].set("core:datetime", iso_8601_ts());
+        }
 
         d_new_fp = nullptr;
         d_updated = false;
@@ -437,7 +464,6 @@ namespace gr {
         capture_segment.set("usrp:offset_frac_secs", pmt::mp(frac_seconds));
 
       } else if(pmt::eqv(tag->key, FREQ_KEY)) {
-
         // frequency as double
         capture_segment.set("core:frequency", tag->value);
 
@@ -471,6 +497,7 @@ namespace gr {
       for(std::vector<tag_t>::const_iterator it = tags.begin(); it != tags.end(); it++) {
         tag_map[(*it).offset].push_back(&(*it));
       }
+
       for(tag_map_t::iterator it = tag_map.begin(); it != tag_map.end(); it++) {
         uint64_t offset = it->first;
         uint64_t adjusted_offset = offset - d_recording_start_offset;
@@ -478,24 +505,29 @@ namespace gr {
         tag_vec_it tag_end = it->second.end();
         // split the list into capture tags and annotation tags
         tag_vec_it annotations_begin = std::partition(tag_begin, it->second.end(), &is_capture_tag);
+
         // Handle any capture tags
         if(std::distance(tag_begin, annotations_begin) > 0) {
           pmt::pmt_t most_recent_segment_start =
             d_captures.back().get("core:sample_start");
+
           // IF there's already a segment for this sample index, then use that
           if(offset != pmt::to_uint64(most_recent_segment_start)) {
             // otherwise add a new empty segment
             meta_namespace new_capture;
             d_captures.push_back(new_capture);
           }
+
           meta_namespace &capture_ns = d_captures.back();
           for(tag_vec_it tag_it = tag_begin; tag_it != annotations_begin; tag_it++) {
             // These get added to the capture object
             add_tag_to_capture_segment(*tag_it, capture_ns);
           }
+
           // And add the sample_start for this capture_segment
           capture_ns.set("core:sample_start", offset);
         }
+
         // handle any annotation tags
         if(std::distance(annotations_begin, tag_end) > 0) {
 
@@ -532,14 +564,15 @@ namespace gr {
       // Check if a new fp is here and handle the update if so
       do_update();
 
-      // drop output on the floor
-      if(!d_fp) {
-        return noutput_items;
-      }
-
+      // Stream tags should always get handled, even if d_fp is nullptr
       get_tags_in_window(d_temp_tags, 0, 0, noutput_items);
       if(d_temp_tags.size() > 0) {
         handle_tags(d_temp_tags);
+      }
+
+      // drop output on the floor
+      if(!d_fp) {
+        return noutput_items;
       }
 
       while(nwritten < noutput_items) {

@@ -444,6 +444,58 @@ class qa_sink(gr_unittest.TestCase):
         data_size = os.path.getsize(data_file)
         assert data_size > 0
 
+    def test_stream_tags_before_file(self):
+        '''Test that stream tags received before a file is opened will
+        get correctly set as metadata'''
+        samp_rate = 200000
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+
+        description = "This is a test of the sigmf sink."
+        author = "Just some person"
+        file_license = "CC-0"
+        hardware = "Sig Source"
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32",
+                               "",
+                               samp_rate,
+                               description,
+                               author,
+                               file_license,
+                               hardware,
+                               False)
+
+        injector = tag_injector()
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        time.sleep(.1)
+        injector.inject_tag = {"test:a": 1}
+        time.sleep(.1)
+        injector.inject_tag = {"rx_freq": 900e6}
+        time.sleep(.2)
+        file_sink.open(data_file)
+        time.sleep(.5)
+        tb.stop()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            assert meta["global"]["core:description"] == description
+            assert meta["global"]["core:author"] == author
+            assert meta["global"]["core:license"] == file_license
+            assert meta["global"]["core:hw"] == hardware
+
+            print(meta)
+            # Check captures meta
+            assert meta["captures"][0]["core:frequency"] == 900e6
+            # Check annotations meta
+            assert meta["annotations"][0]["test:a"] == 1
+
     def test_not_intially_open_annotation_tag_offsets(self):
         '''Test that if a sink is created without a file initially open,
         and then a file is opened, that annotation stream tags will have the

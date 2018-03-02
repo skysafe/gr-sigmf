@@ -77,6 +77,7 @@ namespace gr {
       }
     }
 
+
     class sink_impl : public sink {
       private:
       // current data FILE*
@@ -129,6 +130,7 @@ namespace gr {
       std::vector<meta_namespace> d_annotations;
 
       void reset_meta();
+      void init_meta();
 
       void on_command_message(pmt::pmt_t msg);
 
