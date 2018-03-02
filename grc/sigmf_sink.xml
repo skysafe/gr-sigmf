@@ -1168,11 +1168,6 @@ self.$(id).set_global_meta('$field_key()', $field_val())
     <type>$type</type>
   </sink>
   <sink>
-    <name>meta</name>
-    <type>message</type>
-    <optional>1</optional>
-  </sink>
-  <sink>
     <name>command</name>
     <type>message</type>
     <optional>1</optional>
