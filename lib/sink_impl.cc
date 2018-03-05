@@ -448,7 +448,7 @@ namespace gr {
 
 
     void
-    sink_impl::add_tag_to_capture_segment(const tag_t *tag, meta_namespace &capture_segment)
+    sink_impl::handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment)
     {
       if(pmt::eqv(tag->key, TIME_KEY)) {
 
@@ -470,7 +470,8 @@ namespace gr {
       } else if(pmt::eqv(tag->key, RATE_KEY)) {
 
         // sample_rate as double
-        capture_segment.set("core:sample_rate", tag->value);
+        // Sample rate is special, it goes to the global segment
+        d_global.set("core:sample_rate", tag->value);
 
       } else {
         throw std::runtime_error("invalid key in capture_segment_from_tags");
@@ -479,7 +480,7 @@ namespace gr {
 
 
     bool
-    is_capture_tag(const tag_t *tag)
+    is_capture_or_global_tag(const tag_t *tag)
     {
       return pmt::eqv(tag->key, TIME_KEY) || pmt::eqv(tag->key, RATE_KEY) ||
         pmt::eqv(tag->key, FREQ_KEY);
@@ -504,7 +505,7 @@ namespace gr {
         tag_vec_it tag_begin = it->second.begin();
         tag_vec_it tag_end = it->second.end();
         // split the list into capture tags and annotation tags
-        tag_vec_it annotations_begin = std::partition(tag_begin, it->second.end(), &is_capture_tag);
+        tag_vec_it annotations_begin = std::partition(tag_begin, it->second.end(), &is_capture_or_global_tag);
 
         // Handle any capture tags
         if(std::distance(tag_begin, annotations_begin) > 0) {
@@ -520,8 +521,9 @@ namespace gr {
 
           meta_namespace &capture_ns = d_captures.back();
           for(tag_vec_it tag_it = tag_begin; tag_it != annotations_begin; tag_it++) {
-            // These get added to the capture object
-            add_tag_to_capture_segment(*tag_it, capture_ns);
+            // These tags are handles specially, since they do not
+            // go to an annotation segment
+            handle_uhd_tag(*tag_it, capture_ns);
           }
 
           // And add the sample_start for this capture_segment

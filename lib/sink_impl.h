@@ -147,7 +147,7 @@ namespace gr {
 
       void write_meta();
 
-      void add_tag_to_capture_segment(const tag_t *tag, meta_namespace &capture_segment);
+      void handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment);
       void capture_segment_from_tags(const std::vector<tag_t> &tags);
       void handle_tags(const std::vector<tag_t> &tags);
       void do_update();

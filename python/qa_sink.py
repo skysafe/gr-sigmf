@@ -196,9 +196,6 @@ class qa_sink(gr_unittest.TestCase):
             self.assertEqual(
                 metadata["captures"][i + 1]["core:frequency"],
                 i * 1000)
-            self.assertEqual(
-                metadata["captures"][i + 1]["core:sample_rate"],
-                i * 500)
 
     def test_tags_to_annotation_segments(self):
         samp_rate = 200000
@@ -686,3 +683,34 @@ class qa_sink(gr_unittest.TestCase):
             assert "core:license" not in meta["global"]
             assert "core:hw" not in meta["global"]
 
+    def test_rate_tags_to_global(self):
+        '''Test to ensure that rate tags go to the global segment
+        and not to the capture segment'''
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+
+        file_sink = sigmf.sink("cf32_le",
+                               data_file,
+                               20,
+                               "testing capture segment tags",
+                               "me",
+                               "No License",
+                               "wave source",
+                               False)
+
+        injector = tag_injector()
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+
+        samp_rate = 1000.5
+        injector.inject_tag = {"rx_rate": samp_rate}
+        sleep(.2)
+        tb.stop()
+        tb.wait()
+        meta = json.load(open(json_file, "r"))
+        # Samp rate should have been set by the tag
+        assert meta["global"]["core:sample_rate"] == samp_rate
+        # And should not be in the captures segment
+        assert "core:sample_rate" not in meta["captures"][0]
