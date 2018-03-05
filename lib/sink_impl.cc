@@ -217,7 +217,25 @@ namespace gr {
 
         set_global_meta(pmt::symbol_to_string(key), val);
 
-      } else {
+      } else if (command_str == "set_capture_meta") {
+
+        auto index = pmt::dict_ref(msg, pmt::mp("index"), pmt::get_PMT_NIL());
+        auto key = pmt::dict_ref(msg, pmt::mp("key"), pmt::get_PMT_NIL());
+        auto val = pmt::dict_ref(msg, pmt::mp("val"), pmt::get_PMT_NIL());
+
+        if (pmt::eqv(key, pmt::get_PMT_NIL())) {
+          GR_LOG_ERROR(d_logger, boost::format("Data key not found in dict: %s") % msg);
+          return;
+        }
+        if (pmt::eqv(index, pmt::get_PMT_NIL())) {
+          GR_LOG_ERROR(d_logger, boost::format("Index key not found in dict: %s") % msg);
+          return;
+        }
+        uint64_t index_int = pmt::to_uint64(index);
+        std::cout << "setting capture meta(" << index_int << "," << key << ", " << val << ")" << std::endl;
+        set_capture_meta(index_int, pmt::symbol_to_string(key), val);
+
+      }else {
         GR_LOG_ERROR(d_logger,
                      boost::format("Invalid command string received in dict: %s") % msg);
         return;
@@ -254,7 +272,7 @@ namespace gr {
     void
     sink_impl::set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val) {
       try {
-        auto capture = d_captures.at(index);
+        auto &capture = d_captures.at(index);
         capture.set(key, val);
       } catch (const std::out_of_range &e) {
         GR_LOG_ERROR(d_logger, "Invalid capture index");

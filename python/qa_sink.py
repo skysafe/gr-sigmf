@@ -714,3 +714,38 @@ class qa_sink(gr_unittest.TestCase):
         assert meta["global"]["core:sample_rate"] == samp_rate
         # And should not be in the captures segment
         assert "core:sample_rate" not in meta["captures"][0]
+
+    def test_set_capture_meta_via_message(self):
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+
+        file_sink = sigmf.sink("cf32_le",
+                               data_file,
+                               20,
+                               "testing setting meta via messages",
+                               "me",
+                               "No License",
+                               "wave source",
+                               False)
+
+        sender = msg_sender()
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.msg_connect(sender, "out", file_sink, "command")
+        tb.start()
+
+        sender.send_msg({
+            "command": "set_capture_meta",
+            "index": 0,
+            "key": "test:a",
+            "val": 84
+            })
+        sleep(.2)
+        tb.stop()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta = json.load(f)
+            print(meta)
+            assert meta["captures"][0]["test:a"] == 84
+
