@@ -151,8 +151,15 @@ boost::unique_future<int> quit_future = quit_promise.get_future();
 void
 sig_int_handler(int /* unused */)
 {
-  // Don't actually care about the value, just abusing future for one-shot signaling
-  quit_promise.set_value(0);
+  try {
+    // Don't actually care about the value, just abusing future for one-shot signaling
+    quit_promise.set_value(0);
+  }
+  catch (const boost::future_error &e) {
+    // Swallow this exception, since there's nothing that can be done if the promise
+    // has an error and it probably just means that the flowgraph is slow to
+    // shutdown
+  }
 }
 
 int
