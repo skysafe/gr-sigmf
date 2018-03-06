@@ -39,9 +39,7 @@ def run_flowgraph(filename):
 
     head = blocks.head(gr.sizeof_float * 1, samp_rate)
     source = analog.sig_source_f(samp_rate, analog.GR_COS_WAVE, 1000, 1, 0)
-    sigmf_sink = sigmf.sink("rf32", filename, samp_rate, 'QA test data',
-                            'Cate Miller', 'CC-BY-SA', 'Signal Source',
-                            False)
+    sigmf_sink = sigmf.sink("rf32_le", filename)
 
     tb = gr.top_block()
     tb.connect(source, head)

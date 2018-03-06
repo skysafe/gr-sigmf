@@ -99,13 +99,7 @@ class qa_source (gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Vector Source"
         file_sink = sigmf.sink(type,
-                               filename,
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+                               filename)
         data_path = file_sink.get_data_path()
         meta_path = file_sink.get_meta_path()
 

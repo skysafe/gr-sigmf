@@ -47,18 +47,19 @@ namespace gr {
        */
       static sptr make(std::string type,
                        std::string filename,
-                       double samp_rate,
-                       std::string description,
-                       std::string author,
-                       std::string license,
-                       std::string hardware,
                        bool append = false,
                        bool debug = false);
 
       virtual std::string get_data_path() = 0;
       virtual std::string get_meta_path() = 0;
 
-      virtual void set_global_meta(std::string key, pmt::pmt_t val) = 0;
+      virtual void set_global_meta(const std::string &key, pmt::pmt_t val) = 0;
+      virtual void set_global_meta(const std::string &key, double val) = 0;
+      virtual void set_global_meta(const std::string &key, int64_t val) = 0;
+      virtual void set_global_meta(const std::string &key, uint64_t val) = 0;
+      virtual void set_global_meta(const std::string &key, const std::string &val) = 0;
+      virtual void set_global_meta(const std::string &key, bool val) = 0;
+
       virtual void set_annotation_meta(uint64_t sample_start,
                                        uint64_t sample_count,
                                        std::string key,

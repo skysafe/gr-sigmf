@@ -110,15 +110,15 @@ class qa_sink(gr_unittest.TestCase):
         hardware = "Vector Source"
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+                               data_file)
 
-        # Make sure the get_data_path method works
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
+
         self.assertEqual(data_file, file_sink.get_data_path())
 
         # And get_meta_path
@@ -161,13 +161,7 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               "testing capture segment tags",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+                               data_file)
 
         injector = tag_injector()
         tb = gr.top_block()
@@ -202,13 +196,7 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               "testing annotation segment tags",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+                               data_file)
 
         injector = tag_injector()
         tb = gr.top_block()
@@ -244,24 +232,18 @@ class qa_sink(gr_unittest.TestCase):
         data_file_1, json_file_1 = self.temp_file_names()
         data_file_2, json_file_2 = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               data_file_1,
-                               samp_rate,
-                               "testing write methods",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+                               data_file_1)
 
         counter = sample_counter()
         tb = gr.top_block()
         tb.connect(src, counter)
         tb.connect(counter, file_sink)
         tb.start()
-        file_sink.set_global_meta("test:a", pmt.to_pmt(1))
+        file_sink.set_global_meta("test:a", 1)
         sleep(.2)
         file_sink.open(data_file_2)
         sleep(.2)
-        file_sink.set_global_meta("test:b", pmt.to_pmt(2))
+        file_sink.set_global_meta("test:b", 2)
         sleep(.2)
         file_sink.close()
         sleep(.2)
@@ -290,13 +272,7 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               "testing annotation segment tags",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+                               data_file)
 
         injector = tag_injector()
         sender = msg_sender()
@@ -345,13 +321,7 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               "testing annotation segment tags",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+                               data_file)
         sender = msg_sender()
         tb = gr.top_block()
         tb.connect(src, file_sink)
@@ -405,13 +375,13 @@ class qa_sink(gr_unittest.TestCase):
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               "",
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+                               "")
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
 
         # build flowgraph here
         tb = gr.top_block()
@@ -453,13 +423,13 @@ class qa_sink(gr_unittest.TestCase):
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
-                               "",
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+                               "")
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
 
         injector = tag_injector()
         # build flowgraph here
@@ -506,14 +476,13 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32_le",
-                               "",
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+        file_sink = sigmf.sink("cf32_le", "")
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
 
         injector = tag_injector()
         # build flowgraph here
@@ -560,14 +529,13 @@ class qa_sink(gr_unittest.TestCase):
         file_license = "CC-0"
         hardware = "Sig Source"
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32_le",
-                               "",
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+        file_sink = sigmf.sink("cf32_le", "")
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
 
         injector = tag_injector()
         # build flowgraph here
@@ -601,8 +569,8 @@ class qa_sink(gr_unittest.TestCase):
             assert (meta["captures"][0]
                     ["core:sample_start"] < injected_offset)
 
-    def test_dont_set_empty_global_meta(self):
-        '''Don't set global metadata from args if they're empty'''
+    def test_ensure_empty_string_global_meta_setting(self):
+        '''Ensure empty strings get propagated'''
         N = 1000
         samp_rate = 200000
 
@@ -614,14 +582,15 @@ class qa_sink(gr_unittest.TestCase):
         file_license = ""
         hardware = ""
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+        file_sink = sigmf.sink("cf32_le", data_file)
+
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
+
         # build flowgraph here
         tb = gr.top_block()
         tb.connect(src, file_sink)
@@ -634,10 +603,10 @@ class qa_sink(gr_unittest.TestCase):
             meta = json.loads(meta_str)
 
             # Check global meta
-            assert "core:description" not in meta["global"]
-            assert "core:author" not in meta["global"]
-            assert "core:license" not in meta["global"]
-            assert "core:hw" not in meta["global"]
+            assert meta["global"]["core:description"] == ""
+            assert meta["global"]["core:author"] == ""
+            assert meta["global"]["core:license"] == ""
+            assert meta["global"]["core:hw"] == ""
 
     def test_capture_datetime_on_start(self):
         '''If a file is open to start then it should have a datetime
@@ -653,14 +622,8 @@ class qa_sink(gr_unittest.TestCase):
         file_license = ""
         hardware = ""
         data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               samp_rate,
-                               description,
-                               author,
-                               file_license,
-                               hardware,
-                               False)
+        file_sink = sigmf.sink("cf32_le", data_file)
+
         # build flowgraph here
         tb = gr.top_block()
         tb.connect(src, file_sink)
@@ -677,11 +640,6 @@ class qa_sink(gr_unittest.TestCase):
                 meta_dt_str, "%Y-%m-%dT%H:%M:%S.%fZ")
             print(meta_dt)
             assert (datetime.utcnow() - meta_dt).total_seconds() < 2
-            # Check global meta
-            assert "core:description" not in meta["global"]
-            assert "core:author" not in meta["global"]
-            assert "core:license" not in meta["global"]
-            assert "core:hw" not in meta["global"]
 
     def test_rate_tags_to_global(self):
         '''Test to ensure that rate tags go to the global segment
@@ -689,14 +647,10 @@ class qa_sink(gr_unittest.TestCase):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
 
-        file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               20,
-                               "testing capture segment tags",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+        file_sink = sigmf.sink("cf32_le", data_file)
+
+        # Set a value that will get overridden by the tags
+        file_sink.set_global_meta("core:sample_rate", 20)
 
         injector = tag_injector()
         tb = gr.top_block()
@@ -720,13 +674,7 @@ class qa_sink(gr_unittest.TestCase):
         data_file, json_file = self.temp_file_names()
 
         file_sink = sigmf.sink("cf32_le",
-                               data_file,
-                               20,
-                               "testing setting meta via messages",
-                               "me",
-                               "No License",
-                               "wave source",
-                               False)
+                               data_file)
 
         sender = msg_sender()
         tb = gr.top_block()
@@ -748,4 +696,19 @@ class qa_sink(gr_unittest.TestCase):
             meta = json.load(f)
             print(meta)
             assert meta["captures"][0]["test:a"] == 84
+
+    def test_bad_types_set_global(self):
+        '''Make sure that test_global_meta with a non allowed type throws
+        an error'''
+        data_file, json_file = self.temp_file_names()
+
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+        exception_hit = False
+        try:
+            file_sink.set_global_meta("core:sample_rate", [234, 2342, 234])
+        except:
+            exception_hit = True
+
+        assert exception_hit
 

@@ -157,11 +157,6 @@ namespace gr {
       public:
       sink_impl(std::string type,
                 std::string filename,
-                double samp_rate,
-                std::string description,
-                std::string author,
-                std::string license,
-                std::string hardware,
                 bool append,
                 bool debug);
       ~sink_impl();
@@ -175,7 +170,13 @@ namespace gr {
       std::string get_data_path();
       std::string get_meta_path();
 
-      void set_global_meta(std::string key, pmt::pmt_t val);
+      void set_global_meta(const std::string &key, pmt::pmt_t val);
+      void set_global_meta(const std::string &key, double val);
+      void set_global_meta(const std::string &key, int64_t val);
+      void set_global_meta(const std::string &key, uint64_t val);
+      void set_global_meta(const std::string &key, const std::string &val);
+      void set_global_meta(const std::string &key, bool val);
+
       void set_annotation_meta(uint64_t sample_start,
                                        uint64_t sample_count,
                                        std::string key,

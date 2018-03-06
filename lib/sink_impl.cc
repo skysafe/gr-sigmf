@@ -63,16 +63,10 @@ namespace gr {
     sink::sptr
     sink::make(std::string type,
                std::string filename,
-               double samp_rate,
-               std::string description,
-               std::string author,
-               std::string license,
-               std::string hardware,
                bool append,
                bool debug)
     {
-      return gnuradio::get_initial_sptr(new sink_impl(type, filename, samp_rate, description, author,
-                                                      license, hardware, append, debug));
+      return gnuradio::get_initial_sptr(new sink_impl(type, filename, append, debug));
     }
 
     /*
@@ -80,19 +74,13 @@ namespace gr {
      */
     sink_impl::sink_impl(std::string type,
                          std::string filename,
-                         double samp_rate,
-                         std::string description,
-                         std::string author,
-                         std::string license,
-                         std::string hardware,
                          bool append,
                          bool debug)
     : gr::sync_block("sink",
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_itemsize(type_to_size(type)),
-      d_type(type), d_samp_rate(samp_rate), d_description(description), d_author(author),
-      d_license(license), d_hardware(hardware), d_debug(debug), d_meta_written(false),
+      d_type(type), d_debug(debug), d_meta_written(false),
       d_recording_start_offset(0)
     {
       init_meta();
@@ -139,22 +127,45 @@ namespace gr {
     void
     sink_impl::reset_meta() {
       // std::cout << "reset_meta()" << std::endl;
+
+      pmt::pmt_t samp_rate = d_global.get("core:sample_rate", pmt::get_PMT_NIL());
+      pmt::pmt_t description = d_global.get("core:description",pmt::get_PMT_NIL());
+      pmt::pmt_t author = d_global.get("core:author", pmt::get_PMT_NIL());
+      pmt::pmt_t license = d_global.get("core:license",pmt::get_PMT_NIL());
+      pmt::pmt_t hw = d_global.get("core:hw", pmt::get_PMT_NIL());
+
       d_global = meta_namespace::build_global_object(d_type);
-      d_global.set("core:sample_rate", d_samp_rate);
+      if (!pmt::eqv(pmt::get_PMT_NIL(), samp_rate)) {
+        d_global.set("core:sample_rate", samp_rate);
+      }
+      if (!pmt::eqv(pmt::get_PMT_NIL(), description)) {
+        d_global.set("core:description", description);
+      }
+      if (!pmt::eqv(pmt::get_PMT_NIL(), author)) {
+        d_global.set("core:author", author);
+      }
+      if (!pmt::eqv(pmt::get_PMT_NIL(), license)) {
+        d_global.set("core:license", license);
+      }
+      if (!pmt::eqv(pmt::get_PMT_NIL(), hw)) {
+        d_global.set("core:hw", hw);
+      }
       
-      if (!d_description.empty()) {
-        d_global.set("core:description", d_description);
-      }
-      if (!d_author.empty()) {
-        d_global.set("core:author", d_author);
-      }
-      if (!d_license.empty()) {
-        d_global.set("core:license", d_license);
-      }
-      if (!d_hardware.empty()) {
-        d_global.set("core:hw", d_hardware);
-      }
+      // if (!d_description.empty()) {
+      //   d_global.set("core:description", d_description);
+      // }
+      // if (!d_author.empty()) {
+      //   d_global.set("core:author", d_author);
+      // }
+      // if (!d_license.empty()) {
+      //   d_global.set("core:license", d_license);
+      // }
+      // if (!d_hardware.empty()) {
+      //   d_global.set("core:hw", d_hardware);
+      // }
       d_annotations.clear();
+      // We don't clear the captures here, as there is some extra
+      // work that must be done to avoid data loss
   }
 
     void
@@ -265,12 +276,43 @@ namespace gr {
     }
 
     void
-    sink_impl::set_global_meta(std::string key, pmt::pmt_t val) {
+    sink_impl::set_global_meta(const std::string &key, pmt::pmt_t val)
+    {
       d_global.set(key, val);
+    }
+    void
+    sink_impl::set_global_meta(const std::string &key, double val)
+    {
+      d_global.set(key, pmt::mp(val));
     }
 
     void
-    sink_impl::set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val) {
+    sink_impl::set_global_meta(const std::string &key, int64_t val)
+    {
+      d_global.set(key, pmt::mp(val));
+    }
+
+    void
+    sink_impl::set_global_meta(const std::string &key, uint64_t val)
+    {
+      d_global.set(key, pmt::mp(val));
+    }
+
+    void
+    sink_impl::set_global_meta(const std::string &key, const std::string &val)
+    {
+      d_global.set(key, pmt::mp(val));
+    }
+
+    void
+    sink_impl::set_global_meta(const std::string &key, bool val)
+    {
+      d_global.set(key, pmt::mp(val));
+    }
+
+    void
+    sink_impl::set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val)
+    {
       try {
         auto &capture = d_captures.at(index);
         capture.set(key, val);

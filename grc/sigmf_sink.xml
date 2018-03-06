@@ -5,7 +5,20 @@
   <category>[SigMF]</category>
   <import>import sigmf</import>
   <import>import sys</import>
-  <make>sigmf.sink("$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $filename, $samp_rate, $description, $author, $license, $hardware, $debug)
+  <make>sigmf.sink("$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $filename, $append, $debug)
+self.$(id).set_global_meta("core:sample_rate", $samp_rate)
+#if $description != ""
+self.$(id).set_global_meta("core:description", $description)
+#end if
+#if $author != ""
+self.$(id).set_global_meta("core:author", $author)
+#end if
+#if $license != ""
+self.$(id).set_global_meta("core:license", $license)
+#end if
+#if $hardware != ""
+self.$(id).set_global_meta("core:hw", $hardware)
+#end if
 #for $i in range(1, int($num_extra_fields()) + 1)
 #set $field_val = $getVar('field_' + str($i) + '_value')
 #set $field_key = $getVar('field_' + str($i) + '_key')
@@ -1148,6 +1161,21 @@ self.$(id).set_global_meta('$field_key()', $field_val())
   <tab>Metadata</tab>
 </param>
 
+  <param>
+    <name>Open in append mode?</name>
+    <key>append</key>
+    <value>False</value>
+    <type>enum</type>
+    <hide>part</hide>
+    <option>
+      <name>Yes</name>
+      <key>True</key>
+    </option>
+    <option>
+      <name>No</name>
+      <key>False</key>
+    </option>
+  </param>
   <param>
     <name>Debug</name>
     <key>debug</key>

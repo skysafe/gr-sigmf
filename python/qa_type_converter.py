@@ -53,9 +53,7 @@ class qa_type_converter(gr_unittest.TestCase):
                                          1000, 1, 0)
             tb.connect(source, head)
 
-        sigmf_sink = sigmf.sink(type, filename, self.samp_rate,
-                                'QA test data', 'Cate Miller', 'CC-BY-SA',
-                                'Signal Source', False)
+        sigmf_sink = sigmf.sink(type, filename)
 
         tb.connect(head, sigmf_sink)
         tb.run()
