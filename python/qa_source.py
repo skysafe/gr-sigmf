@@ -1,5 +1,6 @@
 from gnuradio import gr, gr_unittest
 from gnuradio import blocks
+import array
 import tempfile
 import numpy
 import shutil
@@ -322,3 +323,48 @@ class qa_source (gr_unittest.TestCase):
         for tag in collector.tags:
             if tag["key"] != "core:datetime":
                 self.assertEqual(tag["key"], "test")
+
+    def test_first_capture_segment_non_zero_start(self):
+        '''Test to check that if the first capture segment
+        has a non-zero start index, then we should skip that part
+        of the file'''
+
+        filename_data = os.path.join(
+            self.test_dir, "capture_not_zero.sigmf-data")
+        filename_meta = os.path.join(
+            self.test_dir, "capture_not_zero.sigmf-meta")
+        skip_samples = 500
+        normal_samples = 500
+        a = array.array("f")
+        for i in range(skip_samples * 2):
+            a.append(1)
+        for i in range(normal_samples * 2):
+            a.append(2)
+        with open(filename_data, "w") as f:
+            a.tofile(f)
+        metadata = {
+            "global": {
+                "core:datatype": "cf32_le",
+                "core:version": "0.0.1"
+            },
+            "captures" : [
+                {
+                    "core:sample_start": skip_samples
+                }
+            ]
+        }
+        with open(filename_meta, "w") as f:
+            json.dump(metadata, f)
+
+        file_source = sigmf.source(filename_data, "cf32_le",
+                                   repeat=False,
+                                   debug=False)
+
+        sink = blocks.vector_sink_c()
+        tb = gr.top_block()
+        tb.connect(file_source, sink)
+        tb.start()
+        tb.wait()
+        written_data = sink.data()
+        for i in range(len(written_data)):
+            assert(written_data[i] == (2 + 2j))
