@@ -347,7 +347,7 @@ class qa_source (gr_unittest.TestCase):
                 "core:datatype": "cf32_le",
                 "core:version": "0.0.1"
             },
-            "captures" : [
+            "captures": [
                 {
                     "core:sample_start": skip_samples
                 }
