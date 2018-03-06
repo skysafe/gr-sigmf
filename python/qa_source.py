@@ -94,10 +94,6 @@ class qa_source (gr_unittest.TestCase):
         data = sig_source_c(samp_rate, 1000, 1, N)
         src = blocks.vector_source_c(data)
 
-        description = "This is a description"
-        author = "John Smith"
-        file_license = "CC-0"
-        hardware = "Vector Source"
         file_sink = sigmf.sink(type,
                                filename)
         data_path = file_sink.get_data_path()

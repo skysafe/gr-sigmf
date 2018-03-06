@@ -157,7 +157,6 @@ class qa_sink(gr_unittest.TestCase):
             assert meta["captures"][0]["core:sample_start"] == 0
 
     def test_tags_to_capture_segment(self):
-        samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
@@ -192,7 +191,6 @@ class qa_sink(gr_unittest.TestCase):
                 i * 1000)
 
     def test_tags_to_annotation_segments(self):
-        samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
@@ -227,7 +225,6 @@ class qa_sink(gr_unittest.TestCase):
             self.assertEqual(metadata["annotations"][i]["test:c"], 2.33)
 
     def test_write_methods(self):
-        samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file_1, json_file_1 = self.temp_file_names()
         data_file_2, json_file_2 = self.temp_file_names()
@@ -268,7 +265,6 @@ class qa_sink(gr_unittest.TestCase):
         self.assertTrue("test:a" not in meta_2["global"])
 
     def test_pmt_to_annotation(self):
-        samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
@@ -317,7 +313,6 @@ class qa_sink(gr_unittest.TestCase):
         self.assertEqual(metadata["annotations"][2]["test:c"], True)
 
     def test_msg_annotation_meta_merging(self):
-        samp_rate = 200000
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
@@ -617,10 +612,6 @@ class qa_sink(gr_unittest.TestCase):
         data = sig_source_c(samp_rate, 1000, 1, N)
         src = blocks.vector_source_c(data)
 
-        description = ""
-        author = ""
-        file_license = ""
-        hardware = ""
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le", data_file)
 
@@ -687,7 +678,7 @@ class qa_sink(gr_unittest.TestCase):
             "index": 0,
             "key": "test:a",
             "val": 84
-            })
+        })
         sleep(.2)
         tb.stop()
         tb.wait()
@@ -711,4 +702,3 @@ class qa_sink(gr_unittest.TestCase):
             exception_hit = True
 
         assert exception_hit
-
