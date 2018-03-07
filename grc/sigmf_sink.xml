@@ -1179,7 +1179,7 @@ self.$(id).set_global_meta('$field_key()', $field_val())
   <param>
     <name>Debug</name>
     <key>debug</key>
-    <value>True</value>
+    <value>False</value>
     <type>enum</type>
     <option>
       <name>Yes</name>
