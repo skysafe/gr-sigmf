@@ -152,7 +152,8 @@ namespace gr {
       }
       d_annotations.clear();
       // We don't clear the captures here, as there is some extra
-      // work that must be done to avoid data loss
+      // work that must be done to avoid data loss since captures
+      // apply to every sample going forward
   }
 
     void
