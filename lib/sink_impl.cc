@@ -150,19 +150,6 @@ namespace gr {
       if (!pmt::eqv(pmt::get_PMT_NIL(), hw)) {
         d_global.set("core:hw", hw);
       }
-      
-      // if (!d_description.empty()) {
-      //   d_global.set("core:description", d_description);
-      // }
-      // if (!d_author.empty()) {
-      //   d_global.set("core:author", d_author);
-      // }
-      // if (!d_license.empty()) {
-      //   d_global.set("core:license", d_license);
-      // }
-      // if (!d_hardware.empty()) {
-      //   d_global.set("core:hw", d_hardware);
-      // }
       d_annotations.clear();
       // We don't clear the captures here, as there is some extra
       // work that must be done to avoid data loss
