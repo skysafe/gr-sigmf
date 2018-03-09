@@ -23,6 +23,7 @@
 #endif
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/conversion.hpp>
 #include <fcntl.h>
 #include <gnuradio/io_signature.h>
 
@@ -394,6 +395,7 @@ namespace gr {
           write_meta();
           reset_meta();
         }
+
         d_recording_start_offset = nitems_read(0);
 
         // install new file pointer
@@ -403,27 +405,52 @@ namespace gr {
         d_meta_written = d_new_fp == nullptr ? true : false;
 
         if (d_fp != nullptr) {
-          // Need to check if we've received any capture
-          // metadata in the meantime
           meta_namespace first_segment = meta_namespace::build_capture_segment(0);
-          // Iterate through all current capture segments in reverse
-          for(std::vector<meta_namespace>::reverse_iterator rev_it = d_captures.rbegin();
-              rev_it != d_captures.rend(); rev_it++) {
-            meta_namespace &segment = *rev_it;
-            std::set<std::string> segment_keys = segment.keys();
-            for(const std::string &key : segment_keys) {
-              // If we haven't seen this key yet, add it to the new first segment
-              if(!first_segment.has(key)) {
-                first_segment.set(key, segment.get(key));
+
+          // Iterate through the keys of d_pre_capture_data
+          // if any of them match the known keys we need to handle
+          // then deal with it
+          auto capture_keys = pmt::dict_keys(d_pre_capture_data);
+          size_t num_keys = pmt::length(capture_keys);
+          for(size_t i = 0; i < num_keys; i++) {
+            auto capture_key = pmt::nth(i, capture_keys);
+            auto capture_val = pmt::dict_ref(d_pre_capture_data, capture_key, pmt::get_PMT_NIL());
+            if (pmt::eqv(capture_key, TIME_KEY)) {
+              uint64_t received_sample_index = d_pre_capture_tag_index[pmt::symbol_to_string(capture_key)];
+              double current_sample_rate = -1;
+              pmt::pmt_t sample_rate_pmt = pmt::dict_ref(d_pre_capture_data, RATE_KEY, pmt::get_PMT_NIL());
+              if (pmt::eqv(sample_rate_pmt, pmt::get_PMT_NIL())) {
+                // Check if its in the global
+                if (d_global.has("core:sample_rate")) {
+                  current_sample_rate = d_global.get("core:sample_rate");
+                } 
+              } else {
+                current_sample_rate = pmt::to_double(sample_rate_pmt);
               }
+              if (current_sample_rate != -1) {
+                uint64_t total_samples_read = nitems_read(0);
+                uint64_t samples_since_time_received = total_samples_read - received_sample_index;
+              }
+              
+              // TODO: gotta handle offset here
+              first_segment.set("core:datetime", convert_uhd_time_to_iso8601(capture_val));
+            } else if (pmt::eqv(capture_key, FREQ_KEY)) {
+              first_segment.set("core:frequency", capture_val);
+            } else if (pmt::eqv(capture_key, RATE_KEY)) {
+              d_global.set("core:sample_rate", capture_val);
             }
           }
+          // If no datetime set
+          if (!first_segment.has("core:datetime")) {
+            // Then set one
+            std::cout << "Setting to host ts" << std::endl;
+            first_segment.set("core:datetime", iso_8601_ts());
+          } 
+          // clear pre_capture_data
+          d_pre_capture_data = pmt::make_dict();
+          d_pre_capture_tag_index.clear();
           d_captures.clear();
           d_captures.push_back(first_segment);
-
-          // If we updated to something that isn't nullptr, then 
-          // set the start date on the new capture stream
-          d_captures[0].set("core:datetime", iso_8601_ts());
         }
 
         d_new_fp = nullptr;
@@ -494,23 +521,23 @@ namespace gr {
       d_meta_written = true;
     }
 
+    std::string
+    sink_impl::convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time) {
+        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(uhd_time, 0));
+        double frac_seconds = pmt::to_double(pmt::tuple_ref(uhd_time, 1));
+        time_t secs_time(seconds);
+        posix::ptime seconds_since_epoch = posix::from_time_t(secs_time);
+        std::string seconds_iso = posix::to_iso_extended_string(seconds_since_epoch);
+        std::string frac_seconds_str = boost::lexical_cast<std::string>(frac_seconds);
+        boost::replace_all(frac_seconds_str, "0.", ".");
+        return seconds_iso + frac_seconds_str + "Z";
+    }
 
     void
     sink_impl::handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment)
     {
       if(pmt::eqv(tag->key, TIME_KEY)) {
-
-        // this is a tuple
-        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(tag->value, 0));
-        double frac_seconds = pmt::to_double(pmt::tuple_ref(tag->value, 1));
-
-        // As of 1/17/18, there's no good way to map these values to anything in core
-        // For now, we'll just use an extension namespace, but this may change as
-        // core expands
-
-        capture_segment.set("usrp:offset_full_secs", pmt::mp(seconds));
-        capture_segment.set("usrp:offset_frac_secs", pmt::mp(frac_seconds));
-
+        capture_segment.set("core:datetime", convert_uhd_time_to_iso8601(tag->value));
       } else if(pmt::eqv(tag->key, FREQ_KEY)) {
         // frequency as double
         capture_segment.set("core:frequency", tag->value);
@@ -605,6 +632,16 @@ namespace gr {
       }
     }
 
+    void
+    sink_impl::handle_tags_not_capturing(const std::vector<tag_t> &tags) {
+      for(auto &tag: tags) {
+        if (is_capture_or_global_tag(&tag)) {
+          d_pre_capture_data = pmt::dict_add(d_pre_capture_data, tag.key, tag.value);
+          d_pre_capture_tag_index[pmt::symbol_to_string(tag.key)] = tag.offset;
+        }
+      }
+    }
+
     int
     sink_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
@@ -616,13 +653,15 @@ namespace gr {
 
       // Stream tags should always get handled, even if d_fp is nullptr
       get_tags_in_window(d_temp_tags, 0, 0, noutput_items);
-      if(d_temp_tags.size() > 0) {
-        handle_tags(d_temp_tags);
-      }
 
       // drop output on the floor
       if(!d_fp) {
+        handle_tags_not_capturing(d_temp_tags);
         return noutput_items;
+      }
+
+      if(d_temp_tags.size() > 0) {
+        handle_tags(d_temp_tags);
       }
 
       while(nwritten < noutput_items) {

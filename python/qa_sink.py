@@ -36,7 +36,7 @@ class tag_injector(gr.sync_block):
     def work(self, input_items, output_items):
         output_items[0][:] = input_items[0]
         if self.inject_tag:
-            offset = self.nitems_read(0) + 1
+            offset = self.nitems_read(0)
             for key, val in self.inject_tag.items():
                 self.add_item_tag(
                     0, offset, pmt.to_pmt(key), pmt.to_pmt(val))
@@ -455,8 +455,9 @@ class qa_sink(gr_unittest.TestCase):
             print(meta)
             # Check captures meta
             assert meta["captures"][0]["core:frequency"] == 900e6
-            # Check annotations meta
-            assert meta["annotations"][0]["test:a"] == 1
+            # Check annotations meta, should be empty, since annotations are
+            # meant for specific samples and shouldn't be saved
+            assert len(meta["annotations"]) == 0
 
     def test_not_intially_open_annotation_tag_offsets(self):
         '''Test that if a sink is created without a file initially open,
@@ -661,6 +662,8 @@ class qa_sink(gr_unittest.TestCase):
         assert "core:sample_rate" not in meta["captures"][0]
 
     def test_set_capture_meta_via_message(self):
+        '''Test that when we send a message to set some metadata
+        it gets set correctly'''
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
 
@@ -672,7 +675,7 @@ class qa_sink(gr_unittest.TestCase):
         tb.connect(src, file_sink)
         tb.msg_connect(sender, "out", file_sink, "command")
         tb.start()
-
+        sleep(.1)
         sender.send_msg({
             "command": "set_capture_meta",
             "index": 0,
@@ -685,7 +688,6 @@ class qa_sink(gr_unittest.TestCase):
 
         with open(json_file, "r") as f:
             meta = json.load(f)
-            print(meta)
             assert meta["captures"][0]["test:a"] == 84
 
     def test_bad_types_set_global(self):
@@ -702,3 +704,76 @@ class qa_sink(gr_unittest.TestCase):
             exception_hit = True
 
         assert exception_hit
+
+    def test_rx_time_conversion(self):
+        '''Test that rx_time tags are correctly converted to iso8601 strings'''
+
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+        seconds = 1520551983
+        frac_seconds = 0.09375
+        frac_seconds_2 = 0.25
+        correct_str_1 = datetime.utcfromtimestamp(
+            seconds).strftime('%Y-%m-%dT%H:%M:%S')
+        correct_str_1 += str(frac_seconds).lstrip('0') + "Z"
+        correct_str_2 = datetime.utcfromtimestamp(
+            seconds).strftime('%Y-%m-%dT%H:%M:%S')
+        correct_str_2 += str(frac_seconds_2).lstrip('0') + "Z"
+        injector = tag_injector()
+        # first sample should have a rx_time tag
+        injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        sleep(.2)
+        # Also test the case where a tag arives while writing
+        injector.inject_tag = {"rx_time": (seconds, frac_seconds_2)}
+        sleep(.1)
+        tb.stop()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta = json.load(f)
+            assert meta["captures"][0]["core:datetime"] == correct_str_1
+            assert meta["captures"][1]["core:datetime"] == correct_str_2
+
+    def test_rx_time_update_when_file_not_open(self):
+        '''Test that rx_time tags received before recording starts
+        get offset correctly for the datetime on the first captures segment'''
+
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le", "")
+
+        seconds = 1520551983
+        frac_seconds = 0.09375
+        # frac_seconds_2 = 0.25
+        # correct_str_1 = datetime.utcfromtimestamp(
+        #     seconds).strftime('%Y-%m-%dT%H:%M:%S')
+        # correct_str_1 += str(frac_seconds).lstrip('0') + "Z"
+        # correct_str_2 = datetime.utcfromtimestamp(
+        #     seconds).strftime('%Y-%m-%dT%H:%M:%S')
+        # correct_str_2 += str(frac_seconds_2).lstrip('0') + "Z"
+        injector = tag_injector()
+        # first sample should have a rx_time tag
+        injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        sleep(.2)
+        file_sink.open(data_file)
+        # Also test the case where a tag arives while writing
+        # injector.inject_tag = {"rx_time": (seconds, frac_seconds_2)}
+        sleep(.1)
+        tb.stop()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta = json.load(f)
+            assert meta["captures"][0]["core:datetime"] == correct_str_1
+            assert meta["captures"][1]["core:datetime"] == correct_str_2

@@ -140,6 +140,11 @@ namespace gr {
       std::vector<meta_namespace> d_captures;
       std::vector<meta_namespace> d_annotations;
 
+      pmt::pmt_t d_pre_capture_data = pmt::make_dict();
+      // A map of pre_capture_data keys to the sample index of the
+      // tag that they were attached to
+      std::unordered_map<std::string, uint64_t> d_pre_capture_tag_index;
+
       void reset_meta();
       void init_meta();
 
@@ -150,9 +155,11 @@ namespace gr {
       void handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment);
       void capture_segment_from_tags(const std::vector<tag_t> &tags);
       void handle_tags(const std::vector<tag_t> &tags);
+      void handle_tags_not_capturing(const std::vector<tag_t> &tags);
       void do_update();
 
       std::string iso_8601_ts();
+      std::string convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time);
 
       public:
       sink_impl(std::string type,
