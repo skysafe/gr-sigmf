@@ -19,18 +19,25 @@
  */
 
 #include <string>
+#include <boost/endian/conversion.hpp>
 
 std::string
 uhd_format_to_sigmf_format(const std::string &format)
 {
+  std::string ending;
+  if (boost::endian::order::native == boost::endian::order::little) {
+    ending = "_le";
+  } else {
+    ending = "_be";
+  }
   if(format == "fc64") {
-    return "cf64";
+    return "cf64" + ending;
   } else if(format == "fc32") {
-    return "cf32";
+    return "cf32" + ending;
   } else if(format == "sc16") {
-    return "ci16";
+    return "ci16" + ending;
   } else if(format == "sc8") {
-    return "ci8";
+    return "ci8" + ending;
   }
   return format;
 }

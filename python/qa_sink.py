@@ -148,6 +148,7 @@ class qa_sink(gr_unittest.TestCase):
             meta = json.loads(meta_str)
 
             # Check global meta
+            assert meta["global"]["core:datatype"] == "cf32_le"
             assert meta["global"]["core:description"] == description
             assert meta["global"]["core:author"] == author
             assert meta["global"]["core:license"] == file_license
