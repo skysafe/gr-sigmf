@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <sigmf/meta_namespace.h>
 #include <sigmf/sink.h>
@@ -86,6 +87,13 @@ namespace gr {
         s << "unknown sigmf type " << type << std::endl;
         throw std::runtime_error(s.str());
       }
+    }
+
+    inline std::pair<uint64_t, double>
+    extract_uhd_time(pmt::pmt_t uhd_time) {
+        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(uhd_time, 0));
+        double frac_seconds = pmt::to_double(pmt::tuple_ref(uhd_time, 1));
+        return std::make_pair(seconds, frac_seconds);
     }
 
 

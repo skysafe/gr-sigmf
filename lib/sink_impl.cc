@@ -54,6 +54,8 @@
 #define OUR_O_LARGEFILE 0
 #endif
 
+#define PVAR(v) std::cout << #v << " = " << v << std::endl;
+
 namespace fs = boost::filesystem;
 namespace posix = boost::posix_time;
 namespace greg = boost::gregorian;
@@ -406,7 +408,6 @@ namespace gr {
 
         if (d_fp != nullptr) {
           meta_namespace first_segment = meta_namespace::build_capture_segment(0);
-
           // Iterate through the keys of d_pre_capture_data
           // if any of them match the known keys we need to handle
           // then deal with it
@@ -415,14 +416,17 @@ namespace gr {
           for(size_t i = 0; i < num_keys; i++) {
             auto capture_key = pmt::nth(i, capture_keys);
             auto capture_val = pmt::dict_ref(d_pre_capture_data, capture_key, pmt::get_PMT_NIL());
+
             if (pmt::eqv(capture_key, TIME_KEY)) {
               uint64_t received_sample_index = d_pre_capture_tag_index[pmt::symbol_to_string(capture_key)];
               double current_sample_rate = -1;
               pmt::pmt_t sample_rate_pmt = pmt::dict_ref(d_pre_capture_data, RATE_KEY, pmt::get_PMT_NIL());
+
               if (pmt::eqv(sample_rate_pmt, pmt::get_PMT_NIL())) {
                 // Check if its in the global segment
                 if (d_global.has("core:sample_rate")) {
-                  current_sample_rate = d_global.get("core:sample_rate");
+                  pmt::pmt_t samp_rate_pmt = d_global.get("core:sample_rate");
+                  current_sample_rate = pmt::to_double(samp_rate_pmt);
                 } 
               } else {
                 current_sample_rate = pmt::to_double(sample_rate_pmt);
@@ -431,15 +435,28 @@ namespace gr {
               // Then we can compute a new time offset
               if (current_sample_rate != -1) {
                 uint64_t total_samples_read = nitems_read(0);
+                PVAR(total_samples_read);
                 uint64_t samples_since_time_received = total_samples_read - received_sample_index;
                 uint64_t full_seconds_since_time =
                   std::floor(samples_since_time_received / current_sample_rate);
                 double frac_seconds_since_time = 
-                  samples_since_time_received / current_sample_rate
+                  (samples_since_time_received / current_sample_rate) - (full_seconds_since_time);
+
+                uint64_t capture_val_full_seconds;
+                double capture_val_frac_seconds;
+                std::tie(capture_val_full_seconds, capture_val_frac_seconds) = extract_uhd_time(capture_val);
+                uint64_t final_full_seconds = full_seconds_since_time + capture_val_full_seconds;
+                double final_frac_seconds = frac_seconds_since_time + capture_val_frac_seconds;
+                if (final_frac_seconds >= 1) {
+                  final_full_seconds += 1;
+                  final_frac_seconds -= 1;
+                }
+                pmt::pmt_t final_full_pmt = pmt::from_uint64(final_full_seconds);
+                pmt::pmt_t final_frac_pmt = pmt::from_double(final_frac_seconds);
+                first_segment.set("core:datetime",
+                                  convert_uhd_time_to_iso8601(
+                                    pmt::make_tuple(final_full_pmt, final_frac_pmt)));
               }
-              
-              // TODO: gotta handle offset here
-              first_segment.set("core:datetime", convert_uhd_time_to_iso8601(capture_val));
             } else if (pmt::eqv(capture_key, FREQ_KEY)) {
               first_segment.set("core:frequency", capture_val);
             } else if (pmt::eqv(capture_key, RATE_KEY)) {

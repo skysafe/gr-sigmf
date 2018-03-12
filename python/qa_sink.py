@@ -10,6 +10,7 @@ import shutil
 import uuid
 import numpy
 import pmt
+from threading import Event
 from gnuradio import gr, gr_unittest, blocks, analog
 
 from sigmf import sigmf_swig as sigmf
@@ -745,35 +746,85 @@ class qa_sink(gr_unittest.TestCase):
         '''Test that rx_time tags received before recording starts
         get offset correctly for the datetime on the first captures segment'''
 
-        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
-        data_file, json_file = self.temp_file_names()
-        file_sink = sigmf.sink("cf32_le", "")
+        class sample_producer(gr.sync_block):
+            def __init__(self, limit, limit_ev, continue_ev):
+                gr.sync_block.__init__(
+                    self,
+                    name="tag_injector",
+                    in_sig=None,
+                    out_sig=[numpy.complex64],
+                )
+                self.limit = limit
+                self.limit_ev = limit_ev
+                self.continue_ev = continue_ev
+                self.fired = False
 
-        seconds = 1520551983
-        frac_seconds = 0.09375
-        # frac_seconds_2 = 0.25
-        # correct_str_1 = datetime.utcfromtimestamp(
-        #     seconds).strftime('%Y-%m-%dT%H:%M:%S')
-        # correct_str_1 += str(frac_seconds).lstrip('0') + "Z"
-        # correct_str_2 = datetime.utcfromtimestamp(
-        #     seconds).strftime('%Y-%m-%dT%H:%M:%S')
-        # correct_str_2 += str(frac_seconds_2).lstrip('0') + "Z"
-        injector = tag_injector()
-        # first sample should have a rx_time tag
-        injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
-        tb = gr.top_block()
-        tb.connect(src, injector)
-        tb.connect(injector, file_sink)
-        tb.start()
-        sleep(.2)
-        file_sink.open(data_file)
-        # Also test the case where a tag arives while writing
-        # injector.inject_tag = {"rx_time": (seconds, frac_seconds_2)}
-        sleep(.1)
-        tb.stop()
-        tb.wait()
+            def work(self, input_items, output_items):
+                if self.limit <= 0:
+                    if not self.fired:
+                        self.limit_ev.set()
+                        self.continue_ev.wait()
+                        self.fired = True
+                    samples_to_produce = len(output_items[0])
+                    for i in range(samples_to_produce):
+                        output_items[0][i] = 1 + 1j
+                    return samples_to_produce
 
-        with open(json_file, "r") as f:
-            meta = json.load(f)
-            assert meta["captures"][0]["core:datetime"] == correct_str_1
-            assert meta["captures"][1]["core:datetime"] == correct_str_2
+                if self.limit > 0:
+                    samples_to_produce = int(min(self.limit, len(output_items[0])))
+                    for i in range(samples_to_produce):
+                        output_items[0][i] = 1 + 1j
+                    self.limit -= samples_to_produce
+                    return samples_to_produce
+
+        def run_iteration(wait_full, wait_frac):
+            limit_event = Event()
+            continue_event = Event()
+            samp_rate = 10000.0
+            limit_samples = (samp_rate * wait_full) + (samp_rate * wait_frac)
+            print("wut")
+            print(limit_samples)
+            src = sample_producer(limit_samples, limit_event, continue_event)
+
+            data_file, json_file = self.temp_file_names()
+            file_sink = sigmf.sink("cf32_le", "")
+            file_sink.set_global_meta("core:sample_rate", samp_rate)
+
+            seconds = 1520551983
+            frac_seconds = 0.09375
+            end_seconds = seconds + wait_full
+            end_frac = frac_seconds + wait_frac
+            if (end_frac > 1):
+                end_seconds += 1
+                end_frac -= 1
+            correct_str = datetime.utcfromtimestamp(
+                end_seconds).strftime('%Y-%m-%dT%H:%M:%S')
+            correct_str += str(end_frac).lstrip('0') + "Z"
+            injector = tag_injector()
+            # first sample should have a rx_time tag
+            injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
+            tb = gr.top_block()
+            tb.connect(src, injector)
+            tb.connect(injector, file_sink)
+            tb.start()
+            print("waiting")
+            limit_event.wait()
+            # sleep to let the last samples get to the sink block
+            sleep(.1)
+            file_sink.open(data_file)
+            continue_event.set()
+            sleep(.1)
+            tb.stop()
+            tb.wait()
+
+            with open(json_file, "r") as f:
+                meta = json.load(f)
+                print(meta)
+                assert meta["captures"][0]["core:datetime"] == correct_str
+        
+        # just one second of added time
+        run_iteration(1, 0)
+        # Just a fractional amount
+        run_iteration(0, (2/32.0))
+        # fractional parts overlap
+        run_iteration(1, (30/32.0))
