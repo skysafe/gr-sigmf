@@ -286,31 +286,31 @@ namespace gr {
     void
     sink_impl::set_global_meta(const std::string &key, double val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_double(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, int64_t val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_long(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, uint64_t val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_uint64(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, const std::string &val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::string_to_symbol(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, bool val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_bool(val));
     }
 
     void
