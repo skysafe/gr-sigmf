@@ -420,16 +420,22 @@ namespace gr {
               double current_sample_rate = -1;
               pmt::pmt_t sample_rate_pmt = pmt::dict_ref(d_pre_capture_data, RATE_KEY, pmt::get_PMT_NIL());
               if (pmt::eqv(sample_rate_pmt, pmt::get_PMT_NIL())) {
-                // Check if its in the global
+                // Check if its in the global segment
                 if (d_global.has("core:sample_rate")) {
                   current_sample_rate = d_global.get("core:sample_rate");
                 } 
               } else {
                 current_sample_rate = pmt::to_double(sample_rate_pmt);
               }
+              // If we found a sample rate in the global segment or in the received data
+              // Then we can compute a new time offset
               if (current_sample_rate != -1) {
                 uint64_t total_samples_read = nitems_read(0);
                 uint64_t samples_since_time_received = total_samples_read - received_sample_index;
+                uint64_t full_seconds_since_time =
+                  std::floor(samples_since_time_received / current_sample_rate);
+                double frac_seconds_since_time = 
+                  samples_since_time_received / current_sample_rate
               }
               
               // TODO: gotta handle offset here
