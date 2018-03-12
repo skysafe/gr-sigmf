@@ -23,6 +23,9 @@
 #endif
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/endian/conversion.hpp>
+
 #include <fcntl.h>
 #include <gnuradio/io_signature.h>
 
@@ -56,6 +59,7 @@
 namespace fs = boost::filesystem;
 namespace posix = boost::posix_time;
 namespace greg = boost::gregorian;
+namespace algo = boost::algorithm;
 
 namespace gr {
   namespace sigmf {
@@ -80,7 +84,7 @@ namespace gr {
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_itemsize(type_to_size(type)),
-      d_type(type), d_debug(debug), d_meta_written(false),
+      d_type(check_dtype_endianness(type)), d_debug(debug), d_meta_written(false),
       d_recording_start_offset(0)
     {
       init_meta();
@@ -97,6 +101,17 @@ namespace gr {
      */
     sink_impl::~sink_impl()
     {
+    }
+
+    std::string
+    sink_impl::check_dtype_endianness(std::string dtype) {
+      if(algo::ends_with(dtype, "_le") || algo::ends_with(dtype, "_be")) {
+        return dtype;
+      } else {
+        std::string ending = boost::endian::order::native ==
+          boost::endian::order::little ? "_le" : "_be";
+        return dtype + ending; 
+      }
     }
 
     bool

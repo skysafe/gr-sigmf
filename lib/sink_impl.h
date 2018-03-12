@@ -152,6 +152,8 @@ namespace gr {
       void handle_tags(const std::vector<tag_t> &tags);
       void do_update();
 
+      std::string check_dtype_endianness(std::string dtype);
+
       std::string iso_8601_ts();
 
       public:

@@ -1,3 +1,4 @@
+import sys
 import os
 import struct
 import json
@@ -703,3 +704,30 @@ class qa_sink(gr_unittest.TestCase):
             exception_hit = True
 
         assert exception_hit
+
+    def test_dtype_endian_coersion(self):
+        '''Ensure that data types without an ending are converted to the
+        platform native type'''
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+
+        data_file, json_file = self.temp_file_names()
+
+        file_sink = sigmf.sink("cf32",
+                               data_file)
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta = json.load(f)
+            if sys.byteorder == "little":
+                assert meta["global"]["core:datatype"] == "cf32_le"
+            else:
+                assert meta["global"]["core:datatype"] == "cf32_be"
