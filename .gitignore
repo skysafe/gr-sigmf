@@ -1,9 +1,6 @@
 # CMake build dir
 build/
 
-# scripts
-scripts/
-
 # SigMF files
 *.sigmf-data
 *.sigmf-meta
