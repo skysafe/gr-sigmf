@@ -66,10 +66,11 @@ namespace gr {
     sink::sptr
     sink::make(std::string type,
                std::string filename,
+               sink_time_mode time_mode,
                bool append,
                bool debug)
     {
-      return gnuradio::get_initial_sptr(new sink_impl(type, filename, append, debug));
+      return gnuradio::get_initial_sptr(new sink_impl(type, filename, time_mode, append, debug));
     }
 
     /*
@@ -77,14 +78,14 @@ namespace gr {
      */
     sink_impl::sink_impl(std::string type,
                          std::string filename,
+                         sink_time_mode time_mode,
                          bool append,
                          bool debug)
     : gr::sync_block("sink",
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_itemsize(type_to_size(type)),
-      d_type(type), d_debug(debug), d_meta_written(false),
-      d_recording_start_offset(0)
+      d_type(type), d_debug(debug), d_sink_time_mode(time_mode)
     {
       init_meta();
       open(filename.c_str());
@@ -406,6 +407,7 @@ namespace gr {
         d_meta_path = d_new_meta_path;
         d_meta_written = d_new_fp == nullptr ? true : false;
 
+        // If a new file has been opened
         if (d_fp != nullptr) {
           meta_namespace first_segment = meta_namespace::build_capture_segment(0);
           // Iterate through the keys of d_pre_capture_data
@@ -423,7 +425,7 @@ namespace gr {
               pmt::pmt_t sample_rate_pmt = pmt::dict_ref(d_pre_capture_data, RATE_KEY, pmt::get_PMT_NIL());
 
               if (pmt::eqv(sample_rate_pmt, pmt::get_PMT_NIL())) {
-                // Check if its in the global segment
+                // Check if it's in the global segment
                 if (d_global.has("core:sample_rate")) {
                   pmt::pmt_t samp_rate_pmt = d_global.get("core:sample_rate");
                   current_sample_rate = pmt::to_double(samp_rate_pmt);
@@ -436,7 +438,11 @@ namespace gr {
               if (current_sample_rate != -1) {
                 uint64_t total_samples_read = nitems_read(0);
                 PVAR(total_samples_read);
+                // Use the number of samples read since the last time we got a time
+                // combined with the sample rate to compute the new time
                 uint64_t samples_since_time_received = total_samples_read - received_sample_index;
+                // Compute the full seconds and fractional seconds since we last received a time
+                // based on the number of samples and the sample rate
                 uint64_t full_seconds_since_time =
                   std::floor(samples_since_time_received / current_sample_rate);
                 double frac_seconds_since_time = 
@@ -444,18 +450,29 @@ namespace gr {
 
                 uint64_t capture_val_full_seconds;
                 double capture_val_frac_seconds;
-                std::tie(capture_val_full_seconds, capture_val_frac_seconds) = extract_uhd_time(capture_val);
+                std::tie(capture_val_full_seconds, capture_val_frac_seconds) =
+                  extract_uhd_time(capture_val);
+
+                if (d_sink_time_mode == sink_time_mode::relative) {
+                  uint64_t start_full_seconds = 0;
+                  double start_frac_seconds = 0;
+                  if (!pmt::eqv(d_relative_time_at_start, pmt::get_PMT_NIL())) {
+                      std::tie(start_full_seconds, start_frac_seconds) =
+                        extract_uhd_time(capture_val);
+                  }
+                  uint64_t capture_val_full_seconds = capture_val_full_seconds - start_full_seconds;
+                  double capture_val_frac_seconds = capture_val_frac_seconds - start_frac_seconds;
+                }
+                // Add the values computed above to the values from the tag to get the current value
                 uint64_t final_full_seconds = full_seconds_since_time + capture_val_full_seconds;
                 double final_frac_seconds = frac_seconds_since_time + capture_val_frac_seconds;
                 if (final_frac_seconds >= 1) {
                   final_full_seconds += 1;
                   final_frac_seconds -= 1;
                 }
-                pmt::pmt_t final_full_pmt = pmt::from_uint64(final_full_seconds);
-                pmt::pmt_t final_frac_pmt = pmt::from_double(final_frac_seconds);
-                first_segment.set("core:datetime",
-                                  convert_uhd_time_to_iso8601(
-                                    pmt::make_tuple(final_full_pmt, final_frac_pmt)));
+                std::string final_computed_time =
+                  convert_full_fracs_pair_to_iso8601(final_full_seconds, final_frac_seconds);
+                first_segment.set("core:datetime", final_computed_time);
               }
             } else if (pmt::eqv(capture_key, FREQ_KEY)) {
               first_segment.set("core:frequency", capture_val);
@@ -545,9 +562,7 @@ namespace gr {
     }
 
     std::string
-    sink_impl::convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time) {
-        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(uhd_time, 0));
-        double frac_seconds = pmt::to_double(pmt::tuple_ref(uhd_time, 1));
+    sink_impl::convert_full_fracs_pair_to_iso8601(uint64_t seconds, double frac_seconds) {
         time_t secs_time(seconds);
         posix::ptime seconds_since_epoch = posix::from_time_t(secs_time);
         std::string seconds_iso = posix::to_iso_extended_string(seconds_since_epoch);
@@ -556,11 +571,50 @@ namespace gr {
         return seconds_iso + frac_seconds_str + "Z";
     }
 
+    std::string
+    sink_impl::convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time) {
+        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(uhd_time, 0));
+        double frac_seconds = pmt::to_double(pmt::tuple_ref(uhd_time, 1));
+        return convert_full_fracs_pair_to_iso8601(seconds, frac_seconds);
+    }
+
     void
     sink_impl::handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment)
     {
       if(pmt::eqv(tag->key, TIME_KEY)) {
-        capture_segment.set("core:datetime", convert_uhd_time_to_iso8601(tag->value));
+        switch(d_sink_time_mode) {
+          case (sink_time_mode::relative):
+          {
+            // In relative mode, we need to add this to the time we stored 
+            // for the first sample received
+            // Check if we got a relative time on the first sample
+            uint64_t start_full_seconds = 0;
+            double start_frac_seconds = 0;
+            if (!pmt::eqv(d_relative_time_at_start, pmt::get_PMT_NIL())) {
+                std::tie(start_full_seconds, start_frac_seconds) =
+                  extract_uhd_time(d_relative_time_at_start);
+            }
+            // Subtract initial time offset
+            uint64_t tag_full_seconds;
+            double tag_frac_seconds;
+            std::tie(tag_full_seconds, tag_frac_seconds) = extract_uhd_time(tag->value);
+            tag_full_seconds -= start_full_seconds;
+            tag_frac_seconds -= start_frac_seconds;
+            // Add tag seconds to initial timestamp
+            posix::ptime adjusted_time =
+              d_relative_start_ts +
+              posix::seconds(tag_full_seconds) + 
+              posix::nanoseconds(std::floor(tag_frac_seconds * 1000000000));
+            // And set the adjusted time as the new time
+            std::string ts_iso = posix::to_iso_extended_string(adjusted_time) + "Z";
+            capture_segment.set("core:datetime", ts_iso);
+            break;
+          }
+          case (sink_time_mode::absolute):
+            // In absolute mode, we store these as is
+            capture_segment.set("core:datetime", convert_uhd_time_to_iso8601(tag->value));
+            break;
+        }
       } else if(pmt::eqv(tag->key, FREQ_KEY)) {
         // frequency as double
         capture_segment.set("core:frequency", tag->value);
@@ -676,6 +730,19 @@ namespace gr {
 
       // Stream tags should always get handled, even if d_fp is nullptr
       get_tags_in_window(d_temp_tags, 0, 0, noutput_items);
+
+      if (d_sink_time_mode == sink_time_mode::relative && d_is_first_sample) {
+        // Use the most accurate system clock to get a timestamp for start
+        d_relative_start_ts = posix::microsec_clock::universal_time();
+        // Check if we got an rx_time and store it if so
+        for(tag_t tag: d_temp_tags) {
+          if (tag.offset == 0 && pmt::eqv(tag.key, TIME_KEY)) {
+            d_relative_time_at_start = tag.value;
+            break;
+          }
+        }
+        d_is_first_sample = false;
+      }
 
       // drop output on the floor
       if(!d_fp) {

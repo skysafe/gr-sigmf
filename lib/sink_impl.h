@@ -22,6 +22,7 @@
 #define INCLUDED_SIGMF_SINK_IMPL_H
 
 #include <boost/filesystem/path.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <string>
@@ -109,11 +110,8 @@ namespace gr {
       // True if there is a new fp to switch to
       bool d_updated;
 
-
-      bool d_debug;
-
       // True if the metadata for the current file has been written
-      bool d_meta_written;
+      bool d_meta_written = false;
 
       // The offset of the start of the current recording from
       // what the block believes 
@@ -125,6 +123,9 @@ namespace gr {
 
       // Base type, not full format specifier. We need endianness for that.
       std::string d_type;
+
+      // Are we in debug mode?
+      bool d_debug;
 
       // Stored basic global metadata, we'll need these
       double d_samp_rate;
@@ -151,6 +152,14 @@ namespace gr {
       // tag that they were attached to
       std::unordered_map<std::string, uint64_t> d_pre_capture_tag_index;
 
+      // time mode for sink
+      sink_time_mode d_sink_time_mode;
+
+      bool d_is_first_sample = true;
+
+      boost::posix_time::ptime d_relative_start_ts;
+      pmt::pmt_t d_relative_time_at_start = pmt::get_PMT_NIL();
+
       void reset_meta();
       void init_meta();
 
@@ -166,10 +175,12 @@ namespace gr {
 
       std::string iso_8601_ts();
       std::string convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time);
+      std::string convert_full_fracs_pair_to_iso8601(uint64_t seconds, double frac_seconds);
 
       public:
       sink_impl(std::string type,
                 std::string filename,
+                sink_time_mode time_mode,
                 bool append,
                 bool debug);
       ~sink_impl();
