@@ -5,7 +5,7 @@
   <category>[SigMF]</category>
   <import>import sigmf</import>
   <import>import sys</import>
-  <make>sigmf.sink("$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $filename, $append, $debug)
+  <make>sigmf.sink("$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $filename, $time_mode, $append, $debug)
 self.$(id).set_global_meta("core:sample_rate", $samp_rate)
 #if $description != ""
 self.$(id).set_global_meta("core:description", $description)
@@ -96,6 +96,19 @@ self.$(id).set_global_meta('$field_key()', $field_val())
     <key>samp_rate</key>
     <value>samp_rate</value>
     <type>real</type>
+  </param>
+  <param>
+    <name>Time Handling Mode</name>
+    <key>time_mode</key>
+    <type>enum</type>
+    <option>
+      <name>Absolute</name>
+      <key>sigmf.sink_time_mode_absolute</key>
+    </option>
+    <option>
+      <name>Relative</name>
+      <key>sigmf.sink_time_mode_relative</key>
+    </option>
   </param>
   <param>
     <name>Description</name>
