@@ -43,8 +43,6 @@ namespace gr {
     static const pmt::pmt_t META = pmt::string_to_symbol("meta");
     static const pmt::pmt_t COMMAND = pmt::string_to_symbol("command");
 
-    static const char *SIGMF_VERSION = "0.0.1";
-
     inline size_t
     type_to_size(const std::string type)
     {

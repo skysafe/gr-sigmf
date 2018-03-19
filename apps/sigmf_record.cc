@@ -318,7 +318,7 @@ main(int argc, char *argv[])
   std::cout << "  Metadata: " << file_sink->get_meta_path() << std::endl;
 
   // Add any extra global metadata
-  for(int i = 0; i < extra_global_meta.size(); i++) {
+  for(size_t i = 0; i < extra_global_meta.size(); i++) {
     std::string meta = extra_global_meta[i];
     boost::iterator_range<std::string::iterator> second_comma = algo::find_nth(meta, ":", 1);
     std::string key = meta.substr(0, second_comma.begin() - meta.begin());
