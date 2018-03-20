@@ -160,6 +160,7 @@ namespace gr {
       boost::posix_time::ptime d_relative_start_ts;
       pmt::pmt_t d_relative_time_at_start = pmt::get_PMT_NIL();
 
+      std::string add_endianness(const std::string &type);
       void reset_meta();
       void init_meta();
 

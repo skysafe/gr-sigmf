@@ -24,6 +24,8 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/endian/conversion.hpp>
 #include <fcntl.h>
 #include <gnuradio/io_signature.h>
 
@@ -59,6 +61,8 @@
 namespace fs = boost::filesystem;
 namespace posix = boost::posix_time;
 namespace greg = boost::gregorian;
+namespace endian = boost::endian;
+namespace algo = boost::algorithm;
 
 namespace gr {
   namespace sigmf {
@@ -85,7 +89,7 @@ namespace gr {
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_itemsize(type_to_size(type)),
-      d_type(type), d_debug(debug), d_sink_time_mode(time_mode)
+      d_type(add_endianness(type)), d_debug(debug), d_sink_time_mode(time_mode)
     {
       init_meta();
       open(filename.c_str());
@@ -101,6 +105,27 @@ namespace gr {
      */
     sink_impl::~sink_impl()
     {
+    }
+
+    std::string
+    sink_impl::add_endianness(const std::string &type) {
+      std::string correct_ending;
+      std::string incorrect_ending;
+      if (endian::order::native == endian::order::big) {
+        correct_ending = "_be";
+        incorrect_ending = "_le";
+      } else {
+        correct_ending = "_le";
+        incorrect_ending = "_be";
+      }
+      if (algo::ends_with(type, correct_ending)) {
+        return type;
+      } else if (algo::ends_with(type, incorrect_ending)) {
+        throw std::invalid_argument(
+          "endianness of type does not match system endianness");
+      } else {
+        return type + correct_ending;
+      }
     }
 
     bool

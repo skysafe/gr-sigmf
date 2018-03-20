@@ -1,3 +1,4 @@
+import sys
 import os
 import re
 import struct
@@ -886,9 +887,45 @@ class qa_sink(gr_unittest.TestCase):
 
         with open(json_file, "r") as f:
             meta = json.load(f)
-            print(meta)
             capture_one_dt = parse_iso_ts(meta["captures"][0]["core:datetime"])
             capture_two_dt = parse_iso_ts(meta["captures"][1]["core:datetime"])
             diff_time = capture_two_dt - capture_one_dt
             assert diff_time.seconds == 2
             assert diff_time.microseconds == 300000
+
+    def test_endianness_checking(self):
+        '''Check that the sink properly converts and errors on
+        endianness values in the type argument'''
+
+        if sys.byteorder == "little":
+            ending = "_le"
+            bad_ending = "_be"
+        else:
+            ending = "_be"
+            bad_ending = "_le"
+
+        def run_check(dtype):
+            N = 1000
+            samp_rate = 200000
+            data_file, json_file = self.temp_file_names()
+            data = sig_source_c(samp_rate, 1000, 1, N)
+            src = blocks.vector_source_c(data)
+            file_sink = sigmf.sink(dtype, data_file)
+            tb = gr.top_block()
+            tb.connect(src, file_sink)
+            tb.run()
+            tb.wait()
+            with open(json_file, "r") as f:
+                meta = json.load(f)
+                assert meta["global"]["core:datatype"] == ("cf32" + ending)
+        # Try without ending
+        run_check("cf32")
+        # Try with right ending
+        run_check("cf32" + ending)
+        # Try with bad ending
+        exception_msg = ""
+        try:
+            file_sink = sigmf.sink("cf32" + bad_ending, "")  # noqa: F841
+        except Exception as e:
+            exception_msg = e.message
+        assert "endianness" in exception_msg

@@ -4,8 +4,7 @@
   <key>sigmf_sink</key>
   <category>[SigMF]</category>
   <import>import sigmf</import>
-  <import>import sys</import>
-  <make>sigmf.sink("$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $filename, $time_mode, $append, $debug)
+  <make>sigmf.sink("$type.sigmf_type", $filename, $time_mode, $append, $debug)
 self.$(id).set_global_meta("core:sample_rate", $samp_rate)
 #if $description != ""
 self.$(id).set_global_meta("core:description", $description)
