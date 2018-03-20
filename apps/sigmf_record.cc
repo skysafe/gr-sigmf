@@ -201,6 +201,7 @@ main(int argc, char *argv[])
     ("wire-format", po::value<std::string>(&wire_format_str)->default_value(""), "Format of OTW data")
     ("freq,f", po::value<double>(&center_freq)->default_value(0), "Center frequency in hertz")
     ("int-n", "Tune USRP LO in integer-N PLL mode")
+    ("skip-gps", "Skip attempting to sync to GPS")
     ("sample-rate,s", po::value<double>(&sample_rate)->default_value(100e6/16), "Sample rate in samples/second")
     ("gain,g", po::value<double>(&gain)->default_value(0), "Gain in db")
     ("normalized-gain", po::value<double>(&normalized_gain), "Normalized gain")
@@ -287,6 +288,51 @@ main(int argc, char *argv[])
   if(vm.count("subdev-spec")) {
     std::cout << boost::format("Setting subdev spec to: %s") % subdev_spec << std::endl << std::endl;
     usrp_source->set_subdev_spec(subdev_spec);
+  }
+
+  bool do_gps_sync = false;
+  if(!vm.count("skip-gps")) {
+    std::cout << "Looking for GPS sensor..." << std::endl;
+    std::vector<std::string> sensor_names = usrp_source->get_mboard_sensor_names(0);
+    if(std::find(sensor_names.begin(), sensor_names.end(), "gps_locked") != sensor_names.end()) {
+      bool gps_locked = usrp_source->get_mboard_sensor("gps_locked", 0).to_bool();
+      if(gps_locked) {
+        std::cout << "GPS locked, attempting to sync time to GPS..." << std::endl;
+        do_gps_sync = true;
+      } else {
+        std::cout << "GPS not locked, skipping GPS time sync." << std::endl << std::endl;
+      }
+    } else {
+      std::cout << "No GPS sensor found, skipping GPS time sync." << std::endl << std::endl;
+    }
+  } else {
+    std::cout << "Skipping GPS time sync." << std::endl << std::endl;
+  }
+
+  if(do_gps_sync) {
+    std::cout << "Setting clock and time source to GPSDO." << std::endl;
+    usrp_source->set_clock_source("gpsdo");
+    usrp_source->set_time_source("gpsdo");
+
+    uhd::time_spec_t gps_time = uhd::time_spec_t(time_t(usrp_source->get_mboard_sensor("gps_time", 0).to_int()));
+    std::cout << "Got GPS time: " << (boost::format("%0.9f") % gps_time.get_real_secs()) << std::endl;
+    usrp_source->set_time_next_pps(gps_time + 1.0);
+
+    std::cout << "Waiting for GPS PPS edge." << std::endl;
+    boost::this_thread::sleep(boost::posix_time::seconds(2));
+
+    std::cout << "Checking times to see if sync was successful..." << std::endl;
+    gps_time = uhd::time_spec_t(time_t(usrp_source->get_mboard_sensor("gps_time", 0).to_int()));
+    uhd::time_spec_t time_last_pps = usrp_source->get_time_last_pps(0);
+
+    std::cout << "New USRP time: " << (boost::format("%0.9f") % time_last_pps.get_real_secs()) << std::endl;
+    std::cout << "New GPSDO time: " << (boost::format("%0.9f") % gps_time.get_real_secs()) << std::endl;
+    if (gps_time.get_real_secs() == time_last_pps.get_real_secs()) {
+      std::cout << std::endl << "USRP time successfully synchronized to GPS time." << std::endl << std::endl;
+    } else {
+      std::cerr << std::endl << "ERROR: Failed to synchronize USRP time to GPS time." << std::endl << std::endl;
+      return -1;
+    }
   }
 
   uhd::dict<std::string, std::string> usrp_info = usrp_source->get_usrp_info();
