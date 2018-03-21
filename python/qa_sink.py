@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import struct
 import json
 import math
@@ -11,6 +12,7 @@ import shutil
 import uuid
 import numpy
 import pmt
+from threading import Event
 from gnuradio import gr, gr_unittest, blocks, analog
 
 from sigmf import sigmf_swig as sigmf
@@ -37,7 +39,7 @@ class tag_injector(gr.sync_block):
     def work(self, input_items, output_items):
         output_items[0][:] = input_items[0]
         if self.inject_tag:
-            offset = self.nitems_read(0) + 1
+            offset = self.nitems_read(0)
             for key, val in self.inject_tag.items():
                 self.add_item_tag(
                     0, offset, pmt.to_pmt(key), pmt.to_pmt(val))
@@ -74,6 +76,47 @@ class msg_sender(gr.sync_block):
 
     def send_msg(self, msg_to_send):
         self.message_port_pub(pmt.intern("out"), pmt.to_pmt(msg_to_send))
+
+
+class sample_producer(gr.sync_block):
+    def __init__(self, limit, limit_ev, continue_ev):
+        gr.sync_block.__init__(
+            self,
+            name="sample_producer",
+            in_sig=None,
+            out_sig=[numpy.complex64],
+        )
+        self.limit = limit
+        self.limit_ev = limit_ev
+        self.continue_ev = continue_ev
+        self.fired = False
+
+    def work(self, input_items, output_items):
+        if self.limit <= 0:
+            if not self.fired:
+                self.limit_ev.set()
+                self.continue_ev.wait()
+                self.fired = True
+            samples_to_produce = len(output_items[0])
+            for i in range(samples_to_produce):
+                output_items[0][i] = 1 + 1j
+            return samples_to_produce
+
+        if self.limit > 0:
+            samples_to_produce = int(min(self.limit, len(output_items[0])))
+            for i in range(samples_to_produce):
+                output_items[0][i] = 1 + 1j
+            self.limit -= samples_to_produce
+            return samples_to_produce
+
+
+def parse_iso_ts(ts):
+    # strptime can only handle six digits of fractional seconds
+    ts = re.sub(r'\.(\d+)Z',
+                lambda m: "." + m.group(1)[:6] + "Z",
+                ts)
+    return datetime.strptime(
+        ts, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class qa_sink(gr_unittest.TestCase):
@@ -457,8 +500,9 @@ class qa_sink(gr_unittest.TestCase):
             print(meta)
             # Check captures meta
             assert meta["captures"][0]["core:frequency"] == 900e6
-            # Check annotations meta
-            assert meta["annotations"][0]["test:a"] == 1
+            # Check annotations meta, should be empty, since annotations are
+            # meant for specific samples and shouldn't be saved
+            assert len(meta["annotations"]) == 0
 
     def test_not_intially_open_annotation_tag_offsets(self):
         '''Test that if a sink is created without a file initially open,
@@ -629,8 +673,7 @@ class qa_sink(gr_unittest.TestCase):
             meta = json.loads(meta_str)
             print(meta)
             meta_dt_str = meta["captures"][0]["core:datetime"]
-            meta_dt = datetime.strptime(
-                meta_dt_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+            meta_dt = parse_iso_ts(meta_dt_str)
             print(meta_dt)
             assert (datetime.utcnow() - meta_dt).total_seconds() < 2
 
@@ -663,6 +706,8 @@ class qa_sink(gr_unittest.TestCase):
         assert "core:sample_rate" not in meta["captures"][0]
 
     def test_set_capture_meta_via_message(self):
+        '''Test that when we send a message to set some metadata
+        it gets set correctly'''
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
 
@@ -674,7 +719,7 @@ class qa_sink(gr_unittest.TestCase):
         tb.connect(src, file_sink)
         tb.msg_connect(sender, "out", file_sink, "command")
         tb.start()
-
+        sleep(.1)
         sender.send_msg({
             "command": "set_capture_meta",
             "index": 0,
@@ -705,29 +750,184 @@ class qa_sink(gr_unittest.TestCase):
 
         assert exception_hit
 
-    def test_dtype_endian_coersion(self):
-        '''Ensure that data types without an ending are converted to the
-        platform native type'''
-        N = 1000
-        samp_rate = 200000
+    def test_rx_time_conversion(self):
+        '''Test that rx_time tags are correctly converted to iso8601 strings'''
 
-        data = sig_source_c(samp_rate, 1000, 1, N)
-        src = blocks.vector_source_c(data)
-
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
 
-        file_sink = sigmf.sink("cf32",
+        file_sink = sigmf.sink("cf32_le",
                                data_file)
-
-        # build flowgraph here
+        seconds = 1520551983
+        frac_seconds = 0.09375
+        frac_seconds_2 = 0.25
+        correct_str_1 = datetime.utcfromtimestamp(
+            seconds).strftime('%Y-%m-%dT%H:%M:%S')
+        correct_str_1 += str(frac_seconds).lstrip('0') + "Z"
+        correct_str_2 = datetime.utcfromtimestamp(
+            seconds).strftime('%Y-%m-%dT%H:%M:%S')
+        correct_str_2 += str(frac_seconds_2).lstrip('0') + "Z"
+        injector = tag_injector()
+        # first sample should have a rx_time tag
+        injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
         tb = gr.top_block()
-        tb.connect(src, file_sink)
-        tb.run()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        sleep(.2)
+        # Also test the case where a tag arives while writing
+        injector.inject_tag = {"rx_time": (seconds, frac_seconds_2)}
+        sleep(.1)
+        tb.stop()
         tb.wait()
 
         with open(json_file, "r") as f:
             meta = json.load(f)
-            if sys.byteorder == "little":
-                assert meta["global"]["core:datatype"] == "cf32_le"
-            else:
-                assert meta["global"]["core:datatype"] == "cf32_be"
+            assert meta["captures"][0]["core:datetime"] == correct_str_1
+            assert meta["captures"][1]["core:datetime"] == correct_str_2
+
+    def test_rx_time_update_when_file_not_open(self):
+        '''Test that rx_time tags received before recording starts
+        get offset correctly for the datetime on the first captures segment'''
+
+        def run_iteration(wait_full, wait_frac):
+            limit_event = Event()
+            continue_event = Event()
+            samp_rate = 10000.0
+            limit_samples = (samp_rate * wait_full) + (samp_rate * wait_frac)
+            print(limit_samples)
+            src = sample_producer(limit_samples, limit_event, continue_event)
+
+            data_file, json_file = self.temp_file_names()
+            file_sink = sigmf.sink("cf32_le", "")
+            file_sink.set_global_meta("core:sample_rate", samp_rate)
+
+            seconds = 1520551983
+            frac_seconds = 0.09375
+            end_seconds = seconds + wait_full
+            end_frac = frac_seconds + wait_frac
+            if (end_frac > 1):
+                end_seconds += 1
+                end_frac -= 1
+            correct_str = datetime.utcfromtimestamp(
+                end_seconds).strftime('%Y-%m-%dT%H:%M:%S')
+            correct_str += str(end_frac).lstrip('0') + "Z"
+            injector = tag_injector()
+            # first sample should have a rx_time tag
+            injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
+            tb = gr.top_block()
+            tb.connect(src, injector)
+            tb.connect(injector, file_sink)
+            tb.start()
+            print("waiting")
+            limit_event.wait()
+            # sleep to let the last samples get to the sink block
+            sleep(.1)
+            file_sink.open(data_file)
+            continue_event.set()
+            sleep(.1)
+            tb.stop()
+            tb.wait()
+
+            with open(json_file, "r") as f:
+                meta = json.load(f)
+                print(meta)
+                assert meta["captures"][0]["core:datetime"] == correct_str
+
+        # just one second of added time
+        run_iteration(1, 0)
+        # Just a fractional amount
+        run_iteration(0, (2 / 32.0))
+        # fractional parts overlap
+        run_iteration(1, (30 / 32.0))
+
+    def test_relative_time_mode(self):
+        # Example of Relative Mode Opertation
+        # The following events happen:
+
+        # Sample 0: rx_time: (2, 0.50000) at host time
+        # of 2018-03-12T11:36:00.20000
+        # 10,000 samples follow
+        # Sample 10,000: rx_time: (4, 0.80000)
+        # 20,000 samples follow
+        # Note that the relative time difference between the two
+        # capture segments is precisely 2.3 seconds.
+        # This should create two capture segments:
+
+        # Capture Segment 1 core:datetime: 2018-03-12T11:36:00.20000
+
+        # Capture Segment 2 core:datetime: 2018-03-12T11:36:02.50000
+        limit_event = Event()
+        continue_event = Event()
+        samp_rate = 10000.0
+        limit_samples = samp_rate
+        print(limit_samples)
+        src = sample_producer(limit_samples, limit_event, continue_event)
+
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le", data_file,
+                               sigmf.sink_time_mode_relative)
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+
+        injector = tag_injector()
+        # first sample should have a rx_time tag
+        injector.inject_tag = {"rx_time": (2, 0.500000)}
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        print("waiting")
+        limit_event.wait()
+        # sleep to let the last samples get to the sink block
+        sleep(.1)
+        # set the rx_time tag for the next section
+        injector.inject_tag = {"rx_time": (4, 0.80000)}
+        continue_event.set()
+        sleep(.1)
+        tb.stop()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta = json.load(f)
+            capture_one_dt = parse_iso_ts(meta["captures"][0]["core:datetime"])
+            capture_two_dt = parse_iso_ts(meta["captures"][1]["core:datetime"])
+            diff_time = capture_two_dt - capture_one_dt
+            assert diff_time.seconds == 2
+            assert diff_time.microseconds == 300000
+
+    def test_endianness_checking(self):
+        '''Check that the sink properly converts and errors on
+        endianness values in the type argument'''
+
+        if sys.byteorder == "little":
+            ending = "_le"
+            bad_ending = "_be"
+        else:
+            ending = "_be"
+            bad_ending = "_le"
+
+        def run_check(dtype):
+            N = 1000
+            samp_rate = 200000
+            data_file, json_file = self.temp_file_names()
+            data = sig_source_c(samp_rate, 1000, 1, N)
+            src = blocks.vector_source_c(data)
+            file_sink = sigmf.sink(dtype, data_file)
+            tb = gr.top_block()
+            tb.connect(src, file_sink)
+            tb.run()
+            tb.wait()
+            with open(json_file, "r") as f:
+                meta = json.load(f)
+                assert meta["global"]["core:datatype"] == ("cf32" + ending)
+        # Try without ending
+        run_check("cf32")
+        # Try with right ending
+        run_check("cf32" + ending)
+        # Try with bad ending
+        exception_msg = ""
+        try:
+            file_sink = sigmf.sink("cf32" + bad_ending, "")  # noqa: F841
+        except Exception as e:
+            exception_msg = e.message
+        assert "endianness" in exception_msg

@@ -22,10 +22,12 @@
 #define INCLUDED_SIGMF_SINK_IMPL_H
 
 #include <boost/filesystem/path.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <sigmf/meta_namespace.h>
 #include <sigmf/sink.h>
@@ -41,8 +43,6 @@ namespace gr {
 
     static const pmt::pmt_t META = pmt::string_to_symbol("meta");
     static const pmt::pmt_t COMMAND = pmt::string_to_symbol("command");
-
-    static const char *SIGMF_VERSION = "0.0.1";
 
     inline size_t
     type_to_size(const std::string type)
@@ -88,6 +88,13 @@ namespace gr {
       }
     }
 
+    inline std::pair<uint64_t, double>
+    extract_uhd_time(pmt::pmt_t uhd_time) {
+        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(uhd_time, 0));
+        double frac_seconds = pmt::to_double(pmt::tuple_ref(uhd_time, 1));
+        return std::make_pair(seconds, frac_seconds);
+    }
+
 
     class sink_impl : public sink {
       private:
@@ -103,11 +110,8 @@ namespace gr {
       // True if there is a new fp to switch to
       bool d_updated;
 
-
-      bool d_debug;
-
       // True if the metadata for the current file has been written
-      bool d_meta_written;
+      bool d_meta_written = false;
 
       // The offset of the start of the current recording from
       // what the block believes 
@@ -119,6 +123,9 @@ namespace gr {
 
       // Base type, not full format specifier. We need endianness for that.
       std::string d_type;
+
+      // Are we in debug mode?
+      bool d_debug;
 
       // Stored basic global metadata, we'll need these
       double d_samp_rate;
@@ -140,6 +147,20 @@ namespace gr {
       std::vector<meta_namespace> d_captures;
       std::vector<meta_namespace> d_annotations;
 
+      pmt::pmt_t d_pre_capture_data = pmt::make_dict();
+      // A map of pre_capture_data keys to the sample index of the
+      // tag that they were attached to
+      std::unordered_map<std::string, uint64_t> d_pre_capture_tag_index;
+
+      // time mode for sink
+      sink_time_mode d_sink_time_mode;
+
+      bool d_is_first_sample = true;
+
+      boost::posix_time::ptime d_relative_start_ts;
+      pmt::pmt_t d_relative_time_at_start = pmt::get_PMT_NIL();
+
+      std::string add_endianness(const std::string &type);
       void reset_meta();
       void init_meta();
 
@@ -150,15 +171,19 @@ namespace gr {
       void handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment);
       void capture_segment_from_tags(const std::vector<tag_t> &tags);
       void handle_tags(const std::vector<tag_t> &tags);
+      void handle_tags_not_capturing(const std::vector<tag_t> &tags);
       void do_update();
 
       std::string check_dtype_endianness(std::string dtype);
 
       std::string iso_8601_ts();
+      std::string convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time);
+      std::string convert_full_fracs_pair_to_iso8601(uint64_t seconds, double frac_seconds);
 
       public:
       sink_impl(std::string type,
                 std::string filename,
+                sink_time_mode time_mode,
                 bool append,
                 bool debug);
       ~sink_impl();

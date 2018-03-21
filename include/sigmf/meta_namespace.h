@@ -41,11 +41,13 @@
 namespace gr {
   namespace sigmf {
 
+    static const char *SIGMF_VERSION = "0.0.1";
+
     class SIGMF_API meta_namespace {
       public:
 
       static meta_namespace
-      build_global_object(std::string datatype, std::string version = "0.0.1");
+      build_global_object(std::string datatype, std::string version = SIGMF_VERSION);
 
       static meta_namespace build_capture_segment(uint64_t sample_start);
       static meta_namespace build_annotation_segment(uint64_t sample_start, uint64_t sample_count);

@@ -25,6 +25,9 @@ include(GrPlatform) #define LIB_SUFFIX
 include_directories(${Boost_INCLUDE_DIR} ${RapidJson_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
+# Tell boost time to use higher precision
+add_definitions(-DBOOST_DATE_TIME_POSIX_TIME_STD_CONFIG)
+
 list(APPEND sigmf_sources
     meta_namespace.cc
     sink_impl.cc
@@ -34,8 +37,8 @@ list(APPEND sigmf_sources
 
 set(sigmf_sources "${sigmf_sources}" PARENT_SCOPE)
 if(NOT sigmf_sources)
-	MESSAGE(STATUS "No C++ sources... skipping lib/")
-	return()
+    MESSAGE(STATUS "No C++ sources... skipping lib/")
+    return()
 endif(NOT sigmf_sources)
 
 add_library(gnuradio-sigmf SHARED ${sigmf_sources})

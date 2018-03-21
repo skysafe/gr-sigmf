@@ -176,7 +176,7 @@ namespace gr {
 
       if(d_debug) {
         std::cout << "tags to out: \n";
-        for(int i = 0; i < d_tags_to_output.size(); i++) {
+        for(size_t i = 0; i < d_tags_to_output.size(); i++) {
           std::cout << "key = " << d_tags_to_output[i].key << ", ";
           std::cout << "val = " << d_tags_to_output[i].value << ", ";
           std::cout << "offset = " << d_tags_to_output[i].offset << ", ";
@@ -199,7 +199,7 @@ namespace gr {
 
       if(d_debug) {
         std::cout << "num captures: " << d_captures.size() << std::endl;
-        for(int i = 0; i < d_captures.size(); i++) {
+        for(size_t i = 0; i < d_captures.size(); i++) {
           d_captures[i].print();
         }
       }
