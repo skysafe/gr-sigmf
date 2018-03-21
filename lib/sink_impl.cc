@@ -300,31 +300,31 @@ namespace gr {
     void
     sink_impl::set_global_meta(const std::string &key, double val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_double(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, int64_t val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_long(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, uint64_t val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_uint64(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, const std::string &val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::string_to_symbol(val));
     }
 
     void
     sink_impl::set_global_meta(const std::string &key, bool val)
     {
-      d_global.set(key, pmt::mp(val));
+      d_global.set(key, pmt::from_bool(val));
     }
 
     void
@@ -434,6 +434,8 @@ namespace gr {
 
         // If a new file has been opened
         if (d_fp != nullptr) {
+          // Need to check if we've received any capture
+          // metadata in the meantime
           meta_namespace first_segment = meta_namespace::build_capture_segment(0);
           // Iterate through the keys of d_pre_capture_data
           // if any of them match the known keys we need to handle

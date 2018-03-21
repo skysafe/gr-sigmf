@@ -32,7 +32,7 @@
 find_package(Boost
 #   1.61
   REQUIRED
-  COMPONENTS system program_options filesystem log)
+  COMPONENTS system program_options filesystem log thread)
 
 # # link_libraries(${Boost_LIBRARIES})
 include_directories(${Boost_INCLUDE_DIRS})

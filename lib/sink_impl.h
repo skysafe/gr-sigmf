@@ -174,6 +174,8 @@ namespace gr {
       void handle_tags_not_capturing(const std::vector<tag_t> &tags);
       void do_update();
 
+      std::string check_dtype_endianness(std::string dtype);
+
       std::string iso_8601_ts();
       std::string convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time);
       std::string convert_full_fracs_pair_to_iso8601(uint64_t seconds, double frac_seconds);

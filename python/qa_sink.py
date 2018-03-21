@@ -192,6 +192,7 @@ class qa_sink(gr_unittest.TestCase):
             meta = json.loads(meta_str)
 
             # Check global meta
+            assert meta["global"]["core:datatype"] == "cf32_le"
             assert meta["global"]["core:description"] == description
             assert meta["global"]["core:author"] == author
             assert meta["global"]["core:license"] == file_license
@@ -731,6 +732,7 @@ class qa_sink(gr_unittest.TestCase):
 
         with open(json_file, "r") as f:
             meta = json.load(f)
+            print(meta)
             assert meta["captures"][0]["test:a"] == 84
 
     def test_bad_types_set_global(self):
