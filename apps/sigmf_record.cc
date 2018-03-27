@@ -240,8 +240,10 @@ main(int argc, char *argv[])
     std::cerr << "Supplied cpu format str is invalid\n";
     return -1;
   }
-
-  if(vm.count("gain") && vm.count("normalized-gain")) {
+  // Have to use the vars to check since gain has a default value
+  auto gain_var = vm["gain"];
+  auto normalized_gain_var = vm["normalized-gain"];
+  if ((!gain_var.empty() && !gain_var.defaulted()) && !normalized_gain_var.empty()) {
     std::cerr << "Can't set gain and normalized gain at the same time!\n";
     return -1;
   }
