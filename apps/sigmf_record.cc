@@ -21,9 +21,10 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
-#include <boost/thread/future.hpp>
 #include <csignal>
 #include <ctime>
+#include <chrono>
+#include <future>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/uhd/usrp_source.h>
@@ -56,7 +57,7 @@ check_valid_uhd_format(const std::string &str)
 size_t
 format_str_to_size(const std::string &format_str)
 {
-  boost::regex format_regex("(r|c)(\\w)(\\d +)");
+  boost::regex format_regex("(r|c)(\\w)(\\d+)_(le|be)");
   boost::smatch result;
   if(boost::regex_search(format_str, result, format_regex)) {
     int multiplier = result[1] == "c" ? 2 : 1;
@@ -145,8 +146,8 @@ generate_hw_name(const uhd::dict<std::string, std::string> &usrp_info)
   return ss.str();
 }
 
-boost::promise<int> quit_promise;
-boost::unique_future<int> quit_future = quit_promise.get_future();
+std::promise<int> quit_promise;
+std::future<int> quit_future = quit_promise.get_future();
 
 void
 sig_int_handler(int /* unused */)
@@ -155,7 +156,7 @@ sig_int_handler(int /* unused */)
     // Don't actually care about the value, just abusing future for one-shot signaling
     quit_promise.set_value(0);
   }
-  catch (const boost::future_error &e) {
+  catch (const std::future_error &e) {
     // Swallow this exception, since there's nothing that can be done if the promise
     // has an error and it probably just means that the flowgraph is slow to
     // shutdown
@@ -415,8 +416,18 @@ main(int argc, char *argv[])
   std::cout << std::endl << "Press Ctrl + C to stop streaming..." << std::endl;
 
   // run the flow graph
-  tb->start();
-  quit_future.wait();
-  tb->stop();
-  tb->wait();
+  if (vm.count("duration")) {
+    tb->start();
+    auto status = quit_future.wait_for(std::chrono::duration<double>(duration_seconds));
+    if (status == std::future_status::ready) {
+      // If this happened due to the user setting the value, call stop explicitly
+      tb->stop();
+    }
+    tb->wait();
+  } else {
+    tb->start();
+    quit_future.wait();
+    tb->stop();
+    tb->wait();
+  }
 }
