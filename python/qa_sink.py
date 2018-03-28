@@ -972,6 +972,6 @@ class qa_sink(gr_unittest.TestCase):
         self.assertEqual(len(data_files), 1, "More than one data file found!")
         data_temp_name = os.path.basename(data_files[0])
         self.assertTrue(re.match(
-            r"\.temp-((\d|\w){16}-(.+)\.sigmf-data",
+            r"\.temp-((\d|\w){16})-(.+)\.sigmf-data",
             data_temp_name) is not None,
             "Bad temp data name")
