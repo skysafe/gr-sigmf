@@ -135,9 +135,11 @@ namespace gr {
       std::string d_hardware;
 
       boost::filesystem::path d_data_path;
+      boost::filesystem::path d_temp_data_path;
       boost::filesystem::path d_meta_path;
 
       boost::filesystem::path d_new_data_path;
+      boost::filesystem::path d_new_temp_data_path;
       boost::filesystem::path d_new_meta_path;
 
       // Note that samp_rate is needed for timekeeping as well, since we might
@@ -160,6 +162,9 @@ namespace gr {
       boost::posix_time::ptime d_relative_start_ts;
       pmt::pmt_t d_relative_time_at_start = pmt::get_PMT_NIL();
 
+      boost::filesystem::path convert_to_temp_path(const boost::filesystem::path &path);
+      std::string generate_random_string(size_t length);
+
       std::string add_endianness(const std::string &type);
       void reset_meta();
       void init_meta();
@@ -167,6 +172,7 @@ namespace gr {
       void on_command_message(pmt::pmt_t msg);
 
       void write_meta();
+      void move_temp_to_final();
 
       void handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment);
       void capture_segment_from_tags(const std::vector<tag_t> &tags);

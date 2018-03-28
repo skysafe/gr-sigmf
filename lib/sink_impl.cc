@@ -26,6 +26,8 @@
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/endian/conversion.hpp>
+#include <random>
+#include <algorithm>
 #include <fcntl.h>
 #include <gnuradio/io_signature.h>
 
@@ -128,6 +130,38 @@ namespace gr {
       }
     }
 
+    std::string
+    sink_impl::generate_random_string(size_t length) {
+      std::array<char, 62> char_set = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                                        '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+                                        'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                                        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+                                        'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+                                        's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+      std::default_random_engine rng(std::random_device{}());
+      std::uniform_int_distribution<> dist(0, char_set.size() - 1);
+      auto rand_char = [&char_set, &dist, &rng]() { return char_set[dist(rng)]; };
+      std::string rand_string(length, 0);
+      std::generate_n(rand_string.begin(), length, rand_char);
+      return rand_string;
+    }
+
+    boost::filesystem::path
+    sink_impl::convert_to_temp_path(const boost::filesystem::path &path){
+      auto filename = path.filename();
+      auto file_dir = path.parent_path();
+      std::string filename_str = filename.native();
+      std::string random_string = generate_random_string(16);
+      std::string new_filename = ".temp-" + random_string + "-" + filename_str;
+      return file_dir / new_filename;
+    }
+
+    void
+    sink_impl::move_temp_to_final() {
+      fs::rename(d_temp_data_path, d_data_path);
+    }
+
     bool
     sink_impl::stop() {
       close();
@@ -135,6 +169,7 @@ namespace gr {
       if (d_fp) {
         std::fclose(d_fp);
         write_meta();
+        move_temp_to_final();
         d_fp = nullptr;
       }
 
@@ -376,6 +411,7 @@ namespace gr {
       }
 
       d_new_data_path = to_data_path(filename);
+      d_new_temp_data_path = convert_to_temp_path(d_new_data_path);
       d_new_meta_path = meta_path_from_data(d_new_data_path);
 
       // we use the open system call to get access to the O_LARGEFILE flag.
@@ -386,10 +422,10 @@ namespace gr {
       } else {
         flags = O_WRONLY | O_CREAT | O_TRUNC | OUR_O_LARGEFILE | OUR_O_BINARY;
       }
-      if((fd = ::open(d_new_data_path.c_str(), flags, 0664)) < 0) {
+      if((fd = ::open(d_new_temp_data_path.c_str(), flags, 0664)) < 0) {
         GR_LOG_ERROR(d_logger,
-                     boost::format("Failed to open file descriptor for path '%s'") % d_new_data_path);
-        std::perror(d_new_data_path.c_str());
+                     boost::format("Failed to open file descriptor for path '%s'") % d_new_temp_data_path);
+        std::perror(d_new_temp_data_path.c_str());
         return false;
       }
 
@@ -400,7 +436,7 @@ namespace gr {
       }
 
       if((d_new_fp = ::fdopen(fd, "wb")) == NULL) {
-        std::perror(d_new_data_path.c_str());
+        std::perror(d_new_temp_data_path.c_str());
 
         // don't leak file descriptor if fdopen fails
         ::close(fd);
@@ -421,6 +457,7 @@ namespace gr {
         if(d_fp){
           std::fclose(d_fp);
           write_meta();
+          move_temp_to_final();
           reset_meta();
         }
 
@@ -429,6 +466,7 @@ namespace gr {
         // install new file pointer
         d_fp = d_new_fp;
         d_data_path = d_new_data_path;
+        d_temp_data_path = d_new_temp_data_path;
         d_meta_path = d_new_meta_path;
         d_meta_written = d_new_fp == nullptr ? true : false;
 
