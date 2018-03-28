@@ -13,6 +13,7 @@ import uuid
 import numpy
 import pmt
 from threading import Event
+from multiprocessing import Process
 from gnuradio import gr, gr_unittest, blocks, analog
 
 from sigmf import sigmf_swig as sigmf
@@ -931,3 +932,46 @@ class qa_sink(gr_unittest.TestCase):
         except Exception as e:
             exception_msg = e.message
         assert "endianness" in exception_msg
+
+    def test_inconsistent_data_on_kill(self):
+        '''Check that if the sink is killed before it writes out the
+        final metadata file, then the data file should have a name like
+        '.temp-uuid-<original file name>.sigmf-data'
+        '''
+
+        data_file, json_file = self.temp_file_names()
+
+        def process_func():
+            src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+            file_sink = sigmf.sink("cf32_le",
+                                   data_file)
+
+            tb = gr.top_block()
+            tb.connect(src, file_sink)
+            tb.start()
+            tb.wait()
+
+        p = Process(target=process_func)
+        p.start()
+        sleep(.2)
+        p.terminate()
+        try:
+            p.join(1)
+        except Exception:
+            self.fail("Joining subprocess failed")
+
+        # Neither file should exist
+        self.assertFalse(os.path.exists(json_file),
+                         "metadata file found, but should not be there")
+        self.assertFalse(os.path.exists(data_file),
+                         "Data file found with wrong name")
+        # But there should be a temp data file
+        files_dir = os.path.dirname(data_file)
+        data_files = [f for f in os.listdir(
+            files_dir) if f.endswith(".sigmf-data")]
+        self.assertEqual(len(data_files), 1, "More than one data file found!")
+        data_temp_name = os.path.basename(data_files[0])
+        self.assertTrue(re.match(
+            r"\.temp-((\d|\w){16}-(.+)\.sigmf-data",
+            data_temp_name) is not None,
+            "Bad temp data name")
