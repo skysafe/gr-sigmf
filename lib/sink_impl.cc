@@ -39,6 +39,7 @@
 #include <rapidjson/writer.h>
 
 #include "sigmf/sigmf_utils.h"
+#include "tag_keys.h"
 #include "sink_impl.h"
 
 // win32 (mingw/msvc) specific

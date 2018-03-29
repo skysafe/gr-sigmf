@@ -22,12 +22,20 @@
 #include "config.h"
 #endif
 
+#include <sstream>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/conversion.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <gnuradio/io_signature.h>
 #include "sigmf/sigmf_utils.h"
 #include "source_impl.h"
 #include "type_converter.h"
+#include "tag_keys.h"
 
-#define DL std::cout << __LINE__ << std::endl;
+namespace posix = boost::posix_time;
+namespace algo = boost::algorithm;
+
 namespace gr {
   namespace sigmf {
 
@@ -125,6 +133,22 @@ namespace gr {
       }
     }
 
+    posix::ptime
+    source_impl::iso_string_to_ptime(const std::string &str)
+    {
+      boost::posix_time::ptime time;
+      std::stringstream ss(str);
+      boost::local_time::local_time_input_facet *ifc =
+        new boost::local_time::local_time_input_facet();
+      ifc->set_iso_extended_format();
+      ss.imbue(std::locale(ss.getloc(), ifc));
+      boost::local_time::local_date_time zonetime(boost::local_time::not_a_date_time);
+      if(ss >> zonetime) {
+        time = zonetime.utc_time();
+      }
+      return time;
+    }
+
     void
     source_impl::add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list)
     {
@@ -149,9 +173,25 @@ namespace gr {
           std::string key = *it;
           tag_t tag;
           tag.offset = offset;
-
-          tag.key = pmt::mp(key);
-          tag.value = ns.get(key);
+          if (key == "core:frequency") {
+            tag.key = FREQ_KEY;
+          } else if (key == "core:datetime") {
+            tag.key = TIME_KEY;
+          } else {
+            tag.key = pmt::mp(key);
+          }
+          if (key == "core:datetime") {
+            std::string iso_string = pmt::symbol_to_string(ns.get(key));
+            posix::ptime parsed_time = iso_string_to_ptime(iso_string);
+            uint64_t seconds = static_cast<uint64_t>(posix::to_time_t(parsed_time));
+            auto tod = parsed_time.time_of_day();
+            auto tick_seconds = tod.total_seconds() * tod.ticks_per_second();
+            auto frac_ticks = tod.ticks() - tick_seconds;
+            double frac_seconds = static_cast<double>(frac_ticks) / tod.ticks_per_second();
+            tag.value = pmt::make_tuple(pmt::mp(seconds), pmt::mp(frac_seconds));
+          } else {
+            tag.value = ns.get(key);
+          }
 
           d_tags_to_output.push_back(tag);
         }

@@ -10,13 +10,14 @@ from time import sleep
 import tempfile
 import shutil
 import uuid
-import numpy
-import pmt
 from threading import Event
 from multiprocessing import Process
 from gnuradio import gr, gr_unittest, blocks, analog
 
 from sigmf import sigmf_swig as sigmf
+
+from test_blocks import (simple_tag_injector, sample_counter,
+                         sample_producer, msg_sender)
 
 
 def sig_source_c(samp_rate, freq, amp, N):
@@ -24,91 +25,6 @@ def sig_source_c(samp_rate, freq, amp, N):
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
     return y
-
-
-class tag_injector(gr.sync_block):
-    def __init__(self):
-        gr.sync_block.__init__(
-            self,
-            name="tag_injector",
-            in_sig=[numpy.complex64],
-            out_sig=[numpy.complex64],
-        )
-        self.inject_tag = None
-        self.injected_offset = None
-
-    def work(self, input_items, output_items):
-        output_items[0][:] = input_items[0]
-        if self.inject_tag:
-            offset = self.nitems_read(0)
-            for key, val in self.inject_tag.items():
-                self.add_item_tag(
-                    0, offset, pmt.to_pmt(key), pmt.to_pmt(val))
-            self.injected_offset = offset
-            self.inject_tag = None
-        return len(output_items[0])
-
-
-class sample_counter(gr.sync_block):
-    def __init__(self):
-        gr.sync_block.__init__(
-            self,
-            name="sample_counter",
-            in_sig=[numpy.complex64],
-            out_sig=[numpy.complex64],
-        )
-        self.count = 0
-
-    def work(self, input_items, output_items):
-        output_items[0][:] = input_items[0]
-        self.count += len(output_items[0])
-        return len(output_items[0])
-
-
-class msg_sender(gr.sync_block):
-    def __init__(self):
-        gr.sync_block.__init__(
-            self,
-            name="msg_sender",
-            in_sig=None,
-            out_sig=None
-        )
-        self.message_port_register_out(pmt.intern("out"))
-
-    def send_msg(self, msg_to_send):
-        self.message_port_pub(pmt.intern("out"), pmt.to_pmt(msg_to_send))
-
-
-class sample_producer(gr.sync_block):
-    def __init__(self, limit, limit_ev, continue_ev):
-        gr.sync_block.__init__(
-            self,
-            name="sample_producer",
-            in_sig=None,
-            out_sig=[numpy.complex64],
-        )
-        self.limit = limit
-        self.limit_ev = limit_ev
-        self.continue_ev = continue_ev
-        self.fired = False
-
-    def work(self, input_items, output_items):
-        if self.limit <= 0:
-            if not self.fired:
-                self.limit_ev.set()
-                self.continue_ev.wait()
-                self.fired = True
-            samples_to_produce = len(output_items[0])
-            for i in range(samples_to_produce):
-                output_items[0][i] = 1 + 1j
-            return samples_to_produce
-
-        if self.limit > 0:
-            samples_to_produce = int(min(self.limit, len(output_items[0])))
-            for i in range(samples_to_produce):
-                output_items[0][i] = 1 + 1j
-            self.limit -= samples_to_produce
-            return samples_to_produce
 
 
 def parse_iso_ts(ts):
@@ -208,7 +124,7 @@ class qa_sink(gr_unittest.TestCase):
         file_sink = sigmf.sink("cf32_le",
                                data_file)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         tb = gr.top_block()
         tb.connect(src, injector)
         tb.connect(injector, file_sink)
@@ -242,7 +158,7 @@ class qa_sink(gr_unittest.TestCase):
         file_sink = sigmf.sink("cf32_le",
                                data_file)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         tb = gr.top_block()
         tb.connect(src, injector)
         tb.connect(injector, file_sink)
@@ -316,7 +232,7 @@ class qa_sink(gr_unittest.TestCase):
         file_sink = sigmf.sink("cf32_le",
                                data_file)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         sender = msg_sender()
         counter = sample_counter()
         tb = gr.top_block()
@@ -472,7 +388,7 @@ class qa_sink(gr_unittest.TestCase):
         file_sink.set_global_meta("core:license", file_license)
         file_sink.set_global_meta("core:hw", hardware)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         # build flowgraph here
         tb = gr.top_block()
         tb.connect(src, injector)
@@ -526,7 +442,7 @@ class qa_sink(gr_unittest.TestCase):
         file_sink.set_global_meta("core:license", file_license)
         file_sink.set_global_meta("core:hw", hardware)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         # build flowgraph here
         tb = gr.top_block()
         tb.connect(src, injector)
@@ -579,7 +495,7 @@ class qa_sink(gr_unittest.TestCase):
         file_sink.set_global_meta("core:license", file_license)
         file_sink.set_global_meta("core:hw", hardware)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         # build flowgraph here
         tb = gr.top_block()
         tb.connect(src, injector)
@@ -689,7 +605,7 @@ class qa_sink(gr_unittest.TestCase):
         # Set a value that will get overridden by the tags
         file_sink.set_global_meta("core:sample_rate", 20)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         tb = gr.top_block()
         tb.connect(src, injector)
         tb.connect(injector, file_sink)
@@ -768,7 +684,7 @@ class qa_sink(gr_unittest.TestCase):
         correct_str_2 = datetime.utcfromtimestamp(
             seconds).strftime('%Y-%m-%dT%H:%M:%S')
         correct_str_2 += str(frac_seconds_2).lstrip('0') + "Z"
-        injector = tag_injector()
+        injector = simple_tag_injector()
         # first sample should have a rx_time tag
         injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
         tb = gr.top_block()
@@ -813,7 +729,7 @@ class qa_sink(gr_unittest.TestCase):
             correct_str = datetime.utcfromtimestamp(
                 end_seconds).strftime('%Y-%m-%dT%H:%M:%S')
             correct_str += str(end_frac).lstrip('0') + "Z"
-            injector = tag_injector()
+            injector = simple_tag_injector()
             # first sample should have a rx_time tag
             injector.inject_tag = {"rx_time": (seconds, frac_seconds)}
             tb = gr.top_block()
@@ -870,7 +786,7 @@ class qa_sink(gr_unittest.TestCase):
                                sigmf.sink_time_mode_relative)
         file_sink.set_global_meta("core:sample_rate", samp_rate)
 
-        injector = tag_injector()
+        injector = simple_tag_injector()
         # first sample should have a rx_time tag
         injector.inject_tag = {"rx_time": (2, 0.500000)}
         tb = gr.top_block()

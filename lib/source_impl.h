@@ -31,9 +31,6 @@ namespace gr {
 
     static const pmt::pmt_t COMMAND = pmt::mp("command");
     static const pmt::pmt_t META = pmt::mp("meta");
-    static const pmt::pmt_t TIME_KEY = pmt::string_to_symbol("rx_time");
-    static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
-    static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
     static const pmt::pmt_t TAG_KEY = pmt::string_to_symbol("tag");
 
     class source_impl : public source {
@@ -72,6 +69,8 @@ namespace gr {
       meta_namespace d_global;
       std::vector<meta_namespace> d_captures;
       std::vector<meta_namespace> d_annotations;
+
+      boost::posix_time::ptime iso_string_to_ptime(const std::string &str);
 
       void on_command_message(pmt::pmt_t msg);
 

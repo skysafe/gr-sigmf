@@ -2,14 +2,13 @@ from gnuradio import gr, gr_unittest
 from gnuradio import blocks
 import array
 import tempfile
-import numpy
 import shutil
 import json
 import pmt
 import os
 import math
 from time import sleep
-from threading import Timer
+from test_blocks import message_generator, tag_collector
 
 from sigmf import sigmf_swig as sigmf
 
@@ -19,60 +18,6 @@ def sig_source_c(samp_rate, freq, amp, N):
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
     return y
-
-
-class message_generator(gr.basic_block):
-    def __init__(self, message):
-        gr.basic_block.__init__(self, name="message_generator",
-                                in_sig=None, out_sig=None)
-        self.message = message
-        self.message_port_register_out(pmt.intern('messages'))
-        self.timer = None
-
-    def send_msg(self):
-        msg = self.message
-        if not isinstance(msg, pmt.pmt_swig.swig_int_ptr):
-            msg = pmt.to_pmt(msg)
-        self.message_port_pub(pmt.intern('messages'), msg)
-
-    def stop(self):
-        if self.timer:
-            self.timer.cancel()
-            self.timer.join()
-        return True
-
-    def start(self):
-        self.timer = Timer(1, self.send_msg)
-        self.timer.start()
-        return True
-
-
-# Block that just collects all tags that pass thorough it
-class tag_collector(gr.sync_block):
-    def __init__(self):
-        gr.sync_block.__init__(
-            self,
-            name="tag_collector",
-            in_sig=[numpy.complex64],
-            out_sig=[numpy.complex64],
-        )
-        self.tags = []
-
-    def work(self, input_items, output_items):
-        tags = self.get_tags_in_window(0, 0, len(input_items[0]))
-        if (tags):
-            for tag in tags:
-                self.tags.append({
-                    "key": pmt.to_python(tag.key),
-                    "offset": tag.offset,
-                    "value": pmt.to_python(tag.value)
-                })
-        output_items[0][:] = input_items[0]
-        return len(output_items[0])
-
-    def assertTagExists(self, offset, key, val):
-        assert len([t for t in self.tags if t["offset"] ==
-                    offset and t["key"] == key and t["value"] == val]) == 1
 
 
 class qa_source (gr_unittest.TestCase):
@@ -262,8 +207,8 @@ class qa_source (gr_unittest.TestCase):
         zero_offset_tags = [t for t in collector.tags if t["offset"] == 0]
         test_tag = [t for t in zero_offset_tags if t["key"] == "TEST"]
         self.assertEqual(len(test_tag), 1)
-        collector.assertTagExists(5, "core:frequency", 2.4e9)
-        collector.assertTagExists(10, "core:frequency", 2.44e9)
+        collector.assertTagExists(5, "rx_freq", 2.4e9)
+        collector.assertTagExists(10, "rx_freq", 2.44e9)
 
     def test_annotations_to_tags(self):
         data, meta_json, filename, meta_file = self.make_file(
@@ -321,7 +266,7 @@ class qa_source (gr_unittest.TestCase):
         tb.wait()
 
         for tag in collector.tags:
-            if tag["key"] != "core:datetime":
+            if tag["key"] != "rx_time":
                 self.assertEqual(tag["key"], "test")
 
     def test_first_capture_segment_non_zero_start(self):
