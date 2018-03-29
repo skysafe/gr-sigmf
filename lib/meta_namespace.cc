@@ -142,7 +142,7 @@ namespace gr {
     meta_namespace::set(const std::string &key, pmt::pmt_t val)
     {
       if(!validate_key(key)) {
-        throw std::invalid_argument("key format is invalid");
+        throw std::invalid_argument("key format is invalid:'" + key + "'");
       }
       d_data = pmt::dict_add(d_data, pmt::mp(key), val);
     }

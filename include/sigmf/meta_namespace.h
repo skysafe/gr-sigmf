@@ -63,7 +63,7 @@ namespace gr {
       set(const std::string &key, ValType val)
       {
         if(!validate_key(key)) {
-          throw std::invalid_argument("key format is invalid");
+          throw std::invalid_argument("key format is invalid:'" + key + "'");
         }
         d_data = pmt::dict_add(d_data, pmt::mp(key), pmt::mp(val));
       }
@@ -71,8 +71,9 @@ namespace gr {
       void
       set(const pmt::pmt_t &key, const pmt::pmt_t &val)
       {
-        if(!validate_key(pmt::symbol_to_string(key))) {
-          throw std::invalid_argument("key format is invalid");
+        std::string key_str = pmt::symbol_to_string(key);
+        if(!validate_key(key_str)) {
+          throw std::invalid_argument("key format is invalid:'" + key_str + "'");
         }
         d_data = pmt::dict_add(d_data, key, val);
       }
