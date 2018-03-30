@@ -58,6 +58,8 @@ namespace gr {
 
       pmt::pmt_t data();
 
+      static bool validate_key(const std::string &key);
+
       template <typename ValType>
       void
       set(const std::string &key, ValType val)
@@ -107,7 +109,6 @@ namespace gr {
       void print();
 
       private:
-      bool validate_key(const std::string &key);
 
       template <typename Writer>
       void

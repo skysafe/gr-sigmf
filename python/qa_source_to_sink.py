@@ -40,11 +40,18 @@ class qa_source_to_sink(gr_unittest.TestCase):
         test_a = 22.3125
         test_b = "asdf"
         test_c = True
+        test_index_2 = 2000
+        test_d = 18.125
+        test_e = "jkl;"
+        test_f = False
         injector = advanced_tag_injector([
             (0, {"rx_time": time}),
             (0, {"rx_freq": freq}),
             (0, {"rx_rate": samp_rate}),
-            (test_index, {"test:a": test_a, "test:b": test_b, "test:c": test_c})
+            (test_index, {"test:a": test_a,
+                          "test:b": test_b, "test:c": test_c}),
+            (test_index_2, {"test_d": test_d,
+                            "test_e": test_e, "test_f": test_f})
             ])
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         num_samps = int(1e6)
@@ -85,6 +92,15 @@ class qa_source_to_sink(gr_unittest.TestCase):
             self.assertEqual(
                 meta["annotations"][0]["core:sample_start"],
                 test_index, "Bad test index")
+            self.assertEqual(meta["annotations"][1]
+                             ["unknown:test_d"], test_d, "bad test_d value")
+            self.assertEqual(meta["annotations"][1]
+                             ["unknown:test_e"], test_e, "bad test_e value")
+            self.assertEqual(meta["annotations"][1]
+                             ["unknown:test_f"], test_f, "bad test_f value")
+            self.assertEqual(
+                meta["annotations"][1]["core:sample_start"],
+                test_index_2, "Bad test index")
 
         # Read out the data and check that it matches
         file_source = sigmf.source(data_file, "cf32_le", debug=False)
@@ -100,4 +116,9 @@ class qa_source_to_sink(gr_unittest.TestCase):
         collector.assertTagExists(test_index, "test:a", test_a)
         collector.assertTagExists(test_index, "test:b", test_b)
         collector.assertTagExists(test_index, "test:c", test_c)
-        
+        collector.assertTagExists(
+            test_index_2, "test_d", test_d)
+        collector.assertTagExists(
+            test_index_2, "test_e", test_e)
+        collector.assertTagExists(
+            test_index_2, "test_f", test_f)

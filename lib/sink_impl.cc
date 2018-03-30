@@ -755,13 +755,18 @@ namespace gr {
           meta_namespace anno_ns;
           bool found_packet_len = false;
           for(tag_vec_it tag_it = annotations_begin; tag_it != tag_end; tag_it++) {
-
             // These get added to the annoation object
             if(pmt::eqv((*tag_it)->key, PACKET_LEN_KEY)) {
               found_packet_len = true;
               anno_ns.set("core:sample_count", (*tag_it)->value);
             } else {
-              anno_ns.set((*tag_it)->key, (*tag_it)->value);
+              std::string key_str = pmt::symbol_to_string((*tag_it)->key);
+              if (meta_namespace::validate_key(key_str)) {
+                anno_ns.set((*tag_it)->key, (*tag_it)->value);
+              } else {
+                std::string unknown_ns_key = "unknown:" + key_str;
+                anno_ns.set(unknown_ns_key, (*tag_it)->value);
+              }
             }
           }
           if(!found_packet_len) {
