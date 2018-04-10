@@ -15,7 +15,7 @@
   </param>
   
   <param>
-    <name>Input Type</name>
+    <name>Output Type</name>
     <key>type</key>
     <type>enum</type>
     <option>
