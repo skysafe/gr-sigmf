@@ -32,13 +32,13 @@ namespace gr {
       private:
       double d_poll_interval;
       size_t d_mboard;
-      uhd::usrp::multi_usrp::sptr d_usrp;
+      ::uhd::usrp::multi_usrp::sptr d_usrp;
       gr::thread::thread d_poll_thread;
 
       void poll_thread();
 
       public:
-      usrp_gps_message_source_impl(const std::string uhd_args, double poll_interval);
+      usrp_gps_message_source_impl(const ::uhd::device_addr_t &uhd_args, double poll_interval);
       ~usrp_gps_message_source_impl();
 
       pmt::pmt_t poll_now();

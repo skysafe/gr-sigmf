@@ -61,7 +61,7 @@ namespace gr {
     }
 
     usrp_gps_message_source::sptr
-    usrp_gps_message_source::make(const std::string uhd_args, double poll_interval)
+    usrp_gps_message_source::make(const ::uhd::device_addr_t &uhd_args, double poll_interval)
     {
       return gnuradio::get_initial_sptr
         (new usrp_gps_message_source_impl(uhd_args, poll_interval));
@@ -70,7 +70,7 @@ namespace gr {
     /*
      * The private constructor
      */
-    usrp_gps_message_source_impl::usrp_gps_message_source_impl(const std::string uhd_args, double poll_interval)
+    usrp_gps_message_source_impl::usrp_gps_message_source_impl(const ::uhd::device_addr_t &uhd_args, double poll_interval)
       : gr::block("usrp_gps_message_source",
                   gr::io_signature::make(0, 0, 0),
                   gr::io_signature::make(0, 0, 0)),
@@ -78,7 +78,7 @@ namespace gr {
       d_mboard(0)
     {
       message_port_register_out(pmt::intern("out"));
-      d_usrp = uhd::usrp::multi_usrp::make(uhd_args);
+      d_usrp = ::uhd::usrp::multi_usrp::make(uhd_args);
       d_poll_thread = gr::thread::thread(boost::bind(&usrp_gps_message_source_impl::poll_thread, this));
     }
 

@@ -24,6 +24,7 @@
 
 #include <sigmf/api.h>
 #include <gnuradio/block.h>
+#include <uhd/usrp/multi_usrp.hpp>
 
 namespace gr {
   namespace sigmf {
@@ -46,7 +47,7 @@ namespace gr {
        * class. sigmf::usrp_gps_message_source::make is the public interface for
        * creating new instances.
        */
-      static sptr make(const std::string uhd_args, double poll_interval);
+      static sptr make(const ::uhd::device_addr_t &uhd_args, double poll_interval);
     };
 
   } // namespace sigmf

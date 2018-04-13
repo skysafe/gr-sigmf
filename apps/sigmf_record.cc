@@ -32,6 +32,7 @@
 #include <sigmf/meta_namespace.h>
 #include <sigmf/sigmf_utils.h>
 #include <sigmf/sink.h>
+#include <sigmf/usrp_gps_message_source.h>
 
 #include <boost/algorithm/string/find.hpp>
 
@@ -344,6 +345,9 @@ main(int argc, char *argv[])
     }
   }
 
+  gr::sigmf::usrp_gps_message_source::sptr gps_source(
+    gr::sigmf::usrp_gps_message_source::make(device_addr, 1.0));
+
   uhd::dict<std::string, std::string> usrp_info = usrp_source->get_usrp_info();
 
   if(output_filename == "") {
@@ -419,6 +423,8 @@ main(int argc, char *argv[])
   } else {
     tb->connect(usrp_source, 0, file_sink, 0);
   }
+
+  tb->msg_connect(gps_source, "out", file_sink, "gps");
 
   // Handle the interrupt signal
   std::signal(SIGINT, &sig_int_handler);
