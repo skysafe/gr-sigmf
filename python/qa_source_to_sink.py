@@ -80,6 +80,8 @@ class qa_source_to_sink(gr_unittest.TestCase):
             self.assertEqual(
                 meta["captures"][0]["core:frequency"],
                 freq, "Bad metadata, frequency")
+            # Should only be one capture segment
+            self.assertEqual(len(meta["captures"]), 1)
             self.assertEqual(meta["global"]["core:sample_rate"],
                              samp_rate, "Bad metadata, samp_rate")
 
