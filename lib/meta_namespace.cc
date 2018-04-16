@@ -78,8 +78,10 @@ namespace gr {
         return array;
       } else if(val.IsBool()) {
         return pmt::from_bool(val.GetBool());
-      } else if(val.IsInt()) {
+      } else if(val.IsInt64()) {
         return pmt::from_long(val.GetInt64());
+      } else if (val.IsInt()) {
+        return pmt::from_long(val.GetInt());
       } else if(val.IsDouble()) {
         return pmt::from_double(val.GetDouble());
       } else if(val.IsNull()) {
@@ -87,7 +89,7 @@ namespace gr {
       } else if(val.IsString()) {
         return pmt::string_to_symbol(val.GetString());
       } else {
-        std::cout << "oh no!" << std::endl;
+        std::cerr << "Invalid type in json" << std::endl;
         return NULL;
       }
     }

@@ -313,3 +313,51 @@ class qa_source (gr_unittest.TestCase):
         written_data = sink.data()
         for i in range(len(written_data)):
             assert(written_data[i] == (2 + 2j))
+
+    def test_json_types(self):
+
+        # generate a file
+        data, meta_json, filename, meta_file = self.make_file("json_types")
+
+        # Add annotations with all types
+        with open(meta_file, "r+") as f:
+            data = json.load(f)
+            data['annotations'].append({
+                "core:sample_start": 1,
+                "core:sample_count": 2,
+                "test:int": -2,
+                "test:int64": 278202993021,
+                "test:uint": 2,
+                "test:uint2": 2**32 + 2,
+                "test:double": 2.2,
+                "test:neg_double": -2.2,
+                "test:bool1": True,
+                "test:bool2": False,
+                "test:null": None,
+                "test:string": "foo",
+            })
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+
+        # run through the flowgraph
+        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        sink = blocks.vector_sink_c()
+        collector = tag_collector()
+        tb = gr.top_block()
+        tb.connect(file_source, collector)
+        tb.connect(collector, sink)
+        tb.start()
+        tb.wait()
+
+        # Check that all the types got read correctly
+        collector.assertTagExists(1, "test:int", -2)
+        collector.assertTagExists(1, "test:int64", 278202993021)
+        collector.assertTagExists(1, "test:uint", 2)
+        collector.assertTagExists(1, "test:uint2", 2**32 + 2)
+        collector.assertTagExists(1, "test:double", 2.2)
+        collector.assertTagExists(1, "test:neg_double", -2.2)
+        collector.assertTagExists(1, "test:bool1", True)
+        collector.assertTagExists(1, "test:bool2", False)
+        collector.assertTagExists(1, "test:null", None)
+        collector.assertTagExists(1, "test:string", "foo")
