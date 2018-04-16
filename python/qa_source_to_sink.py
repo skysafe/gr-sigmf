@@ -3,10 +3,18 @@ import uuid
 import tempfile
 import os
 import shutil
+import math
 from gnuradio import gr_unittest, gr, analog, blocks
 from sigmf import sigmf_swig as sigmf
 from test_blocks import (advanced_tag_injector, sample_counter,
                          sample_producer, msg_sender, tag_collector)
+
+
+def sig_source_c(samp_rate, freq, amp, N):
+    t = map(lambda x: float(x) / samp_rate, xrange(N))
+    y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
+            1j * amp * math.sin(2. * math.pi * freq * x), t)
+    return y
 
 
 class qa_source_to_sink(gr_unittest.TestCase):
@@ -124,3 +132,74 @@ class qa_source_to_sink(gr_unittest.TestCase):
             test_index_2, "test_e", test_e)
         collector.assertTagExists(
             test_index_2, "test_f", test_f)
+
+    def make_file(self, filename, N=1000, type="cf32_le"):
+        if (not filename.startswith("/")):
+            filename = os.path.join(self.test_dir, filename)
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+
+        file_sink = sigmf.sink(type,
+                               filename)
+        data_path = file_sink.get_data_path()
+        meta_path = file_sink.get_meta_path()
+
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        with open(meta_path, "r") as f:
+            meta_json = json.load(f)
+        return data, meta_json, data_path, meta_path
+
+    def temp_file_names(
+            self, ending_one="sigmf-data", ending_two="sigmf-meta"):
+        name = uuid.uuid4().hex
+        if ending_one:
+            name_one = name + "." + ending_one
+        if ending_two:
+            name_two = name + "." + ending_two
+        return os.path.join(self.test_dir, name_one), \
+            os.path.join(self.test_dir, name_two)
+
+    def test_roundtrip_offset_initial_capture(self):
+
+        # generate a file
+        data, meta_json, filename, meta_file = self.make_file("offset")
+
+        with open(meta_file, "r+") as f:
+            data = json.load(f)
+            data['captures'][0]["core:sample_start"] = 4
+            data['captures'][0]["core:frequency"] = 2.4e9
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+
+        data_start_size = os.path.getsize(filename)
+
+        out_data_file, out_json_file = self.temp_file_names()
+        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_sink = sigmf.sink("cf32_le", out_data_file)
+        tb = gr.top_block()
+        tb.connect(file_source, file_sink)
+        tb.start()
+        tb.wait()
+
+        data_end_size = os.path.getsize(out_data_file)
+        # end data size should be smaller
+        dropped_samples = 4 * 2 * 4
+        self.assertEqual(data_start_size - dropped_samples,
+                         data_end_size, "Wrong data size")
+
+        with open(out_json_file, "r") as f:
+            meta = json.load(f)
+            print(meta)
+            self.assertEqual(len(meta["captures"]), 1,
+                             "Should only be 1 capture segment in file")
+            self.assertEqual(
+                meta["captures"][0]["core:frequency"],
+                2.4e9, "frequency tag is missing")
+
+
+

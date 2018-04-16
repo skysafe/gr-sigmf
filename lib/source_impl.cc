@@ -169,7 +169,7 @@ namespace gr {
 
         } else {
           throw std::runtime_error(
-            "Invalid metadata, no core:sample_start found for capture_segment");
+            "Invalid metadata, no core:sample_start found for segment");
         }
         for(std::set<std::string>::iterator it = capture_keys.begin();
             it != capture_keys.end(); it++) {
@@ -221,6 +221,13 @@ namespace gr {
       // Sort the tags by their offsets
       std::sort(d_tags_to_output.begin(), d_tags_to_output.end(), tag_offset_compare);
 
+      uint64_t offset_correction = 0;
+      if (d_tags_to_output.size() > 0) {
+        offset_correction = d_tags_to_output.front().offset;
+      }
+      for(auto &tag : d_tags_to_output) {
+        tag.offset = tag.offset - offset_correction;
+      }
       if(d_debug) {
         std::cout << "tags to out: \n";
         for(size_t i = 0; i < d_tags_to_output.size(); i++) {
