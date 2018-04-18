@@ -19,5 +19,6 @@
 
 install(FILES
     sigmf_sink.xml
-    sigmf_source.xml DESTINATION share/gnuradio/grc/blocks
+    sigmf_source.xml
+    sigmf_annotation_sink.xml DESTINATION share/gnuradio/grc/blocks
 )

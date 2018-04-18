@@ -32,5 +32,6 @@ install(FILES
     api.h
     sink.h
     meta_namespace.h
-    source.h DESTINATION include/sigmf
+    source.h
+    annotation_sink.h DESTINATION include/sigmf
 )

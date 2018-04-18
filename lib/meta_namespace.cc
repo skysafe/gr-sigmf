@@ -63,9 +63,16 @@ namespace gr {
       if(val.IsObject()) {
         pmt::pmt_t obj = pmt::make_dict();
         for(Value::ConstMemberIterator itr = val.MemberBegin(); itr != val.MemberEnd(); ++itr) {
-          pmt::pmt_t key = pmt::string_to_symbol(itr->name.GetString());
-          pmt::pmt_t val_for_key = json_value_to_pmt(itr->value);
-          obj = pmt::dict_add(obj, key, val_for_key);
+          std::string key_str = itr->name.GetString();
+          pmt::pmt_t key = pmt::string_to_symbol(key_str);
+          if (key_str == "core:sample_rate") {
+            // Coerce this to a double to prevent badness
+            pmt::pmt_t val_for_key = pmt::from_double(itr->value.GetDouble());
+            obj = pmt::dict_add(obj, key, val_for_key);
+          } else {
+            pmt::pmt_t val_for_key = json_value_to_pmt(itr->value);
+            obj = pmt::dict_add(obj, key, val_for_key);
+          }
         }
         return obj;
       } else if(val.IsArray()) {
@@ -78,6 +85,8 @@ namespace gr {
         return array;
       } else if(val.IsBool()) {
         return pmt::from_bool(val.GetBool());
+      } else if(val.IsUint64()) {
+        return pmt::from_uint64(val.GetUint64());
       } else if(val.IsInt64()) {
         return pmt::from_long(val.GetInt64());
       } else if (val.IsInt()) {
@@ -152,13 +161,24 @@ namespace gr {
     pmt::pmt_t
     meta_namespace::get(const std::string &key) const
     {
-      return pmt::dict_ref(d_data, pmt::mp(key), pmt::get_PMT_NIL());
+      return get(pmt::mp(key));
     }
 
     pmt::pmt_t
     meta_namespace::get(const std::string &key, pmt::pmt_t default_val) const
     {
-      return pmt::dict_ref(d_data, pmt::mp(key), default_val);
+      return get(pmt::mp(key), default_val);
+    }
+
+    pmt::pmt_t 
+    meta_namespace::get(pmt::pmt_t key, pmt::pmt_t default_val) const {
+      return pmt::dict_ref(d_data, key, default_val);
+    }
+
+    pmt::pmt_t
+    meta_namespace::get(pmt::pmt_t key) const
+    {
+      return get(key, pmt::get_PMT_NIL());
     }
 
     pmt::pmt_t
@@ -207,11 +227,11 @@ namespace gr {
     void
     meta_namespace::del(const std::string &key)
     {
-      pmt::dict_delete(d_data, pmt::mp(key));
+      d_data = pmt::dict_delete(d_data, pmt::mp(key));
     }
 
     void
-    meta_namespace::print()
+    meta_namespace::print() const
     {
       pmt::print(d_data);
     }

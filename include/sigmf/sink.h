@@ -23,18 +23,11 @@
 
 #include <gnuradio/sync_block.h>
 #include <sigmf/api.h>
+#include <sigmf/time_mode.h>
 #include <sigmf/meta_namespace.h>
 
 namespace gr {
   namespace sigmf {
-
-    // NOTE: We don't actually care about the underlying type
-    // of this enum, but if left unspecified, this triggers a bug
-    // in versions of gcc < 6 (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43407)
-    enum class sink_time_mode: int SIGMF_API{
-      absolute,
-      relative
-    };
 
     /*!
      * \brief Sink block to create SigMF recordings.
@@ -55,7 +48,7 @@ namespace gr {
        */
       static sptr make(std::string type,
                        std::string filename,
-                       sink_time_mode time_mode = sink_time_mode::absolute,
+                       sigmf_time_mode time_mode = sigmf_time_mode::absolute,
                        bool append = false,
                        bool debug = false);
 

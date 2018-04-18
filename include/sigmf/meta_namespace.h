@@ -88,6 +88,7 @@ namespace gr {
       pmt::pmt_t get(const std::string &key) const;
       pmt::pmt_t get(const std::string &key, pmt::pmt_t default_val) const;
       pmt::pmt_t get(pmt::pmt_t key, pmt::pmt_t default_val) const;
+      pmt::pmt_t get(pmt::pmt_t key) const;
       pmt::pmt_t get() const;
 
       std::string get_str(const std::string &key) const;
@@ -106,7 +107,7 @@ namespace gr {
         serialize_impl(writer, d_data);
       }
 
-      void print();
+      void print() const;
 
       private:
 

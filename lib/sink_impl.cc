@@ -40,6 +40,8 @@
 
 #include "sigmf/sigmf_utils.h"
 #include "tag_keys.h"
+#include "writer_utils.h"
+#include "pmt_utils.h"
 #include "sink_impl.h"
 
 // win32 (mingw/msvc) specific
@@ -73,7 +75,7 @@ namespace gr {
     sink::sptr
     sink::make(std::string type,
                std::string filename,
-               sink_time_mode time_mode,
+               sigmf_time_mode time_mode,
                bool append,
                bool debug)
     {
@@ -85,7 +87,7 @@ namespace gr {
      */
     sink_impl::sink_impl(std::string type,
                          std::string filename,
-                         sink_time_mode time_mode,
+                         sigmf_time_mode time_mode,
                          bool append,
                          bool debug)
     : gr::sync_block("sink",
@@ -517,14 +519,14 @@ namespace gr {
                 uint64_t capture_val_full_seconds;
                 double capture_val_frac_seconds;
                 std::tie(capture_val_full_seconds, capture_val_frac_seconds) =
-                  extract_uhd_time(capture_val);
+                  pmt_utils::extract_uhd_time(capture_val);
 
-                if (d_sink_time_mode == sink_time_mode::relative) {
+                if (d_sink_time_mode == sigmf_time_mode::relative) {
                   uint64_t start_full_seconds = 0;
                   double start_frac_seconds = 0;
                   if (!pmt::eqv(d_relative_time_at_start, pmt::get_PMT_NIL())) {
                       std::tie(start_full_seconds, start_frac_seconds) =
-                        extract_uhd_time(capture_val);
+                        pmt_utils::extract_uhd_time(capture_val);
                   }
                   uint64_t capture_val_full_seconds = capture_val_full_seconds - start_full_seconds;
                   double capture_val_frac_seconds = capture_val_frac_seconds - start_frac_seconds;
@@ -591,38 +593,7 @@ namespace gr {
       if (fp == nullptr) {
         std::perror("Error opening d_meta_path");
       }
-      char write_buf[65536];
-      rapidjson::FileWriteStream file_stream(fp, write_buf, sizeof(write_buf));
-
-      rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(file_stream);
-      writer.StartObject();
-
-      writer.String("global");
-      d_global.serialize(writer);
-
-      writer.String("captures");
-      writer.StartArray();
-      for(std::vector<meta_namespace>::iterator it = d_captures.begin();
-          it != d_captures.end(); it++) {
-        (*it).serialize(writer);
-      }
-      writer.EndArray();
-
-      // sort annotations
-      std::sort(d_annotations.begin(), d_annotations.end(), [](const meta_namespace &a, const meta_namespace &b) {
-        // TODO: This may need to become a more complex sort if the spec changes based on https://github.com/gnuradio/SigMF/issues/90
-        return pmt::to_uint64(a.get("core:sample_start")) < pmt::to_uint64(b.get("core:sample_start"));
-      });
-
-      writer.String("annotations");
-      writer.StartArray();
-      for(std::vector<meta_namespace>::iterator it = d_annotations.begin();
-          it != d_annotations.end(); it++) {
-        (*it).serialize(writer);
-      }
-      writer.EndArray();
-
-      writer.EndObject();
+      writer_utils::write_meta_to_fp(fp, d_global, d_captures, d_annotations);
       std::fclose(fp);
       d_meta_written = true;
     }
@@ -649,7 +620,7 @@ namespace gr {
     {
       if(pmt::eqv(tag->key, TIME_KEY)) {
         switch(d_sink_time_mode) {
-          case (sink_time_mode::relative):
+          case (sigmf_time_mode::relative):
           {
             // In relative mode, we need to add this to the time we stored 
             // for the first sample received
@@ -658,12 +629,12 @@ namespace gr {
             double start_frac_seconds = 0;
             if (!pmt::eqv(d_relative_time_at_start, pmt::get_PMT_NIL())) {
                 std::tie(start_full_seconds, start_frac_seconds) =
-                  extract_uhd_time(d_relative_time_at_start);
+                  pmt_utils::extract_uhd_time(d_relative_time_at_start);
             }
             // Subtract initial time offset
             uint64_t tag_full_seconds;
             double tag_frac_seconds;
-            std::tie(tag_full_seconds, tag_frac_seconds) = extract_uhd_time(tag->value);
+            std::tie(tag_full_seconds, tag_frac_seconds) = pmt_utils::extract_uhd_time(tag->value);
             tag_full_seconds -= start_full_seconds;
             tag_frac_seconds -= start_frac_seconds;
             // Add tag seconds to initial timestamp
@@ -676,7 +647,7 @@ namespace gr {
             capture_segment.set("core:datetime", ts_iso);
             break;
           }
-          case (sink_time_mode::absolute):
+          case (sigmf_time_mode::absolute):
             // In absolute mode, we store these as is
             capture_segment.set("core:datetime", convert_uhd_time_to_iso8601(tag->value));
             break;
@@ -802,7 +773,7 @@ namespace gr {
       // Stream tags should always get handled, even if d_fp is nullptr
       get_tags_in_window(d_temp_tags, 0, 0, noutput_items);
 
-      if (d_sink_time_mode == sink_time_mode::relative && d_is_first_sample) {
+      if (d_sink_time_mode == sigmf_time_mode::relative && d_is_first_sample) {
         // Use the most accurate system clock to get a timestamp for start
         d_relative_start_ts = posix::microsec_clock::universal_time();
         // Check if we got an rx_time and store it if so

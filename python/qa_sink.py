@@ -153,6 +153,9 @@ class qa_sink(gr_unittest.TestCase):
                 i * 1000)
 
     def test_tags_to_annotation_segments(self):
+        '''Test that tags correctly convert to annotation segments'''
+        # FIXME: this test is occasionally flaky, as the flowgraph is shutdown
+        # before all the messages get to the sink
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
@@ -783,7 +786,7 @@ class qa_sink(gr_unittest.TestCase):
 
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le", data_file,
-                               sigmf.sink_time_mode_relative)
+                               sigmf.sigmf_time_mode_relative)
         file_sink.set_global_meta("core:sample_rate", samp_rate)
 
         injector = simple_tag_injector()

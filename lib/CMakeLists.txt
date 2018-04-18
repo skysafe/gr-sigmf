@@ -33,6 +33,9 @@ list(APPEND sigmf_sources
     sink_impl.cc
     source_impl.cc
     sigmf_utils.cc
+    annotation_sink_impl.cc
+    writer_utils.cc
+    reader_utils.cc
 )
 
 set(sigmf_sources "${sigmf_sources}" PARENT_SCOPE)

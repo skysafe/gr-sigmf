@@ -85,12 +85,6 @@ namespace gr {
       }
     }
 
-    inline std::pair<uint64_t, double>
-    extract_uhd_time(pmt::pmt_t uhd_time) {
-        uint64_t seconds = pmt::to_uint64(pmt::tuple_ref(uhd_time, 0));
-        double frac_seconds = pmt::to_double(pmt::tuple_ref(uhd_time, 1));
-        return std::make_pair(seconds, frac_seconds);
-    }
 
 
     class sink_impl : public sink {
@@ -152,7 +146,7 @@ namespace gr {
       std::unordered_map<std::string, uint64_t> d_pre_capture_tag_index;
 
       // time mode for sink
-      sink_time_mode d_sink_time_mode;
+      sigmf_time_mode d_sink_time_mode;
 
       bool d_is_first_sample = true;
 
@@ -186,7 +180,7 @@ namespace gr {
       public:
       sink_impl(std::string type,
                 std::string filename,
-                sink_time_mode time_mode,
+                sigmf_time_mode time_mode,
                 bool append,
                 bool debug);
       ~sink_impl();

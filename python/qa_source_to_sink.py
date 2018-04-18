@@ -6,8 +6,8 @@ import shutil
 import math
 from gnuradio import gr_unittest, gr, analog, blocks
 from sigmf import sigmf_swig as sigmf
-from test_blocks import (advanced_tag_injector, sample_counter,
-                         sample_producer, msg_sender, tag_collector)
+from test_blocks import (advanced_tag_injector,
+                         tag_collector)
 
 
 def sig_source_c(samp_rate, freq, amp, N):
@@ -60,7 +60,7 @@ class qa_source_to_sink(gr_unittest.TestCase):
                           "test:b": test_b, "test:c": test_c}),
             (test_index_2, {"test_d": test_d,
                             "test_e": test_e, "test_f": test_f})
-            ])
+        ])
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         num_samps = int(1e6)
         head = blocks.head(gr.sizeof_gr_complex, num_samps)
@@ -153,16 +153,6 @@ class qa_source_to_sink(gr_unittest.TestCase):
             meta_json = json.load(f)
         return data, meta_json, data_path, meta_path
 
-    def temp_file_names(
-            self, ending_one="sigmf-data", ending_two="sigmf-meta"):
-        name = uuid.uuid4().hex
-        if ending_one:
-            name_one = name + "." + ending_one
-        if ending_two:
-            name_two = name + "." + ending_two
-        return os.path.join(self.test_dir, name_one), \
-            os.path.join(self.test_dir, name_two)
-
     def test_roundtrip_offset_initial_capture(self):
 
         # generate a file
@@ -200,6 +190,3 @@ class qa_source_to_sink(gr_unittest.TestCase):
             self.assertEqual(
                 meta["captures"][0]["core:frequency"],
                 2.4e9, "frequency tag is missing")
-
-
-
