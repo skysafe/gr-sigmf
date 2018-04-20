@@ -2,6 +2,12 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 1.1.1
+
+* Fix a bug in `sigmf-record` that caused int-N tuning not to get set
+* Fix a bug related to setting the subdev spec in  `sigmf-record`. It is now set before all other parameters instead of last
+* Improved the wait logic in `sigmf-record` to allow the user to cancel in the case that the duration is specified and it takes longer than expected to receive the needed samples
+
 ## 1.1.0
 
 * Add annotation sink to gr-sigmf

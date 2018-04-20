@@ -25,6 +25,7 @@
 #include <ctime>
 #include <chrono>
 #include <future>
+#include <thread>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/uhd/usrp_source.h>
@@ -149,12 +150,14 @@ generate_hw_name(const uhd::dict<std::string, std::string> &usrp_info)
 std::promise<int> quit_promise;
 std::future<int> quit_future = quit_promise.get_future();
 
+static const int PROMISE_FROM_INT = 0;
+static const int PROMISE_FROM_THREAD = 1;
+
 void
 sig_int_handler(int /* unused */)
 {
   try {
-    // Don't actually care about the value, just abusing future for one-shot signaling
-    quit_promise.set_value(0);
+    quit_promise.set_value(PROMISE_FROM_INT);
   }
   catch (const std::future_error &e) {
     // Swallow this exception, since there's nothing that can be done if the promise
@@ -255,6 +258,12 @@ main(int argc, char *argv[])
   uhd::stream_args_t stream_args(cpu_format_str, wire_format_str);
   gr::uhd::usrp_source::sptr usrp_source(gr::uhd::usrp_source::make(device_addr, stream_args));
 
+  // subdev setting has to be the first thing we do or it leads to bugs
+  if(vm.count("subdev-spec")) {
+    std::cout << boost::format("Setting subdev spec to: %s") % subdev_spec << std::endl << std::endl;
+    usrp_source->set_subdev_spec(subdev_spec);
+  }
+
   std::cout << boost::format("Setting RX Rate: %f MSps...") % (sample_rate/1e6) << std::endl;
   usrp_source->set_samp_rate(sample_rate);
   std::cout << boost::format("Actual RX Rate: %f MSps...") % (usrp_source->get_samp_rate()/1e6) << std::endl << std::endl;
@@ -265,7 +274,7 @@ main(int argc, char *argv[])
     std::cout << "Configuring PLL in integer-N mode..." << std::endl;
     tune_request.args = uhd::device_addr_t("mode_n=integer");
   }
-  usrp_source->set_center_freq(center_freq);
+  usrp_source->set_center_freq(tune_request);
   std::cout << boost::format("Actual RX Freq: %f MHz...") % (usrp_source->get_center_freq()/1e6) << std::endl << std::endl;
 
   if(vm.count("gain")) {
@@ -287,10 +296,6 @@ main(int argc, char *argv[])
     std::cout << boost::format("Setting RX Bandwidth: %f MHz...") % (bandwidth/1e6) << std::endl;
     usrp_source->set_bandwidth(bandwidth);
     std::cout << boost::format("Actual RX Bandwidth: %f MHz...") % (usrp_source->get_bandwidth()/1e6) << std::endl << std::endl;
-  }
-  if(vm.count("subdev-spec")) {
-    std::cout << boost::format("Setting subdev spec to: %s") % subdev_spec << std::endl << std::endl;
-    usrp_source->set_subdev_spec(subdev_spec);
   }
 
   bool do_gps_sync = false;
@@ -399,10 +404,13 @@ main(int argc, char *argv[])
   gr::top_block_sptr tb(gr::make_top_block("sigmf_record"));
 
   // connect blocks
+  uint64_t samples_for_duration;
   if(vm.count("duration")) {
     size_t sample_size = format_str_to_size(sigmf_format);
-    uint64_t samples_for_duration =
+    samples_for_duration =
       static_cast<uint64_t>(std::ceil(duration_seconds * sample_rate));
+    std::cout << "samples_for_duration: " << samples_for_duration << std::endl;
+    std::cout << "sample_size: " << sample_size << std::endl;
     gr::blocks::head::sptr head_block = gr::blocks::head::make(sample_size, samples_for_duration);
 
     tb->connect(usrp_source, 0, head_block, 0);
@@ -415,19 +423,37 @@ main(int argc, char *argv[])
   std::signal(SIGINT, &sig_int_handler);
   std::cout << std::endl << "Press Ctrl + C to stop streaming..." << std::endl;
 
-  // run the flow graph
-  if (vm.count("duration")) {
+  std::thread tb_thread([&tb](){
     tb->start();
-    auto status = quit_future.wait_for(std::chrono::duration<double>(duration_seconds));
+    tb->wait();
+    try {
+      quit_promise.set_value(PROMISE_FROM_THREAD);
+    } catch (const std::future_error &e) {
+      // Nothing to do here
+    }
+  });
+  if (vm.count("duration")) {
+    // We wait in two phases here
+    // first we wait for the expected time + 1 
+    auto status = quit_future.wait_for(std::chrono::duration<double>(duration_seconds + 1));
+    std::string seconds = duration_seconds == 1 ? "second" : "seconds";
     if (status == std::future_status::ready) {
-      // If this happened due to the user setting the value, call stop explicitly
+      int quit_int = quit_future.get();
+      if (quit_int == PROMISE_FROM_INT) {
+        std::cout << "User requested early exit, stopping flowgraph..." << std::endl;
+        tb->stop();
+      }
+    } else if (status == std::future_status::timeout) {
+      // Second phase, just wait now
+      std::cout << "\033[1;33m" << "Warning: Receiving " << samples_for_duration
+                << " samples should have taken " << duration_seconds << " " << seconds
+                << ", but still waiting for samples!" << "\033[0m" <<  std::endl;
+      quit_future.wait();
       tb->stop();
     }
-    tb->wait();
   } else {
-    tb->start();
     quit_future.wait();
     tb->stop();
-    tb->wait();
   }
+  tb_thread.join();
 }
