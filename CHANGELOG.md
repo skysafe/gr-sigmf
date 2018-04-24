@@ -2,6 +2,9 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 1.1.2
+
+* Fix a bug in the sink grc file
 ## 1.1.1
 
 * Fix a bug in `sigmf-record` that caused int-N tuning not to get set
