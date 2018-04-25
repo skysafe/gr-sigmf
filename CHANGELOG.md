@@ -2,9 +2,15 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 1.1.3
+
+* Fixed a bug in the logging configuration for gr-sigmf
+* Updated .gitignore for gr-sigmf
+
 ## 1.1.2
 
 * Fix a bug in the sink grc file
+
 ## 1.1.1
 
 * Fix a bug in `sigmf-record` that caused int-N tuning not to get set
@@ -19,7 +25,6 @@ Note that changes before 1.0.2 are not reflected in this file.
 * Add a get method to `meta_namespace` that takes a single pmt object as a key
 * Make the `print` method of `meta_namespace` const
 * Change how ondisk metadata is loaded to ensure that sample_rate is always loaded as a double
-
 
 ## 1.0.3
 

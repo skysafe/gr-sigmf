@@ -11,6 +11,8 @@ build/
 # Python 
 *.pyc
 
+.pytest_cache/
+
 .cache
 
 # Example files
