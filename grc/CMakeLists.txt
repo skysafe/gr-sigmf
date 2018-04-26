@@ -20,5 +20,6 @@
 install(FILES
     sigmf_sink.xml
     sigmf_source.xml
-    sigmf_annotation_sink.xml DESTINATION share/gnuradio/grc/blocks
+    sigmf_annotation_sink.xml
+    sigmf_usrp_gps_message_source.xml DESTINATION share/gnuradio/grc/blocks
 )

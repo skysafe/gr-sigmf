@@ -25,6 +25,9 @@ include(GrPlatform) #define LIB_SUFFIX
 include_directories(${Boost_INCLUDE_DIR} ${RapidJson_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
+find_package(UHD REQUIRED)
+include_directories(${UHD_INCLUDE_DIRS})
+
 # Tell boost time to use higher precision
 add_definitions(-DBOOST_DATE_TIME_POSIX_TIME_STD_CONFIG)
 
@@ -36,6 +39,7 @@ list(APPEND sigmf_sources
     annotation_sink_impl.cc
     writer_utils.cc
     reader_utils.cc
+    usrp_gps_message_source_impl.cc
 )
 
 set(sigmf_sources "${sigmf_sources}" PARENT_SCOPE)
@@ -45,7 +49,11 @@ if(NOT sigmf_sources)
 endif(NOT sigmf_sources)
 
 add_library(gnuradio-sigmf SHARED ${sigmf_sources})
-target_link_libraries(gnuradio-sigmf ${Boost_LIBRARIES} ${GNURADIO_ALL_LIBRARIES})
+target_link_libraries(gnuradio-sigmf
+    ${UHD_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GNURADIO_ALL_LIBRARIES}
+    )
 set_target_properties(gnuradio-sigmf PROPERTIES DEFINE_SYMBOL "gnuradio_sigmf_EXPORTS")
 
 if(APPLE)

@@ -33,5 +33,6 @@ install(FILES
     sink.h
     meta_namespace.h
     source.h
-    annotation_sink.h DESTINATION include/sigmf
+    annotation_sink.h
+    usrp_gps_message_source.h DESTINATION include/sigmf
 )

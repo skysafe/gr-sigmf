@@ -12,6 +12,7 @@
 #include "sigmf/source.h"
 #include "sigmf/annotation_sink.h"
 #include "sigmf/time_mode.h"
+#include "sigmf/usrp_gps_message_source.h"
 %}
 
 %include "sigmf/time_mode.h"
@@ -21,3 +22,5 @@ GR_SWIG_BLOCK_MAGIC2(sigmf, sink);
 GR_SWIG_BLOCK_MAGIC2(sigmf, source);
 %include "sigmf/annotation_sink.h"
 GR_SWIG_BLOCK_MAGIC2(sigmf, annotation_sink);
+%include "sigmf/usrp_gps_message_source.h"
+GR_SWIG_BLOCK_MAGIC2(sigmf, usrp_gps_message_source);
