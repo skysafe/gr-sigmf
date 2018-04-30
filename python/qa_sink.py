@@ -815,6 +815,55 @@ class qa_sink(gr_unittest.TestCase):
             assert diff_time.seconds == 2
             assert diff_time.microseconds == 300000
 
+    def test_relative_time_mode_initial_closed(self):
+        '''Test relative time mode when the sink is initially not recording'''
+        # limit_event = Event()
+        # continue_event = Event()
+
+        samp_rate = 100e6
+        limit_samples = samp_rate
+        print(limit_samples)
+        # src = sample_producer(limit_samples, limit_event, continue_event)
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le", "",
+                               sigmf.sigmf_time_mode_relative)
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+
+        injector = simple_tag_injector()
+        # first sample should have a rx_time tag
+        injector.inject_tag = {"rx_time": (65000, 0.500000)}
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.start()
+        # sleep to let some samples get to the sink block
+        sleep(.1)
+        # set the rx_time tag for the next section
+        file_sink.open(data_file)
+        # Let some stuff get recorded
+        sleep(.1)
+        tb.stop()
+        tb.wait()
+
+        with open(json_file, "r") as f:
+            meta = json.load(f)
+            capture_one_dt = parse_iso_ts(meta["captures"][0]["core:datetime"])
+            now = datetime.now()
+            print(capture_one_dt)
+            print(now)
+            self.assertEqual(now.year, capture_one_dt.year,
+                             "Bad year in first capture segment")
+            self.assertEqual(now.month, capture_one_dt.month,
+                             "Bad month in first capture segment")
+            self.assertEqual(now.day, capture_one_dt.day,
+                             "Bad month in first capture segment")
+            # capture_two_dt = parse_iso_ts(meta["captures"][1]["core:datetime"])
+            # diff_time = capture_two_dt - capture_one_dt
+            # assert diff_time.seconds == 2
+            # assert diff_time.microseconds == 300000
+
     def test_endianness_checking(self):
         '''Check that the sink properly converts and errors on
         endianness values in the type argument'''
