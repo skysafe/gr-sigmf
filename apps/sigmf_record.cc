@@ -203,7 +203,7 @@ main(int argc, char *argv[])
     ("args,a", po::value<std::string>(&device_args)->default_value(""), "Argument string for UHD")
     ("cpu-format", po::value<std::string>(&cpu_format_str)->default_value("sc16"), "Format of saved data")
     ("wire-format", po::value<std::string>(&wire_format_str)->default_value(""), "Format of OTW data")
-    ("freq,f", po::value<double>(&center_freq)->default_value(0), "Center frequency in hertz")
+    ("freq,f", po::value<double>(&center_freq)->required(), "Center frequency in hertz")
     ("int-n", "Tune USRP LO in integer-N PLL mode")
     ("skip-gps", "Skip attempting to sync to GPS")
     ("sample-rate,s", po::value<double>(&sample_rate)->default_value(100e6/16), "Sample rate in samples/second")
@@ -230,7 +230,6 @@ main(int argc, char *argv[])
               .positional(positional_options)
               .run(),
             vm);
-  po::notify(vm);
 
   if(vm.count("help")) {
     std::cout << "Capture a SigMF recording via a UHD device." << std::endl << std::endl;
@@ -238,6 +237,8 @@ main(int argc, char *argv[])
     std::cout << main_options << std::endl;
     return ~0;
   }
+
+  po::notify(vm);
 
   // TODO: DO i need to make this check? or can I just let stuff explode...
   if(!check_valid_uhd_format(cpu_format_str)) {
