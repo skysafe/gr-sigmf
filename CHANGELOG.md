@@ -2,6 +2,13 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 1.1.4
+
+* Update the grc file for the annotation sink to correspond to the actual sink
+* Add documentation in annotation_sink.h for annotation_mode struct
+* Fix an edge case in time tag handling when in relative mode in sink block
+* Make --freq a required parameter to sigmf-record
+
 ## 1.1.3
 
 * Fixed a bug in the logging configuration for gr-sigmf
