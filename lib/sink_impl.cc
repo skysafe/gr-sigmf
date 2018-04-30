@@ -505,7 +505,6 @@ namespace gr {
               // Then we can compute a new time offset
               if (current_sample_rate != -1) {
                 uint64_t total_samples_read = nitems_read(0);
-                PVAR(total_samples_read);
                 // Use the number of samples read since the last time we got a time
                 // combined with the sample rate to compute the new time
                 uint64_t samples_since_time_received = total_samples_read - received_sample_index;
@@ -521,15 +520,31 @@ namespace gr {
                 std::tie(capture_val_full_seconds, capture_val_frac_seconds) =
                   pmt_utils::extract_uhd_time(capture_val);
 
+                // Handle the relative case
                 if (d_sink_time_mode == sigmf_time_mode::relative) {
+                  // First correct for the offset from the first tag
                   uint64_t start_full_seconds = 0;
                   double start_frac_seconds = 0;
                   if (!pmt::eqv(d_relative_time_at_start, pmt::get_PMT_NIL())) {
                       std::tie(start_full_seconds, start_frac_seconds) =
                         pmt_utils::extract_uhd_time(capture_val);
                   }
-                  uint64_t capture_val_full_seconds = capture_val_full_seconds - start_full_seconds;
-                  double capture_val_frac_seconds = capture_val_frac_seconds - start_frac_seconds;
+                  capture_val_full_seconds = capture_val_full_seconds - start_full_seconds;
+                  capture_val_frac_seconds = capture_val_frac_seconds - start_frac_seconds;
+                  // Then handle adding in the time recorded in d_relative_start_ts
+                  posix::ptime epoch(boost::gregorian::date(1970, 1, 1));
+                  auto duration = d_relative_start_ts - epoch;
+                  uint64_t seconds_adjust = duration.total_seconds();
+                  uint64_t frac_seconds = duration.fractional_seconds();
+                  uint64_t ticks_per_second = duration.ticks_per_second();
+                  double frac_seconds_adjust = (static_cast<double>(frac_seconds) / ticks_per_second);
+
+                  capture_val_full_seconds += seconds_adjust;
+                  capture_val_frac_seconds += frac_seconds_adjust;
+                  if (capture_val_frac_seconds >= 1) {
+                    capture_val_full_seconds += 1;
+                    capture_val_frac_seconds -= 1;
+                  }
                 }
                 // Add the values computed above to the values from the tag to get the current value
                 uint64_t final_full_seconds = full_seconds_since_time + capture_val_full_seconds;
