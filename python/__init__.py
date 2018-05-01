@@ -19,21 +19,28 @@
 # The presence of this file turns this directory into a Python package
 
 '''
-This is the GNU Radio SIGMF module. Place your Python package
-description here (python/__init__.py).
+GNU Radio tools for the Signal Metadata Format (SigMF).
 '''
 
+import os.path
 from gnuradio import uhd
+
 
 # Prepare sigmf swig module to allow passing a string for device_addr_t.
 def _prepare_sigmf_swig():
     try:
         import sigmf_swig
     except ImportError:
+        # This path is for running make test without an installed package.
         import os
         dirname, filename = os.path.split(os.path.abspath(__file__))
         __path__.append(os.path.join(dirname, "..", "..", "swig"))
-        import sigmf_swig
+        try:
+            import sigmf_swig
+        except ImportError:
+            # This path is for running pytest with an installed package.
+            __path__.append(os.path.join(dirname, "..", "build", "swig"))
+            import sigmf_swig
 
     old_constructor = sigmf_swig.usrp_gps_message_source
 
