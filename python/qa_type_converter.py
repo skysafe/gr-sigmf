@@ -467,3 +467,7 @@ class qa_type_converter(gr_unittest.TestCase):
         e = self.read_complex_data(path, 'f', 4)
         a = self.read_complex_data(filename, 'b', 1)
         np.testing.assert_almost_equal(e, a, decimal=0)
+
+
+if __name__ == '__main__':
+    gr_unittest.run(qa_type_converter, "qa_type_converter.xml")

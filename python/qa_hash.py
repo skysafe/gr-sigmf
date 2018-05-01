@@ -41,3 +41,7 @@ class qa_hash(gr_unittest.TestCase):
         data = json.loads(meta.read())
 
         assert 'core:sha512' in data['global']
+
+
+if __name__ == '__main__':
+    gr_unittest.run(qa_hash, "qa_hash.xml")

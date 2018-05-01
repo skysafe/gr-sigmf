@@ -83,3 +83,7 @@ class qa_archive(gr_unittest.TestCase):
         de = np.fromstring(data_expected.read()).all()
         da = np.fromstring(data_actual.read()).all()
         assert de == da
+
+
+if __name__ == '__main__':
+    gr_unittest.run(qa_archive, "qa_archive.xml")

@@ -190,3 +190,7 @@ class qa_source_to_sink(gr_unittest.TestCase):
             self.assertEqual(
                 meta["captures"][0]["core:frequency"],
                 2.4e9, "frequency tag is missing")
+
+
+if __name__ == '__main__':
+    gr_unittest.run(qa_source_to_sink, "qa_source_to_sink.xml")
