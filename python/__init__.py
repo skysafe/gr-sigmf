@@ -23,12 +23,35 @@ This is the GNU Radio SIGMF module. Place your Python package
 description here (python/__init__.py).
 '''
 
-# import swig generated symbols into the sigmf namespace
-try:
-	# this might fail if the module is python-only
-	from sigmf_swig import *
-except ImportError:
-	pass
+from gnuradio import uhd
 
-# import any pure python here
-#
+# Prepare sigmf swig module to allow passing a string for device_addr_t.
+def _prepare_sigmf_swig():
+    try:
+        import sigmf_swig
+    except ImportError:
+        import os
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        __path__.append(os.path.join(dirname, "..", "..", "swig"))
+        import sigmf_swig
+
+    old_constructor = sigmf_swig.usrp_gps_message_source
+
+    def constructor_interceptor(*args, **kwargs):
+        args = list(args)
+        kwargs = dict(kwargs)
+        if len(args) > 0:
+            args[0] = uhd.device_addr_t(args[0])
+        if kwargs.has_key('uhd_args'):
+            kwargs['uhd_args'] = device_addr(kwargs['uhd_args'])
+        # Don't pass kwargs, it confuses swig, instead map into args list.
+        for key in ('uhd_args', 'poll_interval'):
+            if kwargs.has_key(key):
+                args.append(kwargs[key])
+        return old_constructor(*args)
+
+    setattr(sigmf_swig, 'usrp_gps_message_source', constructor_interceptor)
+
+
+_prepare_sigmf_swig()
+from sigmf_swig import *
