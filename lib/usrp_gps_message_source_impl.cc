@@ -74,12 +74,12 @@ namespace gr {
       : gr::block("usrp_gps_message_source",
                   gr::io_signature::make(0, 0, 0),
                   gr::io_signature::make(0, 0, 0)),
+      d_finished(false),
       d_poll_interval(poll_interval),
       d_mboard(0)
     {
       message_port_register_out(pmt::intern("out"));
       d_usrp = ::uhd::usrp::multi_usrp::make(uhd_args);
-      d_poll_thread = gr::thread::thread(boost::bind(&usrp_gps_message_source_impl::poll_thread, this));
     }
 
     /*
@@ -87,6 +87,25 @@ namespace gr {
      */
     usrp_gps_message_source_impl::~usrp_gps_message_source_impl()
     {
+    }
+
+    bool
+    usrp_gps_message_source_impl::start()
+    {
+      d_finished = false;
+      // Start the polling thread.
+      d_poll_thread = gr::thread::thread(boost::bind(&usrp_gps_message_source_impl::poll_thread, this));
+      return gr::block::start();
+    }
+
+    bool
+    usrp_gps_message_source_impl::stop()
+    {
+      // Shut down the polling thread.
+      d_finished = true;
+      d_poll_thread.interrupt();
+      d_poll_thread.join();
+      return gr::block::stop();
     }
 
     pmt::pmt_t

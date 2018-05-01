@@ -30,6 +30,7 @@ namespace gr {
     class usrp_gps_message_source_impl : public usrp_gps_message_source
     {
       private:
+      bool d_finished;
       double d_poll_interval;
       size_t d_mboard;
       ::uhd::usrp::multi_usrp::sptr d_usrp;
@@ -40,6 +41,9 @@ namespace gr {
       public:
       usrp_gps_message_source_impl(const ::uhd::device_addr_t &uhd_args, double poll_interval);
       ~usrp_gps_message_source_impl();
+
+      bool start();
+      bool stop();
 
       pmt::pmt_t poll_now();
     };
