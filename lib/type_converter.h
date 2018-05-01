@@ -145,8 +145,8 @@ namespace gr {
       operator()(char *buf, size_t item_size, size_t count, FILE *fp)
       {
         reserve(item_size * count);
-        size_t items_read = std::fread(d_temp_buf, item_size, count, fp);         
-		volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(buf),
+        size_t items_read = std::fread(d_temp_buf, item_size, count, fp);
+        volk_32f_s32f_convert_8i(reinterpret_cast<int8_t *>(buf),
                                  reinterpret_cast<const float *>(d_temp_buf), 1, items_read);
         return items_read;
       }
