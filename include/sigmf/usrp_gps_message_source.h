@@ -30,7 +30,7 @@ namespace gr {
   namespace sigmf {
 
     /*!
-     * \brief <+description of block+>
+     * \brief Emit PMT messages with GPS sensor data from a USRP.
      * \ingroup sigmf
      *
      */
