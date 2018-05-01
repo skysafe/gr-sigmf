@@ -21,7 +21,7 @@ class qa_archive(gr_unittest.TestCase):
 
     def test_archive(self):
 
-        runner = apps_test_helper.AppRunner(self.test_dir, "sigmf_archive.py")
+        runner = apps_test_helper.AppRunner(self.test_dir, "sigmf-archive")
 
         filename = "temp"
 

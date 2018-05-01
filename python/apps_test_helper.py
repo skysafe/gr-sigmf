@@ -8,27 +8,14 @@ SIGMF_METADATA_EXT = ".sigmf-meta"
 SIGMF_DATASET_EXT = ".sigmf-data"
 
 
-def locate(pattern, root=os.curdir):
-    for path, dirs, files in os.walk(os.path.abspath(root)):
-        for filename in fnmatch.filter(files, pattern):
-            return os.path.join(path, filename)
-
-
 class AppRunner:
     def __init__(self, testdir, app="sigmf_archive.py"):
         self.testdir = testdir
         self.app = app
 
     def run(self, argstr):
-
-        sigmf_location = locate(self.app)
-        if not sigmf_location:
-            raise Exception("Can't find " + self.app + " binary")
-
-        cmdargs = ["python", sigmf_location]
+        cmdargs = [self.app]
         cmdargs.extend(argstr.split())
-        # print(" ".join(cmdargs))
-
         proc = Popen(cmdargs, stdout=PIPE, stderr=PIPE)
         return proc
 
