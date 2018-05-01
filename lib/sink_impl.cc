@@ -105,6 +105,8 @@ namespace gr {
       set_msg_handler(COMMAND, boost::bind(&sink_impl::on_command_message, this, _1));
       message_port_register_in(GPS);
       set_msg_handler(GPS, boost::bind(&sink_impl::on_gps_message, this, _1));
+
+      message_port_register_out(SYSTEM);
     }
 
     /*

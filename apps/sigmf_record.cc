@@ -425,6 +425,9 @@ main(int argc, char *argv[])
   }
 
   tb->msg_connect(gps_source, "out", file_sink, "gps");
+  // This allows the flowgraph to terminate when the Sink is done writing data,
+  // by notifying the GPS Source that it should stop.
+  tb->msg_connect(file_sink, "system", gps_source, "system");
 
   // Handle the interrupt signal
   std::signal(SIGINT, &sig_int_handler);

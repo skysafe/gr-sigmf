@@ -41,6 +41,7 @@ namespace gr {
     static const pmt::pmt_t META = pmt::string_to_symbol("meta");
     static const pmt::pmt_t COMMAND = pmt::string_to_symbol("command");
     static const pmt::pmt_t GPS = pmt::string_to_symbol("gps");
+    static const pmt::pmt_t SYSTEM = pmt::string_to_symbol("system");
     static const pmt::pmt_t LATITUDE = pmt::string_to_symbol("latitude");
     static const pmt::pmt_t LONGITUDE = pmt::string_to_symbol("longitude");
 
