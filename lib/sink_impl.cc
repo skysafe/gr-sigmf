@@ -103,6 +103,8 @@ namespace gr {
       // command message port
       message_port_register_in(COMMAND);
       set_msg_handler(COMMAND, boost::bind(&sink_impl::on_command_message, this, _1));
+      message_port_register_in(GPS);
+      set_msg_handler(GPS, boost::bind(&sink_impl::on_gps_message, this, _1));
     }
 
     /*
@@ -305,6 +307,22 @@ namespace gr {
         GR_LOG_ERROR(d_logger,
                      boost::format("Invalid command string received in dict: %s") % msg);
         return;
+      }
+    }
+
+    void
+    sink_impl::on_gps_message(pmt::pmt_t msg)
+    {
+      // Instant in time that corresponds roughly to where we are now.
+      uint64_t sample_start = nitems_read(0);
+      uint64_t sample_count = 0;
+
+      if(pmt::dict_has_key(msg, LATITUDE) && pmt::dict_has_key(msg, LONGITUDE)) {
+        pmt::pmt_t lat = pmt::dict_ref(msg, LATITUDE, pmt::PMT_NIL);
+        pmt::pmt_t lon = pmt::dict_ref(msg, LONGITUDE, pmt::PMT_NIL);
+        set_annotation_meta(sample_start, sample_count, "core:latitude", lat);
+        set_annotation_meta(sample_start, sample_count, "core:longitude", lon);
+        set_annotation_meta(sample_start, sample_count, "core:generator", pmt::string_to_symbol("USRP GPS Message"));
       }
     }
 

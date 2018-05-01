@@ -40,6 +40,9 @@ namespace gr {
 
     static const pmt::pmt_t META = pmt::string_to_symbol("meta");
     static const pmt::pmt_t COMMAND = pmt::string_to_symbol("command");
+    static const pmt::pmt_t GPS = pmt::string_to_symbol("gps");
+    static const pmt::pmt_t LATITUDE = pmt::string_to_symbol("latitude");
+    static const pmt::pmt_t LONGITUDE = pmt::string_to_symbol("longitude");
 
     inline size_t
     type_to_size(const std::string type)
@@ -161,6 +164,7 @@ namespace gr {
       void init_meta();
 
       void on_command_message(pmt::pmt_t msg);
+      void on_gps_message(pmt::pmt_t msg);
 
       void write_meta();
       void move_temp_to_final();

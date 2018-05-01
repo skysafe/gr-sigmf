@@ -943,3 +943,40 @@ class qa_sink(gr_unittest.TestCase):
             r"\.temp-((\d|\w){16})-(.+)\.sigmf-data",
             data_temp_name) is not None,
             "Bad temp data name")
+
+    def test_gps_annotation(self):
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+
+        sender = msg_sender()
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.msg_connect(sender, "out", file_sink, "gps")
+
+        coords = [
+            (12.345, -67.89),
+            (55.555, -110.111),
+            (33.123, 33.123),
+        ]
+
+        tb.start()
+        for lat, lon in coords:
+            sender.send_msg({
+                "latitude": lat,
+                "longitude": lon,
+            })
+            sleep(.05)
+        tb.stop()
+        tb.wait()
+        metadata = json.load(open(json_file, "r"))
+        # should be 3 annotations
+        self.assertEqual(len(metadata["annotations"]), len(coords))
+        # And they should be these and in this order
+        for ii, point in enumerate(coords):
+            lat, lon = point
+            annotation = metadata["annotations"][ii]
+            self.assertEqual(annotation["core:latitude"], lat)
+            self.assertEqual(annotation["core:longitude"], lon)
+            self.assertIn("GPS", annotation["core:generator"])

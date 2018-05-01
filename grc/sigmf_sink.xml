@@ -1212,6 +1212,11 @@ self.$(id).set_global_meta('$field_key()', $field_val())
     <type>message</type>
     <optional>1</optional>
   </sink>
+  <sink>
+    <name>gps</name>
+    <type>message</type>
+    <optional>1</optional>
+  </sink>
   <doc>    Write data to a SigMF recording.
     Note that this block relies on the stop method being called to write data correctly, so if the flowgraph is not stopped cleanly the metadata will not be written correctly.  </doc>
 </block>
