@@ -342,5 +342,6 @@ class qa_annotation_sink (gr_unittest.TestCase):
                 meta["annotations"][2]["test:foo2"],
                 "foo", "Wrong value in annotation")
 
+
 if __name__ == '__main__':
     gr_unittest.run(qa_annotation_sink, "qa_annotation_sink.xml")

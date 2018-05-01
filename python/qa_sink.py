@@ -859,7 +859,8 @@ class qa_sink(gr_unittest.TestCase):
                              "Bad month in first capture segment")
             self.assertEqual(now.day, capture_one_dt.day,
                              "Bad month in first capture segment")
-            # capture_two_dt = parse_iso_ts(meta["captures"][1]["core:datetime"])
+            # capture_two_dt =
+            # parse_iso_ts(meta["captures"][1]["core:datetime"])
             # diff_time = capture_two_dt - capture_one_dt
             # assert diff_time.seconds == 2
             # assert diff_time.microseconds == 300000

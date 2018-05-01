@@ -28,7 +28,7 @@ class simple_tag_injector(gr.sync_block):
 
 
 class advanced_tag_injector(gr.sync_block):
-    '''Like simple_tag_injector, but can specify exact 
+    '''Like simple_tag_injector, but can specify exact
     indices to inject the tags at'''
     def __init__(self, tags_to_inject):
         gr.sync_block.__init__(
