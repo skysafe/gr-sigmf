@@ -92,10 +92,18 @@ namespace gr {
     bool
     usrp_gps_message_source_impl::start()
     {
-      d_finished = false;
-      // Start the polling thread.
-      d_poll_thread = gr::thread::thread(boost::bind(&usrp_gps_message_source_impl::poll_thread, this));
-      return gr::block::start();
+      std::vector<std::string> sensors = d_usrp->get_mboard_sensor_names(d_mboard);
+      if(std::find(sensors.begin(), sensors.end(), "gps_time") != sensors.end()) {
+        d_finished = false;
+        // Start the polling thread.
+        d_poll_thread = gr::thread::thread(boost::bind(&usrp_gps_message_source_impl::poll_thread, this));
+        return gr::block::start();
+      } else {
+        // This USRP doesn't have a GPS sensor. Too bad.
+        std::cerr << "WARNING: USRP does not appear to have a GPS receiver, skipping GPS messages." << std::endl;
+        d_finished = true;
+        return false;
+      }
     }
 
     bool
