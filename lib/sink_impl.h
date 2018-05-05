@@ -182,6 +182,8 @@ namespace gr {
       std::string convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time);
       std::string convert_full_fracs_pair_to_iso8601(uint64_t seconds, double frac_seconds);
 
+      void close_impl();
+
       public:
       sink_impl(std::string type,
                 std::string filename,

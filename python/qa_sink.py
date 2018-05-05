@@ -11,7 +11,8 @@ import tempfile
 import shutil
 import uuid
 from threading import Event
-from multiprocessing import Process
+import numpy
+from multiprocessing import Process, Queue
 from gnuradio import gr, gr_unittest, blocks, analog
 
 from sigmf import sigmf_swig as sigmf
@@ -981,6 +982,89 @@ class qa_sink(gr_unittest.TestCase):
             self.assertEqual(annotation["core:latitude"], lat)
             self.assertEqual(annotation["core:longitude"], lon)
             self.assertIn("GPS", annotation["core:generator"])
+
+    def test_close_via_pmt(self):
+        '''Ensure that a close sent via pmt is handled even if the work
+        function isn't ever called again'''
+        data_file, json_file = self.temp_file_names()
+
+        class sample_eater(gr.sync_block):
+            def __init__(self):
+                gr.sync_block.__init__(
+                    self,
+                    name="sample_counter",
+                    in_sig=[numpy.complex64],
+                    out_sig=[numpy.complex64],
+                )
+                self.eat_samples = False
+
+            def work(self, input_items, output_items):
+                if self.eat_samples:
+                    return 0
+                else:
+                    output_items[0][:] = input_items[0]
+                    return len(output_items[0])
+
+        def process_func(death_queue):
+            src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+            file_sink = sigmf.sink("cf32_le",
+                                   "")
+            sender = msg_sender()
+            eater = sample_eater()
+            tb = gr.top_block()
+            tb.connect(src, eater)
+            tb.msg_connect(sender, "out", file_sink, "command")
+            tb.connect(eater, file_sink)
+            tb.start()
+            sleep(.05)
+            sender.send_msg({
+                "command": "open",
+                "filename": data_file
+            })
+            # ensure it gets set
+            while True:
+                if file_sink.get_data_path() == "":
+                    sleep(.05)
+                else:
+                    break
+            # record some data
+            sleep(.05)
+            # eat all the samples so the work function
+            # never gets called again
+            eater.eat_samples = True
+            # wait a bit
+            sleep(.05)
+            # send close, this should close and write the file in
+            # the pmt handler
+            sender.send_msg({
+                "command": "close"
+            })
+            # signal to outside that this can be killed
+            death_queue.put("KILL")
+            tb.wait()
+
+        kill_queue = Queue()
+        p = Process(target=process_func, args=(kill_queue,))
+        p.start()
+        # wait for something to be put in the kill queue
+        try:
+            kill_queue.get(True, 2)
+        except Queue.empty:
+            self.fail("Subprocess never signalled for death")
+        # kill the process
+        p.terminate()
+        try:
+            p.join(1)
+        except Exception:
+            self.fail("Joining subprocess failed")
+
+        # both files should exist
+        self.assertTrue(os.path.exists(json_file),
+                        "metadata file not found")
+        self.assertTrue(os.path.exists(data_file),
+                        "Data file not found")
+        self.assertGreater(os.path.getsize(data_file),
+                           0, "No data in data file")
 
 
 if __name__ == '__main__':

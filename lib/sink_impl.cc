@@ -254,7 +254,10 @@ namespace gr {
           return;
         }
       } else if(command_str == "close") {
-        close();
+        // We can call the impl and update directly here, since the update handler
+        // is always run seperately from the work function
+        close_impl();
+        do_update();
       } else if(command_str == "set_annotation_meta") {
         // Need to get sample_start, sample_count, key, and value
         auto sample_start = pmt::dict_ref(msg, pmt::mp("sample_start"), pmt::get_PMT_NIL());
@@ -602,16 +605,21 @@ namespace gr {
     }
 
     void
-    sink_impl::close()
+    sink_impl::close_impl()
     {
-      // hold mutex for duration of this function
-      gr::thread::scoped_lock guard(d_mutex);
-
       if(d_new_fp != nullptr) {
         std::fclose(d_new_fp);
         d_new_fp = nullptr;
       }
       d_updated = true;
+    }
+
+    void
+    sink_impl::close()
+    {
+      // hold mutex for duration of this function
+      gr::thread::scoped_lock guard(d_mutex);
+      close_impl();
     }
 
     void
