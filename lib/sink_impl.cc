@@ -305,7 +305,7 @@ namespace gr {
           return;
         }
         uint64_t index_int = pmt::to_uint64(index);
-        std::cout << "setting capture meta(" << index_int << "," << key << ", " << val << ")" << std::endl;
+        GR_LOG_INFO(d_logger, "setting capture meta(" << index_int << "," << key << ", " << val << ")");
         set_capture_meta(index_int, pmt::symbol_to_string(key), val);
 
       }else {
@@ -589,7 +589,7 @@ namespace gr {
           // If no datetime set
           if (!first_segment.has("core:datetime")) {
             // Then set one
-            std::cout << "Setting to host ts" << std::endl;
+            GR_LOG_INFO(d_logger, "No core:datetime found, using host ts instead")
             first_segment.set("core:datetime", iso_8601_ts());
           } 
           // clear pre_capture_data
@@ -847,7 +847,6 @@ namespace gr {
             s << "sigmf_sink write failed with error " << fileno(d_fp) << std::endl;
             throw std::runtime_error(s.str());
           }
-
           // is EOF
           else {
             break;

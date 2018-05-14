@@ -89,7 +89,7 @@ namespace gr {
       d_num_samples_in_file = std::ftell(d_data_fp) / d_sample_size;
 
       if(d_debug) {
-        std::cout << "Samps in file: " << d_num_samples_in_file;
+        GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
       }
 
       std::fseek(d_data_fp, 0, SEEK_SET);
@@ -133,7 +133,7 @@ namespace gr {
       }
 
       if(d_debug) {
-        std::cout << "Received command message" << std::endl;
+        GR_LOG_DEBUG(d_logger, "Received command message");
       }
     }
 
@@ -211,14 +211,13 @@ namespace gr {
       }
 
       if(d_debug) {
-        std::cout << "tags to out: \n";
+        GR_LOG_DEBUG(d_logger, "tags to output: ")
         for(size_t i = 0; i < d_tags_to_output.size(); i++) {
-          std::cout << "key = " << d_tags_to_output[i].key << ", ";
-          std::cout << "val = " << d_tags_to_output[i].value << ", ";
-          std::cout << "offset = " << d_tags_to_output[i].offset << ", ";
-          std::cout << std::endl;
+          GR_LOG_DEBUG(d_logger, "key = " << d_tags_to_output[i].key << ", ");
+          GR_LOG_DEBUG(d_logger, "val = " << d_tags_to_output[i].value << ", ");
+          GR_LOG_DEBUG(d_logger, "offset = " << d_tags_to_output[i].offset << ", ");
         }
-        std::cout << "End of tags to output" << std::endl;
+        GR_LOG_DEBUG(d_logger, "End of tags to output");
       }
 
       // And set the output index
@@ -234,7 +233,7 @@ namespace gr {
       d_annotations = ns.annotations;
 
       if(d_debug) {
-        std::cout << "num captures: " << d_captures.size() << std::endl;
+        GR_LOG_DEBUG(d_logger, "num captures: " << d_captures.size());
         for(size_t i = 0; i < d_captures.size(); i++) {
           d_captures[i].print();
         }
@@ -286,6 +285,10 @@ namespace gr {
     int
     source_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
+      if (!d_printed) {
+        GR_LOG_DEBUG(d_logger, "in work func");
+        d_printed = true;
+      }
       char *output_buf = static_cast<char *>(output_items[0]);
       int items_read;
 
@@ -298,7 +301,7 @@ namespace gr {
       uint64_t window_start = nitems_written(0);
 
       if(d_debug) {
-        std::cout << "window_start: " << window_start << std::endl;
+        GR_LOG_DEBUG(d_logger,"window_start: " << window_start);
       }
 
       uint64_t window_end = window_start + size;
@@ -311,10 +314,10 @@ namespace gr {
           tag_to_add.offset = tag_to_add.offset + (d_num_samples_in_file * d_repeat_count);
 
           if(d_debug) {
-            std::cout << "Adding a tag\n";
-            std::cout << "key = " << tag_to_add.key << std::endl;
-            std::cout << "val = " << tag_to_add.value << std::endl;
-            std::cout << "offset = " << tag_to_add.offset << std::endl;
+            GR_LOG_DEBUG(d_logger,"Adding a tag");
+            GR_LOG_DEBUG(d_logger, "key = " << tag_to_add.key);
+            GR_LOG_DEBUG(d_logger,"val = " << tag_to_add.value);
+            GR_LOG_DEBUG(d_logger, "offset = " << tag_to_add.offset);
           }
 
           add_item_tag(0, tag_to_add);
