@@ -26,7 +26,6 @@
 #include <rapidjson/writer.h>
 
 using namespace rapidjson;
-#define DL std::cout << __LINE__ << std::endl;
 namespace gr {
   namespace sigmf {
 
