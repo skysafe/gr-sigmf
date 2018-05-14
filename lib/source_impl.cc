@@ -285,10 +285,6 @@ namespace gr {
     int
     source_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
-      if (!d_printed) {
-        GR_LOG_DEBUG(d_logger, "in work func");
-        d_printed = true;
-      }
       char *output_buf = static_cast<char *>(output_items[0]);
       int items_read;
 
