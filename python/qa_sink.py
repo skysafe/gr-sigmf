@@ -851,7 +851,7 @@ class qa_sink(gr_unittest.TestCase):
         with open(json_file, "r") as f:
             meta = json.load(f)
             capture_one_dt = parse_iso_ts(meta["captures"][0]["core:datetime"])
-            now = datetime.now()
+            now = datetime.utcnow()
             print(capture_one_dt)
             print(now)
             self.assertEqual(now.year, capture_one_dt.year,
