@@ -243,3 +243,23 @@ endif(NOT CMAKE_MODULES_DIR)
 install(FILES cmake/Modules/sigmfConfig.cmake
     DESTINATION ${CMAKE_MODULES_DIR}/sigmf
 )
+
+########################################################################
+# Create Pkg Config File
+########################################################################
+file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}"           prefix)
+file(TO_NATIVE_PATH "\${prefix}"                        exec_prefix)
+file(TO_NATIVE_PATH "\${exec_prefix}/${GR_LIBRARY_DIR}" libdir)
+file(TO_NATIVE_PATH "\${prefix}/${GR_INCLUDE_DIR}"      includedir)
+file(TO_NATIVE_PATH "${SYSCONFDIR}"                     SYSCONFDIR)
+file(TO_NATIVE_PATH "${GR_PREFSDIR}"                    GR_PREFSDIR)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/gr-sigmf.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/gr-sigmf.pc
+@ONLY)
+
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/gr-sigmf.pc
+    DESTINATION ${GR_LIBRARY_DIR}/pkgconfig
+)
