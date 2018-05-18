@@ -2,12 +2,25 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 1.1.5
+
+* Add support for building a pkg-config file when building gr-sigmf
+* Fixed flaky test: test_relative_time_mode_initial_closed
+* Cleaned up output of blocks to stdout and stderr in preference to standard logging macros
+* Update the handler for the close command pmt message to call `do_update` immediately
+  This fixes an issue where a lot of time may pass between when the command to 
+  close is received and when the work function runs again.
+* Fixed a couple other flaky tests
+* Updates and improvements to the USRP GPS Message Source
+* Miscellaneous fixes and improvements
+
 ## 1.1.4
 
 * Update the grc file for the annotation sink to correspond to the actual sink
 * Add documentation in annotation_sink.h for annotation_mode struct
 * Fix an edge case in time tag handling when in relative mode in sink block
 * Make --freq a required parameter to sigmf-record
+* Add USRP GPS Message Source
 
 ## 1.1.3
 
