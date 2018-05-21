@@ -46,7 +46,7 @@ namespace gr {
        * creating new instances.
        */
       static sptr
-      make(std::string filename, std::string output_datatype, bool repeat = false, bool debug = false);
+      make(std::string filename, std::string output_datatype, bool repeat = false);
 
       /*!
        * \brief Add a stream tag to the first sample of the file if true

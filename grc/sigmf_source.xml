@@ -5,7 +5,7 @@
   <category>[SigMF]</category>
   <import>import sigmf</import>
   <import>import sys</import>
-  <make>sigmf.source($filename, "$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $repeat, $debug)</make>
+  <make>sigmf.source($filename, "$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $repeat)</make>
 
   <param>
     <name>File</name>
@@ -73,21 +73,6 @@
   <param>
     <name>Repeat</name>
     <key>repeat</key>
-    <value>False</value>
-    <type>enum</type>
-    <option>
-      <name>Yes</name>
-      <key>True</key>
-    </option>
-    <option>
-      <name>No</name>
-      <key>False</key>
-    </option>
-  </param>
-  
-  <param>
-    <name>Debug</name>
-    <key>debug</key>
     <value>False</value>
     <type>enum</type>
     <option>

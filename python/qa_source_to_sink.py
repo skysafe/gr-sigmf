@@ -113,7 +113,7 @@ class qa_source_to_sink(gr_unittest.TestCase):
                 test_index_2, "Bad test index")
 
         # Read out the data and check that it matches
-        file_source = sigmf.source(data_file, "cf32_le", debug=False)
+        file_source = sigmf.source(data_file, "cf32_le")
         collector = tag_collector()
         sink = blocks.vector_sink_c()
         tb = gr.top_block()
@@ -169,7 +169,7 @@ class qa_source_to_sink(gr_unittest.TestCase):
         data_start_size = os.path.getsize(filename)
 
         out_data_file, out_json_file = self.temp_file_names()
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         file_sink = sigmf.sink("cf32_le", out_data_file)
         tb = gr.top_block()
         tb.connect(file_source, file_sink)

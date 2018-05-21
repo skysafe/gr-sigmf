@@ -47,7 +47,6 @@ namespace gr {
       int d_num_samps_to_base;
 
       bool d_repeat;
-      bool d_debug;
       bool d_file_begin;
 
       pmt::pmt_t d_add_begin_tag;
@@ -80,7 +79,7 @@ namespace gr {
       void add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list);
 
       public:
-      source_impl(std::string filename, std::string type, bool repeat, bool debug);
+      source_impl(std::string filename, std::string type, bool repeat);
       ~source_impl();
 
       // Where all the action really happens

@@ -49,8 +49,7 @@ namespace gr {
       static sptr make(std::string type,
                        std::string filename,
                        sigmf_time_mode time_mode = sigmf_time_mode::absolute,
-                       bool append = false,
-                       bool debug = false);
+                       bool append = false);
 
       virtual std::string get_data_path() = 0;
       virtual std::string get_meta_path() = 0;

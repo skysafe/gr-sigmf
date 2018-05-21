@@ -76,10 +76,9 @@ namespace gr {
     sink::make(std::string type,
                std::string filename,
                sigmf_time_mode time_mode,
-               bool append,
-               bool debug)
+               bool append)
     {
-      return gnuradio::get_initial_sptr(new sink_impl(type, filename, time_mode, append, debug));
+      return gnuradio::get_initial_sptr(new sink_impl(type, filename, time_mode, append));
     }
 
     /*
@@ -88,13 +87,12 @@ namespace gr {
     sink_impl::sink_impl(std::string type,
                          std::string filename,
                          sigmf_time_mode time_mode,
-                         bool append,
-                         bool debug)
+                         bool append)
     : gr::sync_block("sink",
                      gr::io_signature::make(1, 1, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_itemsize(type_to_size(type)),
-      d_type(add_endianness(type)), d_debug(debug), d_sink_time_mode(time_mode)
+      d_type(add_endianness(type)), d_sink_time_mode(time_mode)
     {
       init_meta();
       open(filename.c_str());
@@ -625,9 +623,6 @@ namespace gr {
     void
     sink_impl::write_meta()
     {
-      if(d_debug) {
-        // std::cout << "meta_path = " << d_meta_path << std::endl;
-      }
       if(d_meta_written) {
         return;
       }

@@ -44,19 +44,19 @@ namespace gr {
   namespace sigmf {
 
     source::sptr
-    source::make(std::string filename, std::string type, bool repeat, bool debug)
+    source::make(std::string filename, std::string type, bool repeat)
     {
-      return gnuradio::get_initial_sptr(new source_impl(filename, type, repeat, debug));
+      return gnuradio::get_initial_sptr(new source_impl(filename, type, repeat));
     }
 
     /*
      * The private constructor
      */
-    source_impl::source_impl(std::string filename, std::string type, bool repeat, bool debug)
+    source_impl::source_impl(std::string filename, std::string type, bool repeat)
     : gr::sync_block("source",
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(float))),
-      d_data_fp(0), d_meta_fp(0), d_repeat(repeat), d_debug(debug), d_file_begin(true),
+      d_data_fp(0), d_meta_fp(0), d_repeat(repeat), d_file_begin(true),
       d_add_begin_tag(pmt::PMT_NIL), d_repeat_count(0),
       d_data_path(to_data_path(filename)), d_meta_path(meta_path_from_data(d_data_path))
     {
@@ -88,9 +88,7 @@ namespace gr {
       std::fseek(d_data_fp, 0, SEEK_END);
       d_num_samples_in_file = std::ftell(d_data_fp) / d_sample_size;
 
-      if(d_debug) {
-        GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
-      }
+      GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
 
       std::fseek(d_data_fp, 0, SEEK_SET);
       set_output_signature(gr::io_signature::make(1, 1, d_sample_size));
@@ -132,9 +130,7 @@ namespace gr {
         set_begin_tag(tag);
       }
 
-      if(d_debug) {
-        GR_LOG_DEBUG(d_logger, "Received command message");
-      }
+      GR_LOG_DEBUG(d_logger, "Received command message");
     }
 
 
@@ -210,15 +206,13 @@ namespace gr {
         tag.offset = tag.offset - offset_correction;
       }
 
-      if(d_debug) {
-        GR_LOG_DEBUG(d_logger, "tags to output: ")
-        for(size_t i = 0; i < d_tags_to_output.size(); i++) {
-          GR_LOG_DEBUG(d_logger, "key = " << d_tags_to_output[i].key << ", ");
-          GR_LOG_DEBUG(d_logger, "val = " << d_tags_to_output[i].value << ", ");
-          GR_LOG_DEBUG(d_logger, "offset = " << d_tags_to_output[i].offset << ", ");
-        }
-        GR_LOG_DEBUG(d_logger, "End of tags to output");
+      GR_LOG_DEBUG(d_logger, "tags to output: ")
+      for(size_t i = 0; i < d_tags_to_output.size(); i++) {
+        GR_LOG_DEBUG(d_logger, "key = " << d_tags_to_output[i].key << ", ");
+        GR_LOG_DEBUG(d_logger, "val = " << d_tags_to_output[i].value << ", ");
+        GR_LOG_DEBUG(d_logger, "offset = " << d_tags_to_output[i].offset << ", ");
       }
+      GR_LOG_DEBUG(d_logger, "End of tags to output");
 
       // And set the output index
       d_next_tag_index = 0;
@@ -231,13 +225,6 @@ namespace gr {
       d_global = ns.global;
       d_captures = ns.captures;
       d_annotations = ns.annotations;
-
-      if(d_debug) {
-        GR_LOG_DEBUG(d_logger, "num captures: " << d_captures.size());
-        for(size_t i = 0; i < d_captures.size(); i++) {
-          d_captures[i].print();
-        }
-      }
 
       build_tag_list();
     }
@@ -296,10 +283,6 @@ namespace gr {
 
       uint64_t window_start = nitems_written(0);
 
-      if(d_debug) {
-        GR_LOG_DEBUG(d_logger,"window_start: " << window_start);
-      }
-
       uint64_t window_end = window_start + size;
       for(size_t tag_index = d_next_tag_index; tag_index < d_tags_to_output.size(); tag_index++) {
         if(d_tags_to_output[tag_index].offset >= window_start &&
@@ -309,12 +292,10 @@ namespace gr {
           tag_t tag_to_add = d_tags_to_output[tag_index];
           tag_to_add.offset = tag_to_add.offset + (d_num_samples_in_file * d_repeat_count);
 
-          if(d_debug) {
-            GR_LOG_DEBUG(d_logger,"Adding a tag");
-            GR_LOG_DEBUG(d_logger, "key = " << tag_to_add.key);
-            GR_LOG_DEBUG(d_logger,"val = " << tag_to_add.value);
-            GR_LOG_DEBUG(d_logger, "offset = " << tag_to_add.offset);
-          }
+          GR_LOG_DEBUG(d_logger,"Adding a tag");
+          GR_LOG_DEBUG(d_logger, "key = " << tag_to_add.key);
+          GR_LOG_DEBUG(d_logger,"val = " << tag_to_add.value);
+          GR_LOG_DEBUG(d_logger, "offset = " << tag_to_add.offset);
 
           add_item_tag(0, tag_to_add);
 

@@ -119,9 +119,6 @@ namespace gr {
       // Base type, not full format specifier. We need endianness for that.
       std::string d_type;
 
-      // Are we in debug mode?
-      bool d_debug;
-
       // Stored basic global metadata, we'll need these
       double d_samp_rate;
       std::string d_description;
@@ -188,8 +185,7 @@ namespace gr {
       sink_impl(std::string type,
                 std::string filename,
                 sigmf_time_mode time_mode,
-                bool append,
-                bool debug);
+                bool append);
       ~sink_impl();
 
       bool open(const char *filename);

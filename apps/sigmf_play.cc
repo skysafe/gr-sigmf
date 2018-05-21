@@ -125,7 +125,7 @@ main(int argc, char *argv[])
   // Make a file source
   std::string sigmf_format = uhd_format_to_sigmf_format(cpu_format_str);
   gr::sigmf::source::sptr file_source(
-    gr::sigmf::source::make(input_filename, sigmf_format, repeat, false));
+    gr::sigmf::source::make(input_filename, sigmf_format, repeat));
 
   // Look up sample rate in the metadata
   pmt::pmt_t sample_rate_pmt = file_source->global_meta().get("core:sample_rate");

@@ -58,7 +58,7 @@ class qa_source (gr_unittest.TestCase):
         data, meta_json, filename, meta_file = self.make_file("normal")
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         sink = blocks.vector_sink_c()
         tb = gr.top_block()
         tb.connect(file_source, sink)
@@ -78,7 +78,7 @@ class qa_source (gr_unittest.TestCase):
             "small_files", N=1)
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         sink = blocks.vector_sink_c()
         tb = gr.top_block()
         tb.connect(file_source, sink)
@@ -93,8 +93,7 @@ class qa_source (gr_unittest.TestCase):
         # Test to ensure that repeat works correctly
         # TODO: This test should check the tags if set
         data, meta_json, filename, meta_file = self.make_file("repeat")
-        file_source = sigmf.source(filename, "cf32_le", repeat=True,
-                                   debug=False)
+        file_source = sigmf.source(filename, "cf32_le", repeat=True)
         sink = blocks.vector_sink_c()
         tb = gr.top_block()
         tb.connect(file_source, sink)
@@ -126,7 +125,7 @@ class qa_source (gr_unittest.TestCase):
             f.write("A")
 
         try:
-            sigmf.source(filename, "cf32_le", debug=False)
+            sigmf.source(filename, "cf32_le")
         except:
 
             # TODO: I should probably throw a better exception here...
@@ -140,7 +139,7 @@ class qa_source (gr_unittest.TestCase):
         os.remove(meta_file)
         caught_exception = False
         try:
-            sigmf.source(filename, "cf32_le", debug=False)
+            sigmf.source(filename, "cf32_le")
         except:
             caught_exception = True
         assert caught_exception
@@ -149,7 +148,7 @@ class qa_source (gr_unittest.TestCase):
         os.remove(filename)
         caught_exception = False
         try:
-            sigmf.source(filename, debug=False)
+            sigmf.source(filename)
         except:
             caught_exception = True
         assert caught_exception
@@ -158,7 +157,7 @@ class qa_source (gr_unittest.TestCase):
         data, meta_json, filename, meta_file = self.make_file("begin")
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         begin_tag = pmt.to_pmt("TEST")
         file_source.set_begin_tag(begin_tag)
         sink = blocks.vector_sink_c()
@@ -192,7 +191,7 @@ class qa_source (gr_unittest.TestCase):
             f.truncate()
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         begin_tag = pmt.to_pmt("TEST")
         file_source.set_begin_tag(begin_tag)
         sink = blocks.vector_sink_c()
@@ -233,7 +232,7 @@ class qa_source (gr_unittest.TestCase):
             f.truncate()
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         sink = blocks.vector_sink_c()
         collector = tag_collector()
         tb = gr.top_block()
@@ -249,8 +248,7 @@ class qa_source (gr_unittest.TestCase):
         data, meta_json, filename, meta_file = self.make_file("begin")
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", repeat=True,
-                                   debug=False)
+        file_source = sigmf.source(filename, "cf32_le", repeat=True)
         msg = {"command": "set_begin_tag", "tag": "test"}
         generator = message_generator(msg)
         sink = blocks.vector_sink_c()
@@ -302,8 +300,7 @@ class qa_source (gr_unittest.TestCase):
             json.dump(metadata, f)
 
         file_source = sigmf.source(filename_data, "cf32_le",
-                                   repeat=False,
-                                   debug=False)
+                                   repeat=False)
 
         sink = blocks.vector_sink_c()
         tb = gr.top_block()
@@ -341,7 +338,7 @@ class qa_source (gr_unittest.TestCase):
             f.truncate()
 
         # run through the flowgraph
-        file_source = sigmf.source(filename, "cf32_le", debug=False)
+        file_source = sigmf.source(filename, "cf32_le")
         sink = blocks.vector_sink_c()
         collector = tag_collector()
         tb = gr.top_block()
