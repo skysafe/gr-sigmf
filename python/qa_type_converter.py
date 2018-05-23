@@ -68,12 +68,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "rf32", 1)
 
         # expected
-        expected_source = sigmf.source(path, "rf32", False, False)
+        expected_source = sigmf.source(path, "rf32", False)
         convert = blocks.float_to_int(1, 1)
         expected_sink = blocks.vector_sink_i(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri32", False, False)
+        actual_source = sigmf.source(path, "ri32", False)
         actual_sink = blocks.vector_sink_i(1)
 
         tb1 = gr.top_block()
@@ -96,12 +96,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "rf32", 1)
 
         # expected
-        expected_source = sigmf.source(path, "rf32", False, False)
+        expected_source = sigmf.source(path, "rf32", False)
         convert = blocks.float_to_short(1, 1)
         expected_sink = blocks.vector_sink_s(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri16", False, False)
+        actual_source = sigmf.source(path, "ri16", False)
         actual_sink = blocks.vector_sink_s(1)
 
         tb1 = gr.top_block()
@@ -124,12 +124,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "rf32", 1)
 
         # expected
-        expected_source = sigmf.source(path, "rf32", False, False)
+        expected_source = sigmf.source(path, "rf32", False)
         convert1 = blocks.float_to_short(1, 1)
         expected_sink = blocks.vector_sink_s(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri8", False, False)
+        actual_source = sigmf.source(path, "ri8", False)
         convert2 = blocks.char_to_float(1, 1)
         actual_sink = blocks.vector_sink_f(1)
 
@@ -155,12 +155,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri32", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri32", False, False)
+        expected_source = sigmf.source(path, "ri32", False)
         convert = blocks.int_to_float(1, 2147483647)
         expected_sink = blocks.vector_sink_f(1)
 
         # actual
-        actual_source = sigmf.source(path, "rf32", False, False)
+        actual_source = sigmf.source(path, "rf32", False)
         actual_sink = blocks.vector_sink_f(1)
 
         tb1 = gr.top_block()
@@ -183,11 +183,11 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri32", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri32", False, False)
+        expected_source = sigmf.source(path, "ri32", False)
         expected_sink = blocks.vector_sink_i(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri16", False, False)
+        actual_source = sigmf.source(path, "ri16", False)
         actual_sink = blocks.vector_sink_s(1)
 
         tb1 = gr.top_block()
@@ -209,11 +209,11 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri32", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri32", False, False)
+        expected_source = sigmf.source(path, "ri32", False)
         expected_sink = blocks.vector_sink_i(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri8", False, False)
+        actual_source = sigmf.source(path, "ri8", False)
         convert1 = blocks.char_to_float(1, 1)
         convert2 = blocks.float_to_int(1, 1)
         actual_sink = blocks.vector_sink_i(1)
@@ -239,12 +239,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri16", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri16", False, False)
+        expected_source = sigmf.source(path, "ri16", False)
         convert = blocks.short_to_float(1, 32767)
         expected_sink = blocks.vector_sink_f(1)
 
         # actual
-        actual_source = sigmf.source(path, "rf32", False, False)
+        actual_source = sigmf.source(path, "rf32", False)
         actual_sink = blocks.vector_sink_f(1)
 
         tb1 = gr.top_block()
@@ -267,11 +267,11 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri16", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri16", False, False)
+        expected_source = sigmf.source(path, "ri16", False)
         expected_sink = blocks.vector_sink_s(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri32", False, False)
+        actual_source = sigmf.source(path, "ri32", False)
         actual_sink = blocks.vector_sink_i(1)
 
         tb1 = gr.top_block()
@@ -293,12 +293,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri16", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri16", False, False)
+        expected_source = sigmf.source(path, "ri16", False)
         convert = blocks.short_to_char(1)
         expected_sink = blocks.vector_sink_b(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri8", False, False)
+        actual_source = sigmf.source(path, "ri8", False)
         actual_sink = blocks.vector_sink_b(1)
 
         tb1 = gr.top_block()
@@ -321,12 +321,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri8", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri8", False, False)
+        expected_source = sigmf.source(path, "ri8", False)
         convert = blocks.char_to_float(1, 127)
         expected_sink = blocks.vector_sink_f(1)
 
         # actual
-        actual_source = sigmf.source(path, "rf32", False, False)
+        actual_source = sigmf.source(path, "rf32", False)
         actual_sink = blocks.vector_sink_f(1)
 
         tb1 = gr.top_block()
@@ -349,13 +349,13 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri8", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri8", False, False)
+        expected_source = sigmf.source(path, "ri8", False)
         convert1 = blocks.char_to_float(1, 1)
         convert2 = blocks.float_to_int(1, 1)
         expected_sink = blocks.vector_sink_i(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri32", False, False)
+        actual_source = sigmf.source(path, "ri32", False)
         actual_sink = blocks.vector_sink_i(1)
 
         tb1 = gr.top_block()
@@ -379,12 +379,12 @@ class qa_type_converter(gr_unittest.TestCase):
         path = self.make_file("test_source", "ri8", 1)
 
         # expected
-        expected_source = sigmf.source(path, "ri8", False, False)
+        expected_source = sigmf.source(path, "ri8", False)
         convert = blocks.char_to_short(1)
         expected_sink = blocks.vector_sink_s(1)
 
         # actual
-        actual_source = sigmf.source(path, "ri16", False, False)
+        actual_source = sigmf.source(path, "ri16", False)
         actual_sink = blocks.vector_sink_s(1)
 
         tb1 = gr.top_block()
@@ -420,7 +420,7 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # actual
         filename = os.path.join(self.test_dir, "test_sink")
-        actual_source = sigmf.source(path, "ci32", False, False)
+        actual_source = sigmf.source(path, "ci32", False)
         actual_sink = sigmf.sink("ci32", filename)
 
         tb = gr.top_block()
@@ -438,7 +438,7 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # actual
         filename = os.path.join(self.test_dir, "test_sink")
-        actual_source = sigmf.source(path, "ci16", False, False)
+        actual_source = sigmf.source(path, "ci16", False)
         actual_sink = sigmf.sink("ci16", filename)
 
         tb = gr.top_block()
@@ -456,7 +456,7 @@ class qa_type_converter(gr_unittest.TestCase):
 
         # actual
         filename = os.path.join(self.test_dir, "test_sink")
-        actual_source = sigmf.source(path, "ci8", False, False)
+        actual_source = sigmf.source(path, "ci8", False)
         actual_sink = sigmf.sink("ci8", filename)
 
         tb = gr.top_block()
