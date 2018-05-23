@@ -36,7 +36,6 @@ namespace gr {
         // sort annotations
         std::sort(annotations.begin(), annotations.end(),
                   [](const meta_namespace &a, const meta_namespace &b) {
-                    a.print();
                     // TODO: This may need to become a more complex sort if the spec
                     // changes based on https://github.com/gnuradio/SigMF/issues/90
                     return pmt::to_uint64(a.get("core:sample_start")) <
