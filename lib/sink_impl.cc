@@ -389,11 +389,17 @@ namespace gr {
     void
     sink_impl::set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val)
     {
-      try {
-        auto &capture = d_captures.at(index);
-        capture.set(key, val);
-      } catch (const std::out_of_range &e) {
-        GR_LOG_ERROR(d_logger, "Invalid capture index");
+      // If there's no current fp being written to, then put this in d_pre_capture_data
+      if (d_fp == nullptr) {
+        d_pre_capture_data = pmt::dict_add(d_pre_capture_data, pmt::mp(key), val);
+      } else {
+        // otherwise it goes in the relavant capture segment
+        try {
+          auto &capture = d_captures.at(index);
+          capture.set(key, val);
+        } catch (const std::out_of_range &e) {
+          GR_LOG_ERROR(d_logger, "Invalid capture index");
+        }
       }
     }
 
@@ -582,6 +588,9 @@ namespace gr {
               first_segment.set("core:frequency", capture_val);
             } else if (pmt::eqv(capture_key, RATE_KEY)) {
               d_global.set("core:sample_rate", capture_val);
+            } else {
+              // any other data just goes in the first capture_segment
+              first_segment.set(capture_key, capture_val);
             }
           }
           // If no datetime set

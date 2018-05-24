@@ -12,6 +12,7 @@ import shutil
 import uuid
 from threading import Event
 import numpy
+import pmt
 from multiprocessing import Process, Queue
 from gnuradio import gr, gr_unittest, blocks, analog
 
@@ -1065,6 +1066,32 @@ class qa_sink(gr_unittest.TestCase):
                         "Data file not found")
         self.assertGreater(os.path.getsize(data_file),
                            0, "No data in data file")
+
+    def test_set_capture_meta_before_start(self):
+        """Test that if set_capture_meta is called before flowgraph start
+        that it is handled correctly and not discarded"""
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+        file_sink.set_capture_meta(0, "test:foo", pmt.to_pmt("bar"))
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        tb.wait()
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            self.assertEqual(meta["captures"][0]["test:foo"], "bar", "Pre start capture segment data discarded")
+
 
 
 if __name__ == '__main__':
