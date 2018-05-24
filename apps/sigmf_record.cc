@@ -372,6 +372,10 @@ main(int argc, char *argv[])
   file_sink->set_global_meta("core:license", pmt::mp(license));
   file_sink->set_global_meta("core:hw", pmt::mp(hardware != "" ? hardware : generate_hw_name(usrp_info)));
 
+  // Check what the gain is and set that on the first capture segment
+  double gain_at_start = usrp_source->get_gain();
+  file_sink->set_capture_meta(0, "uhd:rx_gain", pmt::mp(gain_at_start));
+
   std::cout << "Writing SigMF recording to:" << std::endl;
   std::cout << "  Samples: " << file_sink->get_data_path() << std::endl;
   std::cout << "  Metadata: " << file_sink->get_meta_path() << std::endl;
