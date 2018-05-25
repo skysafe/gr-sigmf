@@ -710,7 +710,7 @@ namespace gr {
         d_global.set("core:sample_rate", tag->value);
 
       } else {
-        throw std::runtime_error("invalid key in capture_segment_from_tags");
+        throw std::runtime_error("invalid key in handle_uhd_tag");
       }
     }
 
