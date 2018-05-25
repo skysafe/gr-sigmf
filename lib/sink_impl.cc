@@ -748,7 +748,7 @@ namespace gr {
           pmt::pmt_t most_recent_segment_start =
             d_captures.back().get("core:sample_start");
 
-          // IF there's already a segment for this sample index, then use that
+          // If there's already a segment for this sample index, then use that
           if(offset != pmt::to_uint64(most_recent_segment_start)) {
             // otherwise add a new empty segment
             meta_namespace new_capture;
