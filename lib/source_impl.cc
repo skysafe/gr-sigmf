@@ -50,7 +50,7 @@ namespace gr {
     }
 
     source::sptr
-    source::make(std::string filename, bool repeat)
+    source::make_no_datatype(std::string filename, bool repeat)
     {
       return gnuradio::get_initial_sptr(new source_impl(filename, "", repeat));
     }

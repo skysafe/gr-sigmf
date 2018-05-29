@@ -149,7 +149,7 @@ main(int argc, char *argv[])
 
   // Make a source block
   gr::sigmf::source::sptr file_source(
-    gr::sigmf::source::make(input_filename));
+    gr::sigmf::source::make_no_datatype(input_filename));
 
   // Get the sample_rate
   pmt::pmt_t sample_rate = file_source->global_meta().get("core:sample_rate");

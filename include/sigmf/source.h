@@ -55,7 +55,7 @@ namespace gr {
        * native datatype of the input file as the output datatype.
        */
       static sptr
-      make(std::string filename, bool repeat = false);
+      make_no_datatype(std::string filename, bool repeat = false);
 
       /*!
        * \brief Add a stream tag to the first sample of the file if true
