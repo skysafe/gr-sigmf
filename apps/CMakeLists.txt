@@ -34,19 +34,14 @@ find_package(Boost
   REQUIRED
   COMPONENTS system program_options filesystem log thread)
 
-# # link_libraries(${Boost_LIBRARIES})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${RapidJson_INCLUDE_DIR})
 
-# # ## Threading
-# # find_package(Threads REQUIRED)
-# # link_libraries(${CMAKE_THREAD_LIBS_INIT})
-
-# ## UHD
+## UHD
 find_package(UHD REQUIRED)
 include_directories(${UHD_INCLUDE_DIRS})
 
-# ## Gnuradio
+## Gnuradio
 # find_package(Gnuradio "3.7.2" REQUIRED)
 # include_directories(${GNURADIO_ALL_INCLUDE_DIRS})
 
@@ -64,7 +59,6 @@ add_executable(sigmf-record
     ${SIGMF_RECORD_SRCFILES}
 )
 
-target_link_libraries (sigmf-record ${CMAKE_THREAD_LIBS_INIT})
 # get_cmake_property(_variableNames VARIABLES)
 # foreach (_variableName ${_variableNames})
 #     message(STATUS "${_variableName}=${${_variableName}}")
