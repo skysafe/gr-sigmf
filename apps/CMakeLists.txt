@@ -95,6 +95,27 @@ target_link_libraries(sigmf-play
 install(TARGETS sigmf-play DESTINATION bin)
 
 ####################################################
+############### sigmf-crop #########################
+####################################################
+
+set(SIGMF_CROP_SRCFILES
+    "sigmf_crop.cc"
+)
+
+add_executable(sigmf-crop
+    ${SIGMF_CROP_SRCFILES}
+)
+
+target_link_libraries(sigmf-crop
+    ${UHD_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GNURADIO_ALL_LIBRARIES}
+    gnuradio-sigmf
+    )
+
+install(TARGETS sigmf-crop DESTINATION bin)
+
+####################################################
 ############### Python-based apps ##################
 ####################################################
 GR_PYTHON_INSTALL(

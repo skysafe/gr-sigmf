@@ -49,6 +49,15 @@ namespace gr {
       make(std::string filename, std::string output_datatype, bool repeat = false);
 
       /*!
+       * \brief Return a shared_ptr to a new instance of sigmf::source.
+       * 
+       * This constructor will build a sink that will always use the 
+       * native datatype of the input file as the output datatype.
+       */
+      static sptr
+      make(std::string filename, bool repeat = false);
+
+      /*!
        * \brief Add a stream tag to the first sample of the file if true
        */
       virtual void set_begin_tag(pmt::pmt_t val) = 0;

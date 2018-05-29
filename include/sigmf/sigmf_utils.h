@@ -25,16 +25,16 @@
 namespace gr {
   namespace sigmf {
     boost::filesystem::path to_data_path(const std::string &filename) SIGMF_API;
-    boost::filesystem::path meta_path_from_data(boost::filesystem::path data_path);
+    boost::filesystem::path meta_path_from_data(boost::filesystem::path data_path) SIGMF_API;
+
     enum endian_t { LITTLE = 0, BIG = 1 };
-    struct format_detail_t {
+    struct SIGMF_API format_detail_t {
       bool is_complex;
       std::string type_str; // base type string, so no r or c and no _le or _be
       size_t width;
       endian_t endianness;
     };
+    format_detail_t parse_format_str(const std::string &format_str) SIGMF_API;
 
-    format_detail_t parse_format_str(const std::string &format_str);
-    size_t format_str_to_size(const std::string &format_str);
   }
 }

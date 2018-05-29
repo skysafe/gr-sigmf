@@ -49,13 +49,19 @@ namespace gr {
       return gnuradio::get_initial_sptr(new source_impl(filename, type, repeat));
     }
 
+    source::sptr
+    source::make(std::string filename, bool repeat)
+    {
+      return gnuradio::get_initial_sptr(new source_impl(filename, "", repeat));
+    }
+
     /*
      * The private constructor
      */
     source_impl::source_impl(std::string filename, std::string type, bool repeat)
     : gr::sync_block("source",
                      gr::io_signature::make(0, 0, 0),
-                     gr::io_signature::make(1, 1, sizeof(float))),
+                     gr::io_signature::make(1, 1, sizeof(float))), // This get's overwritten below
       d_data_fp(0), d_meta_fp(0), d_repeat(repeat), d_file_begin(true),
       d_add_begin_tag(pmt::PMT_NIL), d_repeat_count(0),
       d_data_path(to_data_path(filename)), d_meta_path(meta_path_from_data(d_data_path))
@@ -71,6 +77,9 @@ namespace gr {
       open();
       load_metadata();
       std::string input_datatype = d_global.get_str("core:datatype");
+      if (type == "") {
+        type = input_datatype;
+      }
 
       // Get the input datatype
       format_detail_t input_detail = parse_format_str(input_datatype);
