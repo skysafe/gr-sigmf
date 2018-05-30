@@ -170,8 +170,12 @@ namespace gr {
 
         pmt::pmt_t values = poll_now();
         message_port_pub(pmt::intern("out"), values);
-
-        boost::this_thread::sleep_until(next_tick);
+        try {
+          boost::this_thread::sleep_until(next_tick);
+        } catch(const boost::thread_interrupted &e) {
+          GR_LOG_INFO(d_logger, "poll_thread interrupted, exiting");
+          return;
+        }
       }
     }
   } /* namespace sigmf */
