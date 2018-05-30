@@ -165,13 +165,13 @@ namespace gr {
     usrp_gps_message_source_impl::poll_thread()
     {
       while(true) {
-        std::chrono::time_point<std::chrono::steady_clock> now = std::chrono::steady_clock::now();
-        std::chrono::time_point<std::chrono::steady_clock> next_tick = now + std::chrono::milliseconds((int) (d_poll_interval * 1000.0));
+        boost::chrono::time_point<boost::chrono::steady_clock> now = boost::chrono::steady_clock::now();
+        boost::chrono::time_point<boost::chrono::steady_clock> next_tick = now + boost::chrono::milliseconds((int) (d_poll_interval * 1000.0));
 
         pmt::pmt_t values = poll_now();
         message_port_pub(pmt::intern("out"), values);
 
-        std::this_thread::sleep_until(next_tick);
+        boost::this_thread::sleep_until(next_tick);
       }
     }
   } /* namespace sigmf */
