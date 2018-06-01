@@ -25,7 +25,6 @@
 #include <chrono>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #include <uhd/usrp/multi_usrp.hpp>
 #include <gnuradio/io_signature.h>
