@@ -596,7 +596,7 @@ namespace gr {
           // If no datetime set
           if (!first_segment.has("core:datetime")) {
             // Then set one
-            GR_LOG_INFO(d_logger, "No core:datetime found, using host ts instead")
+            GR_LOG_INFO(d_logger, "No core:datetime found, using host ts instead");
             first_segment.set("core:datetime", iso_8601_ts());
           } 
           // clear pre_capture_data

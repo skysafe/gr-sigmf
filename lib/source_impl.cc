@@ -215,7 +215,7 @@ namespace gr {
         tag.offset = tag.offset - offset_correction;
       }
 
-      GR_LOG_DEBUG(d_logger, "tags to output: ")
+      GR_LOG_DEBUG(d_logger, "tags to output: ");
       for(size_t i = 0; i < d_tags_to_output.size(); i++) {
         GR_LOG_DEBUG(d_logger, "key = " << d_tags_to_output[i].key << ", ");
         GR_LOG_DEBUG(d_logger, "val = " << d_tags_to_output[i].value << ", ");
