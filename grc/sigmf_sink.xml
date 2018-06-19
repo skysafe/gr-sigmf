@@ -99,6 +99,7 @@ self.$(id).set_global_meta('$field_key()', $field_val())
   <param>
     <name>Time Handling Mode</name>
     <key>time_mode</key>
+    <value>sigmf.sigmf_time_mode_relative</value>
     <type>enum</type>
     <option>
       <name>Absolute</name>
