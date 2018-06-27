@@ -229,14 +229,14 @@ namespace gr {
     sink_impl::on_command_message(pmt::pmt_t msg)
     {
       if(!pmt::is_dict(msg)) {
-        GR_LOG_ERROR(d_logger, boost::format("Command message is not a dict: %s") % msg);
+        GR_LOG_WARN(d_logger, boost::format("Command message is not a dict: %s") % msg);
         return;
       }
 
       // Look for a command
       pmt::pmt_t command_pmt = pmt::dict_ref(msg, COMMAND, pmt::get_PMT_NIL());
       if(pmt::eqv(command_pmt, pmt::get_PMT_NIL())) {
-        GR_LOG_ERROR(d_logger, boost::format("Command key not found in dict: %s") % msg);
+        GR_LOG_WARN(d_logger, boost::format("Command key not found in dict: %s") % msg);
         return;
       }
       std::string command_str = pmt::symbol_to_string(command_pmt);
