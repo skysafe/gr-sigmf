@@ -59,6 +59,7 @@ add_executable(sigmf-record
     ${SIGMF_RECORD_SRCFILES}
 )
 
+target_link_libraries (sigmf-record ${CMAKE_THREAD_LIBS_INIT})
 # get_cmake_property(_variableNames VARIABLES)
 # foreach (_variableName ${_variableNames})
 #     message(STATUS "${_variableName}=${${_variableName}}")
