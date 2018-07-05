@@ -95,7 +95,10 @@ namespace gr {
       d_type(add_endianness(type)), d_sink_time_mode(time_mode)
     {
       init_meta();
-      open(filename.c_str());
+      bool opened_file = open(filename.c_str());
+      if (filename != "" && !opened_file) {
+        throw std::runtime_error((boost::format("Unable to open file '%s'") % filename).str());
+      }
       d_temp_tags.reserve(32);
 
       // command message port

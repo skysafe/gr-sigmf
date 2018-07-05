@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import struct
+import exceptions
 import json
 import math
 import time
@@ -1090,8 +1091,21 @@ class qa_sink(gr_unittest.TestCase):
             meta_str = f.read()
             meta = json.loads(meta_str)
 
-            self.assertEqual(meta["captures"][0]["test:foo"], "bar", "Pre start capture segment data discarded")
+            self.assertEqual(meta["captures"][0]["test:foo"],
+                             "bar", "Pre start capture segment data discarded")
 
+    def test_bad_filename(self):
+        """Test that if we get a bad filename, then we should get a runtime
+        error"""
+        dirname = uuid.uuid4().hex
+        filename = uuid.uuid4().hex
+        # Make a data file with a weird name that doesn't exist
+        data_file = os.path.join("/tmp", dirname, filename)
+        # with self.assertRaises()
+        # Try to instantiate the sink, this should error
+        with self.assertRaises(exceptions.RuntimeError):
+            file_sink = sigmf.sink("cf32_le",
+                                   data_file)
 
 
 if __name__ == '__main__':
