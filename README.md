@@ -13,6 +13,21 @@ Ultimately we'd be happy if gr-sigmf became the canonical implementation of SigM
 * Correctly and completely implement the [SigMF Specification](https://github.com/gnuradio/SigMF/blob/master/sigmf-spec.md).
 * Be a "good GNU Radio citizen", and interact in useful ways with the existing core blocks, existing OOT blocks, and hardware interfaces such as ``gr-uhd``.
 
+## Contents
+
+* A set of blocks for reading and writing SigMF datasets
+  * sink: Create SigMF datasets
+  * source: Read SigMF datasets
+  * annotation_sink: Write SigMF metadata only
+  * usrp_gps_message_source: Surface gps metadata from a usrp as messages so it can easily be used by a SigMF sink.
+
+* A set of command line tools for creating/working with SigMF datasets. They include:
+  * sigmf-record: Create SigMF datasets from Ettus radios
+  * sigmf-play: Replay SigMF datasets to Ettus radios
+  * sigmf-archive: Convert SigMF datasets to and from archive files
+  * sigmf-crop: Extract subsections from SigMF datasets
+  * sigmf-hash: Verify and calculate hashes for SigMF datasets
+
 ## Roadmap
 
 This is a (rough) planned sequence of development.
