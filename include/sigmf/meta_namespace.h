@@ -43,6 +43,13 @@ namespace gr {
 
     static const char *SIGMF_VERSION = "0.0.1";
 
+    /*!
+     * meta_namespace is essentially a light wrapper around a pmt
+     * that is used to represent all sections of the metadata in
+     * gr-simgf. The global metadata is a single instace and
+     * each segment in annotations and captures is also a single
+     * instance.
+     */
     class SIGMF_API meta_namespace {
       public:
 
