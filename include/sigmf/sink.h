@@ -51,57 +51,66 @@ namespace gr {
                        sigmf_time_mode time_mode = sigmf_time_mode::absolute,
                        bool append = false);
 
-      /* \brief Get the path the the current .sigmf-data file as a string
+      /*!
+       * \brief Get the path the the current .sigmf-data file as a string
        *
        * If there is no currently open file, returns empty string
        * @return the path
        */
       virtual std::string get_data_path() = 0;
 
-      /* \brief Get the path the the current .sigmf-meta file as a string
+      /*!
+       * \brief Get the path the the current .sigmf-meta file as a string
        *
        * If there is no currently open file, returns empty string
        * @return the path
        */
       virtual std::string get_meta_path() = 0;
 
-      /* \brief Set a value in the global metadata for this data set.
+      /*!
+       * \brief Set a value in the global metadata for this data set.
        * @param key the key for the value
        * @param val the value to store
        */
       virtual void set_global_meta(const std::string &key, pmt::pmt_t val) = 0;
 
-      /* \brief Set a value in the global metadata for this data set.
+      /*!
+       * \brief Set a value in the global metadata for this data set.
        * @param key the key for the value
        * @param val the value to store
        */
       virtual void set_global_meta(const std::string &key, double val) = 0;
 
-      /* \brief Set a value in the global metadata for this data set.
+      /*!
+       * \brief Set a value in the global metadata for this data set.
        * @param key the key for the value
        * @param val the value to store
        */
       virtual void set_global_meta(const std::string &key, int64_t val) = 0;
 
-      /* \brief Set a value in the global metadata for this data set.
+      /*!
+       * \brief Set a value in the global metadata for this data set.
        * @param key the key for the value
        * @param val the value to store
        */
       virtual void set_global_meta(const std::string &key, uint64_t val) = 0;
 
-      /* \brief Set a value in the global metadata for this data set.
+      /*!
+       * \brief Set a value in the global metadata for this data set.
        * @param key the key for the value
        * @param val the value to store
        */
       virtual void set_global_meta(const std::string &key, const std::string &val) = 0;
 
-      /* \brief Set a value in the global metadata for this data set.
+      /*!
+       * \brief Set a value in the global metadata for this data set.
        * @param key the key for the value
        * @param val the value to store
        */
       virtual void set_global_meta(const std::string &key, bool val) = 0;
 
-      /* \brief Set a value in the annotations metadata for this data set.
+      /*!
+       * \brief Set a value in the annotations metadata for this data set.
        * @param sample_start sample start for the annotation
        * @param sample_count sample count for the annotation
        * @param key the key for the value
@@ -116,7 +125,8 @@ namespace gr {
                                        std::string key,
                                        pmt::pmt_t val) = 0;
 
-      /* \brief Set a value in the annotations metadata for this data set.
+      /*!
+       * \brief Set a value in the annotations metadata for this data set.
        * @param index the index of the desired capture segment
        * @param key the key for the value
        * @param val the value to store
@@ -126,7 +136,8 @@ namespace gr {
        */
       virtual void set_capture_meta(uint64_t index, std::string key, pmt::pmt_t val) = 0;
 
-      /* \brief Open a new file to start recording to
+      /*!
+       * \brief Open a new file to start recording to
        * @param filename the file to write to
        *
        * The sigmf sink will coerce the filename to the names of the two files in a
@@ -134,7 +145,8 @@ namespace gr {
        */
       virtual bool open(const char *filename) = 0;
 
-      /* \brief Stop writing to the current file
+      /*!
+       * \brief Stop writing to the current file
        */
       virtual void close() = 0;
     };
