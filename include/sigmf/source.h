@@ -50,8 +50,8 @@ namespace gr {
 
       /*!
        * \brief Return a shared_ptr to a new instance of sigmf::source.
-       * 
-       * This constructor will build a sink that will always use the 
+       *
+       * This constructor will build a sink that will always use the
        * native datatype of the input file as the output datatype.
        */
       static sptr
@@ -59,10 +59,18 @@ namespace gr {
 
       /*!
        * \brief Add a stream tag to the first sample of the file if true
+       * @param val the tag to add
        */
       virtual void set_begin_tag(pmt::pmt_t val) = 0;
 
+      /*!
+       * \brief retrieve the global metadata for this source
+       */
       virtual gr::sigmf::meta_namespace &global_meta() = 0;
+
+      /*!
+       * \brief retrieve the capture segments for this source
+       */
       virtual std::vector<gr::sigmf::meta_namespace> &capture_segments() = 0;
     };
 

@@ -46,18 +46,39 @@ namespace gr {
     class SIGMF_API meta_namespace {
       public:
 
-      static meta_namespace
-      build_global_object(std::string datatype, std::string version = SIGMF_VERSION);
+      /* \brief build meta_namespace that represents a global metadata sction
+      * @param datatype the datatype of the file as a string
+      * @param version the sigmf version of the file
+      * @return the built meta_namespace object
+      */
+      static meta_namespace build_global_object(std::string datatype, std::string version = SIGMF_VERSION);
 
+      /* \brief build meta_namespace that represents a capture segment
+      * @param sample_start the sample_start of this capture segment
+      * @return the built meta_namespace object
+      */
       static meta_namespace build_capture_segment(uint64_t sample_start);
+
+      /* \brief build meta_namespace that represents an annotation segment
+      * @param sample_start the sample_start of this annotation segment
+      * @param sample_count the sample_count of this annotation segment
+      * @return the built meta_namespace object
+      */
       static meta_namespace build_annotation_segment(uint64_t sample_start, uint64_t sample_count);
 
       meta_namespace(pmt::pmt_t data);
       meta_namespace();
       ~meta_namespace();
 
+      /* \brief access the underlying pmt for this meta_namespace object
+      * @return the pmt
+      */
       pmt::pmt_t data();
 
+      /* \brief check if a given string is a valid key for SigMF metadata
+      * @param key the key to check
+      * @return true if the key is valid and false otherwise
+      */
       static bool validate_key(const std::string &key);
 
       template <typename ValType>

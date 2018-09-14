@@ -1,10 +1,13 @@
 /*! \mainpage
 
-Welcome to the GNU Radio SIGMF Block
+Welcome to the GNU Radio SigMF Block
 
-This is the intro page for the Doxygen manual generated for the SIGMF
-block (docs/doxygen/other/main_page.dox). Edit it to add more detailed
-documentation about the new GNU Radio modules contained in this
-project.
+This OOT module contains a set of blocks for working with sigmf.
+The main blocks in this module are:
+
+- source: A block for reading SigMF data
+- sink: A block for writing SigMF data
+- usrp_gps_message_source: A block to make getting gps metadata from a USRP radio easier
+- annotation_sink: A block for writing annotation data only
 
 */
