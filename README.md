@@ -56,3 +56,8 @@ This is a (rough) planned sequence of development.
 ## Notes
 
 To guarantee valid data in the event of a crash, write an initial minimal metadata file at launch, then write a completed file on a clean shutdown.
+
+
+## Testing
+
+Any new feature added to gr-sigmf should be accompannied by a unit test.
