@@ -3,10 +3,10 @@
 This module contains blocks to read from and write to SigMF recordings in GNU
 Radio.
 
-Gr-sigmf is currently a *work in progress*. We welcome any feature requests or bug reports. 
+Gr-sigmf is currently a *work in progress*. We welcome any feature requests or bug reports.
 Pull requests are fine too, but will be met with more success if you make an issue first.
 
-Ultimately we'd be happy if gr-sigmf became the canonical implementation of SigMF in GNURadio. 
+Ultimately we'd be happy if gr-sigmf became the canonical implementation of SigMF in GNURadio.
 
 ## Goals
 
@@ -27,9 +27,11 @@ This is a (rough) planned sequence of development.
 * SigMF Source correctly converts capture segments and annotations to stream tags
 * Convert stream tags to annotations in sink block
 * SigMF Player tool (sigmf-play)
-* Automatic sample format conversion in Source 
+* Automatic sample format conversion in Source
+* Handle annotations via messages (with sample offset or timestamp)
+* Python tools to accomplish basic tasks (e.g. updating checksum, handling archives)
 
-### Up next 
+### Up next
 
 * Output metadata via message (for support in applications like 'such samples')
 * Make sure that UHD generates/reads stream tags that are nicely handled by
@@ -37,8 +39,6 @@ This is a (rough) planned sequence of development.
 * Make waterfall, frequency, and time sinks interact well with stream tags as
   translated from metadata.
 * Build stream tag converter block to convert uhd stream tags to tags with keys that match sigmf keys
-* Handle annotations via messages (with sample offset or timestamp)
-* Python tools to accomplish basic tasks (e.g. updating checksum, handling archives)
 
 ### Farther future
 
@@ -56,5 +56,3 @@ This is a (rough) planned sequence of development.
 ## Notes
 
 To guarantee valid data in the event of a crash, write an initial minimal metadata file at launch, then write a completed file on a clean shutdown.
-
-Is there a GNU Radio-wide way to refer to sample formats? It would be nice to use a constant instead of a string.
