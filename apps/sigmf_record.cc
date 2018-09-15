@@ -449,7 +449,7 @@ main(int argc, char *argv[])
   });
   if (vm.count("duration")) {
     // We wait in two phases here
-    // first we wait for the expected time + 1 
+    // first we wait for the expected time + 1
     auto status = quit_future.wait_for(std::chrono::duration<double>(duration_seconds + 1));
     std::string seconds = duration_seconds == 1 ? "second" : "seconds";
     if (status == std::future_status::ready) {

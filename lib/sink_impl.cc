@@ -190,7 +190,7 @@ namespace gr {
       return posix::to_iso_extended_string(t) + "Z";
     }
 
-    void 
+    void
     sink_impl::init_meta() {
       reset_meta();
       d_captures.push_back(meta_namespace::build_capture_segment(0));
@@ -527,7 +527,7 @@ namespace gr {
                 if (d_global.has("core:sample_rate")) {
                   pmt::pmt_t samp_rate_pmt = d_global.get("core:sample_rate");
                   current_sample_rate = pmt::to_double(samp_rate_pmt);
-                } 
+                }
               } else {
                 current_sample_rate = pmt::to_double(sample_rate_pmt);
               }
@@ -542,7 +542,7 @@ namespace gr {
                 // based on the number of samples and the sample rate
                 uint64_t full_seconds_since_time =
                   std::floor(samples_since_time_received / current_sample_rate);
-                double frac_seconds_since_time = 
+                double frac_seconds_since_time =
                   (samples_since_time_received / current_sample_rate) - (full_seconds_since_time);
 
                 uint64_t capture_val_full_seconds;
@@ -601,7 +601,7 @@ namespace gr {
             // Then set one
             GR_LOG_INFO(d_logger, "No core:datetime found, using host ts instead");
             first_segment.set("core:datetime", iso_8601_ts());
-          } 
+          }
           // clear pre_capture_data
           d_pre_capture_data = pmt::make_dict();
           d_pre_capture_tag_index.clear();
@@ -672,7 +672,7 @@ namespace gr {
         switch(d_sink_time_mode) {
           case (sigmf_time_mode::relative):
           {
-            // In relative mode, we need to add this to the time we stored 
+            // In relative mode, we need to add this to the time we stored
             // for the first sample received
             // Check if we got a relative time on the first sample
             uint64_t start_full_seconds = 0;
@@ -690,7 +690,7 @@ namespace gr {
             // Add tag seconds to initial timestamp
             posix::ptime adjusted_time =
               d_relative_start_ts +
-              posix::seconds(tag_full_seconds) + 
+              posix::seconds(tag_full_seconds) +
               posix::nanoseconds(std::floor(tag_frac_seconds * 1000000000));
             // And set the adjusted time as the new time
             std::string ts_iso = posix::to_iso_extended_string(adjusted_time) + "Z";

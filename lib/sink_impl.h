@@ -109,7 +109,7 @@ namespace gr {
       bool d_meta_written = false;
 
       // The offset of the start of the current recording from
-      // what the block believes 
+      // what the block believes
       uint64_t d_recording_start_offset;
 
       boost::mutex d_mutex;

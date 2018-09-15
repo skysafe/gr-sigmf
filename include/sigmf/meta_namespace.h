@@ -181,6 +181,7 @@ namespace gr {
       pmt::pmt_t d_data;
     };
 
+
     struct SIGMF_API metafile_namespaces {
       meta_namespace global;
       std::vector<meta_namespace> captures;
