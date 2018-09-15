@@ -365,11 +365,12 @@ main(int argc, char *argv[])
   // make a sink block
   gr::sigmf::sink::sptr file_sink(
     gr::sigmf::sink::make(sigmf_format, output_filename));
-   
+
   file_sink->set_global_meta("core:sample_rate", pmt::mp(sample_rate));
   file_sink->set_global_meta("core:description", pmt::mp(description));
   file_sink->set_global_meta("core:author", pmt::mp(author));
   file_sink->set_global_meta("core:license", pmt::mp(license));
+  file_sink->set_global_meta("core:recorder", pmt::mp("sigmf_record"));
   file_sink->set_global_meta("core:hw", pmt::mp(hardware != "" ? hardware : generate_hw_name(usrp_info)));
 
   // Check what the gain is and set that on the first capture segment
