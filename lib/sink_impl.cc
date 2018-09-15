@@ -638,6 +638,13 @@ namespace gr {
       if(d_meta_written) {
         return;
       }
+      // Update the last capture with the length
+      if(d_captures.size() > 0) {
+        auto &last_capture = d_captures.back();
+        auto last_start = pmt::to_uint64(last_capture.get("core:sample_start"));
+        auto last_length = nitems_read(0) - last_start;
+        last_capture.set("core:length", pmt::from_uint64(last_length));
+      }
 
       FILE *fp = std::fopen(d_meta_path.c_str(), "w");
       if (fp == nullptr) {
@@ -755,6 +762,13 @@ namespace gr {
           if(offset != pmt::to_uint64(most_recent_segment_start)) {
             // otherwise add a new empty segment
             meta_namespace new_capture;
+            // Adding a new segment, compute the length of the last segment
+            if (d_captures.size() > 0) {
+              auto &previous_capture = d_captures.back();
+              auto prev_start = pmt::to_uint64(previous_capture.get("core:sample_start"));
+              auto prev_length = offset - prev_start;
+              previous_capture.set("core:length", pmt::from_uint64(prev_length));
+            }
             d_captures.push_back(new_capture);
           }
 

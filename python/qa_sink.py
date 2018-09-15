@@ -20,7 +20,7 @@ from gnuradio import gr, gr_unittest, blocks, analog
 from sigmf import sigmf_swig as sigmf
 
 from test_blocks import (simple_tag_injector, sample_counter,
-                         sample_producer, msg_sender)
+                         sample_producer, msg_sender, advanced_tag_injector)
 
 
 def sig_source_c(samp_rate, freq, amp, N):
@@ -1107,6 +1107,70 @@ class qa_sink(gr_unittest.TestCase):
             file_sink = sigmf.sink("cf32_le",
                                    data_file)
 
+    def test_length_in_capture_segment(self):
+        """Test that in a simple scenario, the length is correctly written"""
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+        file_sink.set_capture_meta(0, "test:foo", pmt.to_pmt("bar"))
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        tb.wait()
+        # check that the length is right
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            self.assertEqual(meta["captures"][0]["core:length"],
+                             1000, "core:length is incorrect")
+
+    def test_length_in_capture_segment_multiple_segments(self):
+        """Test that in a complex scenario, the length is correctly written"""
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+        file_sink.set_capture_meta(0, "test:foo", pmt.to_pmt("bar"))
+
+        index_1 = 0
+        index_2 = 227
+        index_3 = 859
+        injector = advanced_tag_injector([
+            (index_1, {"rx_freq": 2.4e9}),
+            (index_2, {"rx_freq": 2.2e9}),
+            (index_3, {"rx_freq": 2.6e9}),
+        ])
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, injector)
+        tb.connect(injector, file_sink)
+        tb.run()
+        tb.wait()
+        # check that the length is right for each segment
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+            self.assertEqual(len(meta["captures"]), 3,
+                             "Wrong number of captures")
+            self.assertEqual(meta["captures"][0]["core:length"],
+                             index_2 - index_1, "core:length is incorrect")
+            self.assertEqual(meta["captures"][1]["core:length"],
+                             index_3 - index_2, "core:length is incorrect")
+            self.assertEqual(meta["captures"][2]["core:length"],
+                             N - index_3, "core:length is incorrect")
 
 if __name__ == '__main__':
     gr_unittest.run(qa_sink, "qa_sink.xml")
