@@ -41,7 +41,8 @@ namespace gr {
 
       /*!
        * \brief Return a shared_ptr to a new instance of sigmf::usrp_gps_message_source.
-       *
+       * @param uhd_args the args specifiying the usrp to use
+       * @param poll_interval the polling interval in seconds
        * To avoid accidental use of raw pointers, sigmf::usrp_gps_message_source's
        * constructor is in a private implementation
        * class. sigmf::usrp_gps_message_source::make is the public interface for

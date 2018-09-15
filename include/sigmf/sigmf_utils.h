@@ -25,19 +25,21 @@
 namespace gr {
   namespace sigmf {
 
-    /*! \brief convert a filename to the path of a .sigmf-data file
-      * @param filename the filename
-      * @return the path as a boost::filesystem::path object
-      *
-      * For example, filename is `/foo/bar/baz` then the returned path would
-      * be `/foo/bar/bas.sigmf-data`. Any existing extension will be replaced
-      */
+    /*!
+     * \brief convert a filename to the path of a .sigmf-data file
+     * @param filename the filename
+     * @return the path as a boost::filesystem::path object
+     *
+     * For example, filename is `/foo/bar/baz` then the returned path would
+     * be `/foo/bar/bas.sigmf-data`. Any existing extension will be replaced
+     */
     boost::filesystem::path to_data_path(const std::string &filename) SIGMF_API;
 
-    /*! \brief convert a data path to the path of a .sigmf-meta file
-      * @param data_path path to data
-      * @return the path as a boost::filesystem::path object
-      */
+    /*!
+     * \brief convert a data path to the path of a .sigmf-meta file
+     * @param data_path path to data
+     * @return the path as a boost::filesystem::path object
+     */
     boost::filesystem::path meta_path_from_data(boost::filesystem::path data_path) SIGMF_API;
 
     //! An enum describing endianness
@@ -60,7 +62,8 @@ namespace gr {
       endian_t endianness;
     };
 
-    /*! \brief Parse the dataset format
+    /*!
+     * \brief Parse the dataset format
      * defined by SigMF into a format_detail_t struct.
      * @param format_str format as a sttring
      * @exception std::runtime_error invalid format string

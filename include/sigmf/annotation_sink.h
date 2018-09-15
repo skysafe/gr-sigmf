@@ -41,7 +41,7 @@ namespace gr {
      * Determines how the annotation sink deals
      * with existing annotations. If keep(), then
      * they are all kept. If clear(), then existing
-     * annotations are cleared, optionally with a globbing 
+     * annotations are cleared, optionally with a globbing
      * expression as a filter for the annotations to remove
      */
     struct SIGMF_API annotation_mode {
