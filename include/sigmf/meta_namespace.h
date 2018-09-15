@@ -41,7 +41,7 @@
 namespace gr {
   namespace sigmf {
 
-    static const char *SIGMF_VERSION = "0.0.1";
+    static const char *SIGMF_VERSION = "0.0.2";
 
     /*!
      * meta_namespace is essentially a light wrapper around a pmt
