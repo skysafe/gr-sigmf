@@ -345,7 +345,7 @@ namespace gr {
           // NOTE: this may change if the sigmf spec changes
           pmt::pmt_t first_capture_start_position = d_captures[0].get("core:sample_start");
           uint64_t offset_samples = pmt::to_uint64(first_capture_start_position);
-          uint64_t offset_bytes = offset_samples * d_sample_size; 
+          uint64_t offset_bytes = offset_samples * d_sample_size;
           // If we ever do this when d_data_fp isn't at 0, something is wrong
           assert(std::ftell(d_data_fp) == 0);
           std::fseek(d_data_fp, offset_bytes, SEEK_SET);
