@@ -307,12 +307,12 @@ namespace gr {
 
       uint64_t window_end = window_start + size;
       for(size_t tag_index = d_next_tag_index; tag_index < d_tags_to_output.size(); tag_index++) {
-        if(d_tags_to_output[tag_index].offset >= window_start &&
-           d_tags_to_output[tag_index].offset < window_end) {
+        uint64_t tag_offset = d_tags_to_output[tag_index].offset + (d_num_samples_in_file * d_repeat_count);
+        if(tag_offset >= window_start && tag_offset < window_end) {
 
           // Update the offset since the file may have repeated
           tag_t tag_to_add = d_tags_to_output[tag_index];
-          tag_to_add.offset = tag_to_add.offset + (d_num_samples_in_file * d_repeat_count);
+          tag_to_add.offset = tag_offset;
 
           GR_LOG_DEBUG(d_logger,"Adding a tag");
           GR_LOG_DEBUG(d_logger, "key = " << tag_to_add.key);
@@ -321,14 +321,12 @@ namespace gr {
 
           add_item_tag(0, tag_to_add);
 
-        } else {
-          if(tag_index == d_tags_to_output.size() - 1) {
-            d_next_tag_index = 0;
-          } else {
-            d_next_tag_index = tag_index;
-          }
-          break;
+          d_next_tag_index = tag_index + 1;
         }
+      }
+
+      if(d_next_tag_index == d_tags_to_output.size()) {
+        d_next_tag_index = 0;
       }
 
       while(base_size > 0) {
@@ -375,9 +373,7 @@ namespace gr {
         if(std::fseek((FILE *)d_data_fp, 0, SEEK_SET) == -1) {
           std::fprintf(stderr, "[%s] fseek failed\n", __FILE__);
         }
-        if(d_add_begin_tag != pmt::PMT_NIL) {
-          d_repeat_count++;
-        }
+        d_repeat_count++;
         d_file_begin = true;
       }
 
