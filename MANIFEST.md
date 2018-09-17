@@ -1,16 +1,15 @@
-title: The SIGMF OOT Module
-brief: Short description of gr-sigmf
-tags: # Tags are arbitrary, but look at CGRAN what other authors are using
-  - sdr
+title: gr-sigmf
+brief: Blocks for interfacing with SigMF (The Signal Metadata Format)
+tags:
+  - sigmf
+  - metadata
+  - streams
 author:
-  - Author Name <authors@email.address>
+  - Paul Wicks <paul@skysafe.io>
+  - Cate Miller <cate@skysafe.io>
+  - Scott Torborg <scott@skysafe.io>
 copyright_owner:
-  - Copyright Owner 1
-license:
-#repo: # Put the URL of the repository here, or leave blank for default
-#website: <module_website> # If you have a separate project website, put it here
-#icon: <icon_url> # Put a URL to a square image here that will be used as an icon on CGRAN
+  - SkySafe Inc <info@skysafe.io>
+license: GPLv3
+repo: https://github.com/skysafe/gr-sigmf
 ---
-A longer, multi-line description of gr-sigmf.
-You may use some *basic* Markdown here.
-If left empty, it will try to find a README file instead.
