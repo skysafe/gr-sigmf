@@ -197,9 +197,22 @@ namespace gr {
       return a.offset < b.offset;
     }
 
+    void source_impl::add_global_tags(const meta_namespace &global_segment) {
+      if (global_segment.has("core:sample_rate")) {
+          tag_t tag;
+          tag.offset = 0;
+          tag.key = RATE_KEY;
+          tag.value = global_segment.get("core:sample_rate");
+          d_tags_to_output.push_back(tag);
+      }
+    }
+
     void
     source_impl::build_tag_list()
     {
+      // Add known tags from the global object
+      add_global_tags(d_global);
+
       // Add tags to the send queue from both captures and annotations
       add_tags_from_meta_list(d_captures);
       add_tags_from_meta_list(d_annotations);

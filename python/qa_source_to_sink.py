@@ -121,6 +121,7 @@ class qa_source_to_sink(gr_unittest.TestCase):
         tb.connect(collector, sink)
         tb.start()
         tb.wait()
+        collector.assertTagExists(0, "rx_rate", samp_rate)
         collector.assertTagExists(0, "rx_time", time)
         collector.assertTagExists(0, "rx_freq", freq)
         collector.assertTagExists(test_index, "test:a", test_a)
