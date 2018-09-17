@@ -169,7 +169,7 @@ namespace gr {
       return get(pmt::mp(key), default_val);
     }
 
-    pmt::pmt_t 
+    pmt::pmt_t
     meta_namespace::get(pmt::pmt_t key, pmt::pmt_t default_val) const {
       return pmt::dict_ref(d_data, key, default_val);
     }
