@@ -1,3 +1,4 @@
+Language: Cpp
 AccessModifierOffset: 0
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
@@ -13,7 +14,7 @@ AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: false
 
-AlwaysBreakAfterReturnType: AllDefinitions 
+AlwaysBreakAfterReturnType: AllDefinitions
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: true
 
@@ -21,7 +22,7 @@ BinPackArguments: true
 BinPackParameters: false
 
 BreakBeforeBinaryOperators: false
-BreakBeforeBraces: Custom 
+BreakBeforeBraces: Custom
 
 BraceWrapping:
     AfterClass:            false
@@ -38,8 +39,7 @@ BraceWrapping:
 
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializersBeforeComma: false
-# Note supported in 3.8
-# BreakStringLiterals: true
+BreakStringLiterals: true
 
 ColumnLimit: 90
 # CommentPragmas:  # Don't need this at the moment, might need later
@@ -49,17 +49,27 @@ ContinuationIndentWidth: 2
 Cpp11BracedListStyle: false
 DerivePointerAlignment: false
 
+IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex:           '^\<uhd'
-    Priority:        3
-  - Regex:           '^\<'
-    Priority:        2
-  - Regex:           '.\*'
+  - Regex:           '^"'
     Priority:        1
+  - Regex:           '^(\<|")sigmf\/'
+    Priority:        1
+  - Regex:           '^\<boost\/'
+    Priority:        2
+  - Regex:           '^\<gnuradio\/'
+    Priority:        3
+  - Regex:           '^\<pmt\/'
+    Priority:        3
+  - Regex:           '^\<uhd'
+    Priority:        4
+  - Regex:           '^\<'
+    Priority:        5
+  - Regex:           '.\*'
+    Priority:        6
 
 IndentCaseLabels: false
 IndentWidth: 2
-# Language:Cpp # 4.0 option
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 
@@ -76,7 +86,7 @@ ReflowComments: true
 SortIncludes: true
 
 SpaceAfterCStyleCast: false
-# SpaceAfterTemplateKeyword: false # 4.0 option
+SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Never
 SpaceInEmptyParentheses: false
