@@ -2,13 +2,24 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 1.1.6
+* Add support for writing `core:length` to capture segments
+* Update `sigmf-record` to write `core:recorder` field
+* Improvements to documentation
+* Fixed an error in gps logging
+* Sink block will now throw an error if an invalid file is supplied
+* Change the default time mode of the sink to be relative
+* Handle thread interruption correctly in usrp_gps_message block
+* Add a sigmf-crop tool
+* Miscellaneous fixes and improvements
+
 ## 1.1.5
 
 * Add support for building a pkg-config file when building gr-sigmf
 * Fixed flaky test: test_relative_time_mode_initial_closed
 * Cleaned up output of blocks to stdout and stderr in preference to standard logging macros
 * Update the handler for the close command pmt message to call `do_update` immediately
-  This fixes an issue where a lot of time may pass between when the command to 
+  This fixes an issue where a lot of time may pass between when the command to
   close is received and when the work function runs again.
 * Fixed a couple other flaky tests
 * Updates and improvements to the USRP GPS Message Source
