@@ -8,6 +8,8 @@ namespace gr {
     static const pmt::pmt_t RATE_KEY = pmt::string_to_symbol("rx_rate");
     static const pmt::pmt_t FREQ_KEY = pmt::string_to_symbol("rx_freq");
     static const pmt::pmt_t PACKET_LEN_KEY = pmt::string_to_symbol("packet_len");
+    static const pmt::pmt_t CORE_LENGTH_KEY = pmt::string_to_symbol("core:length");
+
 
   } // namespace sigmf
 } // namespace gr
