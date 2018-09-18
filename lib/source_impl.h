@@ -77,7 +77,7 @@ namespace gr {
       void load_metadata();
       void build_tag_list();
       void add_global_tags(const meta_namespace &global_segment);
-      void add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list);
+      void add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list, uint64_t shift_amount);
 
       public:
       source_impl(std::string filename, std::string type, bool repeat);

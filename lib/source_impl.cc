@@ -144,7 +144,7 @@ namespace gr {
 
 
     void
-    source_impl::add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list)
+    source_impl::add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list, uint64_t shift_amount)
     {
       for(std::vector<meta_namespace>::const_iterator it = meta_list.begin();
           it != meta_list.end(); it++) {
@@ -154,7 +154,7 @@ namespace gr {
 
         if(capture_keys.count("core:sample_start")) {
           offset = pmt::to_uint64(ns.get("core:sample_start"));
-
+          offset -= shift_amount;
           // remove this key, we don't need it as a tag later
           capture_keys.erase("core:sample_start");
 
@@ -206,9 +206,14 @@ namespace gr {
       // Add known tags from the global object
       add_global_tags(d_global);
 
+      uint64_t offset = 0;
+      if (d_captures.size() > 0) {
+        offset = pmt::to_uint64(d_captures[0].get("core:sample_start"));
+      }
+
       // Add tags to the send queue from both captures and annotations
-      add_tags_from_meta_list(d_captures);
-      add_tags_from_meta_list(d_annotations);
+      add_tags_from_meta_list(d_captures, offset);
+      add_tags_from_meta_list(d_annotations, offset);
 
       GR_LOG_DEBUG(d_logger, "tags to output: ");
       for(auto it = d_tags_to_output.begin(); it != d_tags_to_output.end(); it++) {
