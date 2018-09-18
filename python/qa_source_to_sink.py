@@ -162,12 +162,18 @@ class qa_source_to_sink(gr_unittest.TestCase):
         # generate a file
         data, meta_json, filename, meta_file = self.make_file("offset")
 
+        # drop the first 4 samples
+        adjust_size = 4
+        adjusted_length = 0
         with open(meta_file, "r+") as f:
-            data = json.load(f)
-            data['captures'][0]["core:sample_start"] = 4
-            data['captures'][0]["core:frequency"] = 2.4e9
+            fdata = json.load(f)
+            fdata['captures'][0]["core:sample_start"] = adjust_size
+            fdata['captures'][0]["core:frequency"] = 2.4e9
+            adjusted_length = fdata['captures'][0]["core:length"] - adjust_size
+            fdata['captures'][0]["core:length"] = adjusted_length
+            # print(fdata)
             f.seek(0)
-            json.dump(data, f, indent=4)
+            json.dump(fdata, f, indent=4)
             f.truncate()
 
         data_start_size = os.path.getsize(filename)
@@ -175,20 +181,26 @@ class qa_source_to_sink(gr_unittest.TestCase):
         out_data_file, out_json_file = self.temp_file_names()
         file_source = sigmf.source(filename, "cf32_le")
         file_sink = sigmf.sink("cf32_le", out_data_file)
+        tagd = blocks.tag_debug(gr.sizeof_gr_complex, "test")
         tb = gr.top_block()
         tb.connect(file_source, file_sink)
+        tb.connect(file_source, tagd)
         tb.start()
         tb.wait()
 
         data_end_size = os.path.getsize(out_data_file)
         # end data size should be smaller
-        dropped_samples = 4 * 2 * 4
+        dropped_samples = adjust_size * 2 * 4
         self.assertEqual(data_start_size - dropped_samples,
                          data_end_size, "Wrong data size")
 
         with open(out_json_file, "r") as f:
             meta = json.load(f)
             print(meta)
+            self.assertEqual(len(meta["annotations"]), 0,
+                                "Shouldn't be any annotations in file")
+            self.assertEqual(meta["captures"][0]
+                             ["core:length"], adjusted_length)
             self.assertEqual(len(meta["captures"]), 1,
                              "Should only be 1 capture segment in file")
             self.assertEqual(
