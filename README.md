@@ -1,12 +1,15 @@
-# GNU Radio SigMF Blocks
+# gr-sigmf: GNU Radio SigMF Blocks
 
-This module contains blocks to read from and write to SigMF recordings in GNU
-Radio.
+This module contains blocks to read from and write to SigMF (the Signal
+Metadata Format) recordings in GNU Radio.
 
-Gr-sigmf is currently a *work in progress*. We welcome any feature requests or bug reports.
-Pull requests are fine too, but will be met with more success if you make an issue first.
+Currently gr-sigmf is best described as alpha software. Basic interactions
+work, but features are not complete and the API should be considered somewhat
+unstable. We welcome any feature requests or bug reports. Pull requests are
+fine too, but will be met with more success if you make an issue first.
 
-Ultimately we'd be happy if gr-sigmf became the canonical implementation of SigMF in GNURadio.
+Data correctness issues will be prioritized over reliability issues, which will
+in turn be prioritized over new feature development.
 
 ## Quick Start
 
@@ -34,7 +37,7 @@ To make a SigMF recording using an Ettus Research USRP:
 
     $ sigmf-record --sample-rate 10e6 --freq 88.5e6 --gain 30 example.sigmf
 
-## Goals
+## Design Principles
 
 * Correctly and completely implement the [SigMF Specification](https://github.com/gnuradio/SigMF/blob/master/sigmf-spec.md).
 * Be a "good GNU Radio citizen", and interact in useful ways with the existing core blocks, existing OOT blocks, and hardware interfaces such as ``gr-uhd``.
@@ -56,23 +59,7 @@ To make a SigMF recording using an Ettus Research USRP:
 
 ## Roadmap
 
-This is a (rough) planned sequence of development.
-
-### Completed so far
-
-* Basic SigMF Sink with core namespace fields as parameters
-* Factor out classes for handling metadata
-* SigMF Recorder tool (sigmf-record)
-* Basic SigMF Source with complex float 32 only
-* SigMF Sink correctly converts uhd stream tags to new capture segments
-* SigMF Source correctly converts capture segments and annotations to stream tags
-* Convert stream tags to annotations in sink block
-* SigMF Player tool (sigmf-play)
-* Automatic sample format conversion in Source
-* Handle annotations via messages (with sample offset or timestamp)
-* Python tools to accomplish basic tasks (e.g. updating checksum, handling archives)
-
-### Up next
+### Near Future
 
 * Output metadata via message (for support in applications like 'such samples')
 * Make sure that UHD generates/reads stream tags that are nicely handled by
@@ -81,24 +68,9 @@ This is a (rough) planned sequence of development.
   translated from metadata.
 * Build stream tag converter block to convert uhd stream tags to tags with keys that match sigmf keys
 
-### Farther future
+### Farther Future
 
 * Dynamic control over recording state via message
 * Tar archive support
 * Multi-channel recording support, if it is introduced into the main spec
 * Automatic file rotation?
-
-### Bare minimum level of usability for gathering/manipulating data
-
-* SigMF Recorder (as a GNU Radio flowgraph, with UHD)
-* SigMF Player (as a GNU Radio flowgraph, with UHD)
-* SigMF Source
-
-## Notes
-
-To guarantee valid data in the event of a crash, write an initial minimal metadata file at launch, then write a completed file on a clean shutdown.
-
-
-## Testing
-
-Any new feature added to gr-sigmf should be accompannied by a unit test.
