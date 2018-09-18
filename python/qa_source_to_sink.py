@@ -155,6 +155,9 @@ class qa_source_to_sink(gr_unittest.TestCase):
         return data, meta_json, data_path, meta_path
 
     def test_roundtrip_offset_initial_capture(self):
+        """Test that if the first capture segment has an offset, then
+        it gets correctly offset and output when roundtripped from a
+        source to a sink"""
 
         # generate a file
         data, meta_json, filename, meta_file = self.make_file("offset")
