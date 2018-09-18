@@ -171,7 +171,6 @@ class qa_source_to_sink(gr_unittest.TestCase):
             fdata['captures'][0]["core:frequency"] = 2.4e9
             adjusted_length = fdata['captures'][0]["core:length"] - adjust_size
             fdata['captures'][0]["core:length"] = adjusted_length
-            # print(fdata)
             f.seek(0)
             json.dump(fdata, f, indent=4)
             f.truncate()
