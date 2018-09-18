@@ -8,6 +8,32 @@ Pull requests are fine too, but will be met with more success if you make an iss
 
 Ultimately we'd be happy if gr-sigmf became the canonical implementation of SigMF in GNURadio.
 
+## Quick Start
+
+Dependencies required:
+
+* GNU Radio
+* RapidJSON
+* Swig (for Python support)
+* UHD (for USRP recording and playback tools)
+
+To install dependencies on Ubuntu 18.04 LTS:
+
+    $ sudo apt install rapidjson-dev swig gnuradio libuhd-dev
+
+To install from source:
+
+    $ git clone git@github.com:skysafe/gr-sigmf.git
+    $ cd gr-sigmf
+    $ mkdir build; cd build
+    $ cmake ..
+    $ make
+    $ sudo make install
+
+To make a SigMF recording using an Ettus Research USRP:
+
+    $ sigmf-record --sample-rate 10e6 --freq 88.5e6 --gain 30 example.sigmf
+
 ## Goals
 
 * Correctly and completely implement the [SigMF Specification](https://github.com/gnuradio/SigMF/blob/master/sigmf-spec.md).
