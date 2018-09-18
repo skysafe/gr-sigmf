@@ -52,8 +52,8 @@ namespace gr {
       pmt::pmt_t d_add_begin_tag;
       pmt::pmt_t d_id;
 
-      std::vector<tag_t> d_tags_to_output;
-      size_t d_next_tag_index;
+      // A multimap of tags to output that maps from tag index to tag
+      std::multimap<uint64_t, tag_t> d_tags_to_output;
       size_t d_num_samples_in_file;
 
       uint64_t d_repeat_count;

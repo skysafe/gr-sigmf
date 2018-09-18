@@ -3,6 +3,7 @@ from gnuradio import blocks
 import array
 import tempfile
 import shutil
+import pmt
 import json
 import pmt
 import os
@@ -32,7 +33,14 @@ class qa_source (gr_unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    def make_file(self, filename, N=1000, type="cf32_le"):
+    def make_file(
+            self,
+            filename,
+            annotations=None,
+            captures=None,
+            global_data=None,
+            N=1000,
+            type="cf32_le"):
         if (not filename.startswith("/")):
             filename = os.path.join(self.test_dir, filename)
         samp_rate = 200000
@@ -48,6 +56,39 @@ class qa_source (gr_unittest.TestCase):
         tb = gr.top_block()
         tb.connect(src, file_sink)
         tb.run()
+        with open(meta_path, "r+") as f:
+            jdata = json.load(f)
+            if annotations is not None:
+                for anno in annotations:
+                    updated = False
+                    for anno_data in jdata["annotations"]:
+                        if anno["core:sample_start"] ==\
+                                anno_data["core:sample_start"] and\
+                                anno.get("core:sample_count", "NO_COUNT") ==\
+                                anno_data.get("core:sample_count", "NO_COUNT"):
+                            anno_data.update(anno)
+                            updated = True
+                            break
+                    if not updated:
+                        jdata["annotations"].append(anno)
+                jdata["annotations"].sort(key=lambda a: a["core:sample_start"])
+            if captures is not None:
+                for capture in captures:
+                    updated = False
+                    for capture_data in jdata["captures"]:
+                        if capture["core:sample_start"] ==\
+                                capture_data["core:sample_start"]:
+                            capture_data.update(capture)
+                            updated = True
+                            break
+                    if not updated:
+                        jdata["annotations"].append(anno)
+            if global_data:
+                jdata["global"].update(global_data)
+            f.seek(0)
+            json.dump(jdata, f, indent=4)
+            f.truncate()
+
         with open(meta_path, "r") as f:
             meta_json = json.load(f)
         return data, meta_json, data_path, meta_path
@@ -91,9 +132,18 @@ class qa_source (gr_unittest.TestCase):
     def test_repeat(self):
 
         # Test to ensure that repeat works correctly
-        # TODO: This test should check the tags if set
-        data, meta_json, filename, meta_file = self.make_file("repeat")
+        N = 1000
+        annos = [{
+            "core:sample_start": 1,
+            "core:sample_count": 1,
+            "test:foo": "a",
+        }]
+        data, meta_json, filename, meta_file = self.make_file(
+            "repeat", N=N, annotations=annos)
         file_source = sigmf.source(filename, "cf32_le", repeat=True)
+        # Add begin tag to test
+        begin_tag_val = pmt.to_pmt("BEGIN")
+        file_source.set_begin_tag(begin_tag_val)
         sink = blocks.vector_sink_c()
         tb = gr.top_block()
         tb.connect(file_source, sink)
@@ -108,7 +158,36 @@ class qa_source (gr_unittest.TestCase):
         written_data = sink.data()
         written_len = len(written_data)
         num_reps = written_len / data_len
-        assert num_reps > 1
+
+        # check that repeats occurred
+        self.assertGreater(num_reps, 1, "No repeats occurred to test!")
+
+        # check for begin tags
+        for i in range(num_reps):
+            tags_for_offset = [t for t in sink.tags()
+                               if t.offset == i * N and
+                               pmt.to_python(t.key) == pmt.to_python(
+                                   begin_tag_val)]
+            self.assertEqual(len(tags_for_offset), 1,
+                             "begin tag missing in repeat")
+
+        def check_for_tag(l, key, val, err):
+            tags = [t for t in l if pmt.to_python(
+                t.key) == key and pmt.to_python(t.value) == val]
+            self.assertEqual(
+                len(tags), 1, err)
+
+        for i in range(num_reps):
+            tags_for_offset = [t for t in sink.tags()
+                               if t.offset == (i * N) + 1]
+            self.assertEqual(len(tags_for_offset), 2,
+                             "Wrong number of tags for offset")
+            check_for_tag(tags_for_offset, "core:sample_count",
+                          1, "core:sample_count missing")
+            check_for_tag(tags_for_offset, "test:foo",
+                          "a", "test:foo missing")
+
+        # check that the data is correctly repeated
         for rep in range(num_reps):
             self.assertComplexTuplesAlmostEqual(
                 data, written_data[rep * data_len: (rep + 1) * data_len])

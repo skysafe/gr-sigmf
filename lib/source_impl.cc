@@ -185,16 +185,9 @@ namespace gr {
           } else {
             tag.value = ns.get(key);
           }
-
-          d_tags_to_output.push_back(tag);
+          d_tags_to_output.insert({offset, tag});
         }
       }
-    }
-
-    bool
-    tag_offset_compare(const tag_t &a, const tag_t &b)
-    {
-      return a.offset < b.offset;
     }
 
     void source_impl::add_global_tags(const meta_namespace &global_segment) {
@@ -203,7 +196,7 @@ namespace gr {
           tag.offset = 0;
           tag.key = RATE_KEY;
           tag.value = global_segment.get("core:sample_rate");
-          d_tags_to_output.push_back(tag);
+          d_tags_to_output.insert({0, tag});
       }
     }
 
@@ -217,27 +210,15 @@ namespace gr {
       add_tags_from_meta_list(d_captures);
       add_tags_from_meta_list(d_annotations);
 
-      // Sort the tags by their offsets
-      std::sort(d_tags_to_output.begin(), d_tags_to_output.end(), tag_offset_compare);
-
-      uint64_t offset_correction = 0;
-      if (d_tags_to_output.size() > 0) {
-        offset_correction = d_tags_to_output.front().offset;
-      }
-      for(auto &tag : d_tags_to_output) {
-        tag.offset = tag.offset - offset_correction;
-      }
-
       GR_LOG_DEBUG(d_logger, "tags to output: ");
-      for(size_t i = 0; i < d_tags_to_output.size(); i++) {
-        GR_LOG_DEBUG(d_logger, "key = " << d_tags_to_output[i].key << ", ");
-        GR_LOG_DEBUG(d_logger, "val = " << d_tags_to_output[i].value << ", ");
-        GR_LOG_DEBUG(d_logger, "offset = " << d_tags_to_output[i].offset << ", ");
+      for(auto it = d_tags_to_output.begin(); it != d_tags_to_output.end(); it++) {
+        auto key = it->first;
+        auto tag_to_output = it->second;
+        GR_LOG_DEBUG(d_logger, "key = " << key << ", ");
+        GR_LOG_DEBUG(d_logger, "val = " << tag_to_output.value << ", ");
+        GR_LOG_DEBUG(d_logger, "offset = " << tag_to_output.offset << ", ");
       }
       GR_LOG_DEBUG(d_logger, "End of tags to output");
-
-      // And set the output index
-      d_next_tag_index = 0;
     }
 
     void
@@ -305,28 +286,33 @@ namespace gr {
 
       uint64_t window_start = nitems_written(0);
 
-      uint64_t window_end = window_start + size;
-      for(size_t tag_index = d_next_tag_index; tag_index < d_tags_to_output.size(); tag_index++) {
-        uint64_t tag_offset = d_tags_to_output[tag_index].offset + (d_num_samples_in_file * d_repeat_count);
-        if(tag_offset >= window_start && tag_offset < window_end) {
-
-          // Update the offset since the file may have repeated
-          tag_t tag_to_add = d_tags_to_output[tag_index];
-          tag_to_add.offset = tag_offset;
-
-          GR_LOG_DEBUG(d_logger,"Adding a tag");
-          GR_LOG_DEBUG(d_logger, "key = " << tag_to_add.key);
-          GR_LOG_DEBUG(d_logger,"val = " << tag_to_add.value);
-          GR_LOG_DEBUG(d_logger, "offset = " << tag_to_add.offset);
-
-          add_item_tag(0, tag_to_add);
-
-          d_next_tag_index = tag_index + 1;
+      uint64_t adjusted_start = window_start % d_num_samples_in_file;
+      int tag_space = size;
+      uint64_t cur_start = adjusted_start;
+      uint64_t offset_adjust = window_start;
+      while(true) {
+        auto start_it = d_tags_to_output.lower_bound(cur_start);
+        std::multimap<uint64_t, tag_t>::iterator end_it;
+        // Figure out how many times we need to jump through the tags for the file
+        if ((cur_start + tag_space) > d_num_samples_in_file) {
+          end_it = d_tags_to_output.end();
+          tag_space -= (d_num_samples_in_file - cur_start);
+        } else {
+          end_it = d_tags_to_output.upper_bound(cur_start + tag_space);
+          tag_space = 0;
         }
-      }
-
-      if(d_next_tag_index == d_tags_to_output.size()) {
-        d_next_tag_index = 0;
+        // add tags in current tag window
+        for(auto it = start_it; it != end_it; it++) {
+          auto tag_to_output = it->second;
+          tag_to_output.offset = tag_to_output.offset + offset_adjust;
+          add_item_tag(0, tag_to_output);
+        }
+        if (tag_space <= 0) {
+          break;
+        }
+        // update for the next run
+        offset_adjust += (d_num_samples_in_file - cur_start);
+        cur_start = 0;
       }
 
       while(base_size > 0) {
