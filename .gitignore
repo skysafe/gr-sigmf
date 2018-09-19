@@ -8,7 +8,7 @@ build/
 # Visual Studio Code config directory
 .vscode/
 
-# Python 
+# Python
 *.pyc
 
 .pytest_cache/
@@ -24,5 +24,8 @@ build/
 .pydevproject
 .settings/
 
-# Vim 
+# Vim
 *.swp
+
+# unittest junk
+.unittests/
