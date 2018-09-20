@@ -239,7 +239,14 @@ main(int argc, char *argv[])
     return ~0;
   }
 
-  po::notify(vm);
+  try {
+    po::notify(vm);
+  } catch(po::error &e) {
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
+
+
 
   // TODO: DO i need to make this check? or can I just let stuff explode...
   if(!check_valid_uhd_format(cpu_format_str)) {
