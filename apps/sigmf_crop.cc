@@ -115,7 +115,7 @@ main(int argc, char *argv[])
             vm);
 
   if(vm.count("help")) {
-    std::cout << "Cut out a section from an existing " << std::endl << std::endl;
+    std::cout << "Cut out a section from an existing file" << std::endl << std::endl;
     std::cout << boost::format("Usage: %s [options] <filename>") % argv[0] << std::endl << std::endl;
     std::cout << main_options << std::endl;
     return ~0;
