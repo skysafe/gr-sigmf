@@ -5,7 +5,6 @@ import tempfile
 import shutil
 import pmt
 import json
-import pmt
 import os
 import math
 from time import sleep

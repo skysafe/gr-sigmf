@@ -4,7 +4,7 @@ import json
 import struct
 import os
 import shutil
-from subprocess import check_output, CalledProcessError, STDOUT, PIPE, Popen
+from subprocess import PIPE, Popen
 import numpy as np
 from uuid import uuid4
 from test_utils import sig_source_c
@@ -63,7 +63,7 @@ class qa_crop(gr_unittest.TestCase):
             out_tuple = s.unpack(raw_data)
             out_data = [complex(x, y)
                         for x, y in zip(out_tuple[0::2], out_tuple[1::2])]
-            t = 0, std_out, std_err,  out_file, out_data, out_meta
+            t = 0, std_out, std_err, out_file, out_data, out_meta
         else:
             t = p.returncode, std_out, std_err, out_file, [], out_meta
         return t
@@ -154,9 +154,6 @@ class qa_crop(gr_unittest.TestCase):
             meta = json.load(f)
             self.assertEqual(meta["annotations"][0]["core:sample_start"],
                              25, "Annotation has wrong sample start")
-
-
-
 
 
 if __name__ == '__main__':

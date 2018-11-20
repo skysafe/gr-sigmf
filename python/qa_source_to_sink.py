@@ -164,7 +164,6 @@ class qa_source_to_sink(gr_unittest.TestCase):
 
         # drop the first 4 samples
         adjust_size = 4
-        adjusted_length = 0
         with open(meta_file, "r+") as f:
             fdata = json.load(f)
             fdata['captures'][0]["core:sample_start"] = adjust_size

@@ -1,7 +1,5 @@
 from gnuradio import gr, blocks, analog
 from subprocess import Popen, PIPE
-import os
-import fnmatch
 from sigmf import sigmf_swig as sigmf
 
 SIGMF_METADATA_EXT = ".sigmf-meta"

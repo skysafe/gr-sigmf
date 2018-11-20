@@ -1104,8 +1104,9 @@ class qa_sink(gr_unittest.TestCase):
         # with self.assertRaises()
         # Try to instantiate the sink, this should error
         with self.assertRaises(exceptions.RuntimeError):
-            file_sink = sigmf.sink("cf32_le",
-                                   data_file)
+            sigmf.sink("cf32_le",
+                       data_file)
+
 
 if __name__ == '__main__':
     gr_unittest.run(qa_sink, "qa_sink.xml")
