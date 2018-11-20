@@ -343,7 +343,7 @@ class qa_source (gr_unittest.TestCase):
         tb.wait()
 
         for tag in collector.tags:
-            if tag["key"] not in ["rx_time", "core:length"]:
+            if tag["key"] != "rx_time":
                 self.assertEqual(tag["key"], "test")
 
     def test_first_capture_segment_non_zero_start(self):
