@@ -197,7 +197,7 @@ class qa_source_to_sink(gr_unittest.TestCase):
             meta = json.load(f)
             print(meta)
             self.assertEqual(len(meta["annotations"]), 0,
-                                "Shouldn't be any annotations in file")
+                             "Shouldn't be any annotations in file")
             self.assertEqual(meta["captures"][0]
                              ["core:length"], adjusted_length)
             self.assertEqual(len(meta["captures"]), 1,
