@@ -668,7 +668,7 @@ namespace gr {
     void
     sink_impl::handle_uhd_tag(const tag_t *tag, meta_namespace &capture_segment)
     {
-      if(pmt::eqv(tag->key, TIME_KEY)) {
+      if (pmt::eqv(tag->key, TIME_KEY)) {
         switch(d_sink_time_mode) {
           case (sigmf_time_mode::relative):
           {
