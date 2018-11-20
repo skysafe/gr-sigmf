@@ -719,8 +719,6 @@ namespace gr {
         // Sample rate is special, it goes to the global segment
         d_global.set("core:sample_rate", tag->value);
 
-      } else if(pmt::eqv(tag->key, CORE_LENGTH_KEY)) {
-        d_global.set("core:length", tag->value);
       } else {
         throw std::runtime_error("invalid key in handle_uhd_tag");
       }
@@ -731,7 +729,7 @@ namespace gr {
     is_capture_or_global_tag(const tag_t *tag)
     {
       return pmt::eqv(tag->key, TIME_KEY) || pmt::eqv(tag->key, RATE_KEY) ||
-        pmt::eqv(tag->key, FREQ_KEY) || pmt::eqv(tag->key, CORE_LENGTH_KEY);
+        pmt::eqv(tag->key, FREQ_KEY);
     }
 
     void
