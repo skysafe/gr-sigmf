@@ -123,7 +123,7 @@ main(int argc, char *argv[])
 
   try {
     po::notify(vm);
-  }  
+  }
   catch(const std::exception &e) {
     std::cout << e.what() << std::endl;
     return 1;
@@ -157,7 +157,7 @@ main(int argc, char *argv[])
   // Get the item size
   pmt::pmt_t source_output_type_pmt = file_source->global_meta().get("core:datatype");
   std::string source_output_type = pmt::symbol_to_string(source_output_type_pmt);
-  auto parsed_format = gr::sigmf::parse_format_str(source_output_type);  
+  auto parsed_format = gr::sigmf::parse_format_str(source_output_type);
   size_t sample_size = ((parsed_format.width * (parsed_format.is_complex ? 2 : 1)) / 8);
 
   // Convert file size to num samples
@@ -176,7 +176,7 @@ main(int argc, char *argv[])
   if (start_spec != "" && end_spec != "") {
     try {
       crop_start = parse_spec(start_spec, sample_rate);
-    } 
+    }
     catch(const std::exception &e) {
       std::cerr << "Failed to parse crop start!\n" << e.what() << std::endl;
       return -1;
@@ -184,7 +184,7 @@ main(int argc, char *argv[])
     uint64_t parsed_end;
     try {
       parsed_end = parse_spec(end_spec, sample_rate);
-    } 
+    }
     catch(const std::exception &e) {
       std::cerr << "Failed to parse crop end!\n" << e.what() << std::endl;
       return -1;
@@ -198,31 +198,31 @@ main(int argc, char *argv[])
   } else if (start_spec != "" && length_spec != "") {
     try {
       crop_start = parse_spec(start_spec, sample_rate);
-    } 
+    }
     catch(const std::exception &e) {
       std::cerr << "Failed to parse crop start!\n" << e.what() << std::endl;
       return -1;
     }
     try {
       crop_length = parse_spec(length_spec, sample_rate);
-    } 
+    }
     catch(const std::exception &e) {
       std::cerr << RED << "Failed to parse crop length!\n" << e.what() << NO_COLOR << std::endl;
       return -1;
     }
   } else { // end + length
-    
+
     uint64_t parsed_end;
     try {
       parsed_end = parse_spec(end_spec, sample_rate);
-    } 
+    }
     catch(const std::exception &e) {
       std::cerr << RED << "Failed to parse crop end!\n" << e.what() << NO_COLOR << std::endl;
       return -1;
     }
     try {
       crop_length = parse_spec(length_spec, sample_rate);
-    } 
+    }
     catch(const std::exception &e) {
       std::cerr << RED << "Failed to parse crop length!\n" << e.what() << NO_COLOR << std::endl;
       return -1;
@@ -260,15 +260,15 @@ main(int argc, char *argv[])
   gr::sigmf::meta_namespace &global_meta = file_source->global_meta();
   std::set<std::string> global_keys = global_meta.keys();
   for(const std::string &key: global_keys) {
-    // sha512 will change 
+    // sha512 will change
     // sink block handles datatype, no need to do it again
     // offset doesn't make any sense after cropping
     if (key == "core:sha512" || key == "core:datatype" || key == "core:offset") {
       continue;
-    } 
+    }
     file_sink->set_global_meta(key, global_meta.get(key));
   }
-  
+
   // Make the top block and wire everything up
   gr::top_block_sptr tb(gr::make_top_block("sigmf_crop"));
   tb->connect(file_source, 0, skip_head_block, 0);
