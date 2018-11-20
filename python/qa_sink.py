@@ -20,7 +20,7 @@ from gnuradio import gr, gr_unittest, blocks, analog
 from sigmf import sigmf_swig as sigmf
 
 from test_blocks import (simple_tag_injector, sample_counter,
-                         sample_producer, msg_sender, advanced_tag_injector)
+                         sample_producer, msg_sender)
 
 
 def sig_source_c(samp_rate, freq, amp, N):
