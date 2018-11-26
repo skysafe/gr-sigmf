@@ -1101,7 +1101,6 @@ class qa_sink(gr_unittest.TestCase):
         filename = uuid.uuid4().hex
         # Make a data file with a weird name that doesn't exist
         data_file = os.path.join("/tmp", dirname, filename)
-        # with self.assertRaises()
         # Try to instantiate the sink, this should error
         with self.assertRaises(exceptions.RuntimeError):
             sigmf.sink("cf32_le",
