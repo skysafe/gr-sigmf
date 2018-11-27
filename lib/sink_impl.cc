@@ -95,10 +95,7 @@ namespace gr {
       d_type(add_endianness(type)), d_sink_time_mode(time_mode)
     {
       init_meta();
-      bool opened_file = open(filename.c_str());
-      if (filename != "" && !opened_file) {
-        throw std::runtime_error((boost::format("Unable to open file '%s'") % filename).str());
-      }
+      open(filename.c_str());
       d_temp_tags.reserve(32);
 
       // command message port
@@ -427,20 +424,20 @@ namespace gr {
       }
     }
 
-    bool
+    void
     sink_impl::open(const std::string &filename)
     {
-      return open(filename.c_str());
+      open(filename.c_str());
     }
 
-    bool
+    void
     sink_impl::open(const char *filename)
     {
       gr::thread::scoped_lock guard(d_mutex); // hold mutex for duration of this function
 
       if ((filename != nullptr) && (filename[0] == '\0')) {
         // Then it's empty string and we can just return now
-        return false;
+        return;
       }
 
       d_new_data_path = to_data_path(filename);
@@ -456,10 +453,12 @@ namespace gr {
         flags = O_WRONLY | O_CREAT | O_TRUNC | OUR_O_LARGEFILE | OUR_O_BINARY;
       }
       if((fd = ::open(d_new_temp_data_path.c_str(), flags, 0664)) < 0) {
-        GR_LOG_ERROR(d_logger,
-                     boost::format("Failed to open file descriptor for path '%s'") % d_new_temp_data_path);
-        std::perror(d_new_temp_data_path.c_str());
-        return false;
+        std::string open_error = std::strerror(errno);
+        std::string error_msg = (boost::format("Failed to open file descriptor for path '%s', error was: %s")
+                     % d_new_temp_data_path
+                     % open_error).str();
+        GR_LOG_ERROR(d_logger, error_msg);
+        throw std::runtime_error(error_msg);
       }
 
       // if we've already got a new one open, close it
@@ -469,14 +468,18 @@ namespace gr {
       }
 
       if((d_new_fp = ::fdopen(fd, "wb")) == NULL) {
-        std::perror(d_new_temp_data_path.c_str());
-
+        std::string fd_open_error = std::strerror(errno);
+        std::string error_msg = (boost::format("Failed to open file pointer for path '%s', error was: %s")
+                     % d_new_temp_data_path
+                     % fd_open_error).str();
+        GR_LOG_ERROR(d_logger, error_msg);
         // don't leak file descriptor if fdopen fails
         ::close(fd);
+
+        throw std::runtime_error(error_msg);
       }
 
       d_updated = true;
-      return d_new_fp != nullptr;
     }
 
     void

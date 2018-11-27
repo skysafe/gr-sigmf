@@ -188,9 +188,9 @@ namespace gr {
                 bool append);
       ~sink_impl();
 
-      bool open(const char *filename);
+      void open(const char *filename);
 
-      bool open(const std::string &filename);
+      void open(const std::string &filename);
 
       void close();
 

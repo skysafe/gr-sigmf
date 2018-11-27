@@ -143,7 +143,7 @@ namespace gr {
        * The sigmf sink will coerce the filename to the names of the two files in a
        * SigMF data set
        */
-      virtual bool open(const char *filename) = 0;
+      virtual void open(const char *filename) = 0;
 
       /*!
        * \brief Stop writing to the current file

@@ -1106,6 +1106,43 @@ class qa_sink(gr_unittest.TestCase):
             sigmf.sink("cf32_le",
                        data_file)
 
+    def test_exception_from_open_via_message(self):
+        """Test that if open is called via a message,
+        then an exception is thrown"""
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        file_sink = sigmf.sink("cf32_le",
+                               "")
+        dirname = uuid.uuid4().hex
+        filename = uuid.uuid4().hex
+        # Make a data file with a weird name that doesn't exist
+        data_file = os.path.join("/tmp", dirname, filename)
+
+        sender = msg_sender()
+        # eater = sample_eater()
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.msg_connect(sender, "out", file_sink, "command")
+
+        tb.start()
+        sleep(.05)
+        # This should result in an exception beting thrown in the block
+        sender.send_msg({
+            "command": "open",
+            "filename": data_file
+        })
+        # This is a bit of a hack, once there is better exception handling
+        # behavior in gnuradio, this test will need to be updated. As is, we
+        # can detect that a block has stopped running by checking that it's not
+        # reading new items
+        sleep(.05)
+        items = file_sink.nitems_read(0)
+        sleep(.05)
+        items2 = file_sink.nitems_read(0)
+        diff_items = items2 - items
+        self.assertEqual(
+            diff_items, 0, "Block didn't die from invalid open message!")
+        tb.stop()
+        tb.wait()
 
 if __name__ == '__main__':
     gr_unittest.run(qa_sink, "qa_sink.xml")
