@@ -1,17 +1,17 @@
 /* -*- c++ -*- */
-/* 
+/*
  * Copyright 2018 Scott Torborg, Paul Wicks, Caitlin Miller
- * 
+ *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street,
@@ -66,19 +66,39 @@ namespace gr {
         (new usrp_gps_message_source_impl(uhd_args, poll_interval));
     }
 
+    usrp_gps_message_source::sptr
+    usrp_gps_message_source::make(::uhd::usrp::multi_usrp::sptr usrp_ptr, double poll_interval)
+    {
+      return gnuradio::get_initial_sptr
+        (new usrp_gps_message_source_impl(usrp_ptr, poll_interval));
+    }
+
     /*
-     * The private constructor
+     * Constructor for creating usrp pointer
      */
     usrp_gps_message_source_impl::usrp_gps_message_source_impl(const ::uhd::device_addr_t &uhd_args, double poll_interval)
+      : usrp_gps_message_source_impl(::uhd::usrp::multi_usrp::make(uhd_args), poll_interval)
+      // d_finished(false),
+      // d_poll_interval(poll_interval),
+      // d_mboard(0)
+    {
+      // message_port_register_out(pmt::intern("out"));
+      // d_usrp = ::uhd::usrp::multi_usrp::make(uhd_args);
+    }
+
+    /*
+     * Constructor for accepting usrp pointer
+     */
+    usrp_gps_message_source_impl::usrp_gps_message_source_impl(::uhd::usrp::multi_usrp::sptr usrp_ptr, double poll_interval)
       : gr::block("usrp_gps_message_source",
                   gr::io_signature::make(0, 0, 0),
                   gr::io_signature::make(0, 0, 0)),
       d_finished(false),
       d_poll_interval(poll_interval),
-      d_mboard(0)
+      d_mboard(0),
+      d_usrp(usrp_ptr)
     {
       message_port_register_out(pmt::intern("out"));
-      d_usrp = ::uhd::usrp::multi_usrp::make(uhd_args);
     }
 
     /*

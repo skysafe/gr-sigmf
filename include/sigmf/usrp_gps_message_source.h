@@ -49,6 +49,17 @@ namespace gr {
        * creating new instances.
        */
       static sptr make(const ::uhd::device_addr_t &uhd_args, double poll_interval);
+
+      /*!
+       * \brief Return a shared_ptr to a new instance of sigmf::usrp_gps_message_source.
+       * @param usrp_ptr a pointer to an already open usrp
+       * @param poll_interval the polling interval in seconds
+       * To avoid accidental use of raw pointers, sigmf::usrp_gps_message_source's
+       * constructor is in a private implementation
+       * class. sigmf::usrp_gps_message_source::make is the public interface for
+       * creating new instances.
+       */
+      static sptr make(::uhd::usrp::multi_usrp::sptr usrp_ptr, double poll_interval);
     };
 
   } // namespace sigmf
