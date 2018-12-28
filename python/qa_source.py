@@ -93,6 +93,8 @@ class qa_source (gr_unittest.TestCase):
         return data, meta_json, data_path, meta_path
 
     def test_normal_run(self):
+        """Test a bog-standard run through a normal file and
+        ensure that the data is correct"""
 
         # generate a file
         data, meta_json, filename, meta_file = self.make_file("normal")
@@ -112,8 +114,7 @@ class qa_source (gr_unittest.TestCase):
         # TODO: implement this check
 
     def test_small_file(self):
-
-        # test on a very small file
+        """test on a very small file"""
         data, meta_json, filename, meta_file = self.make_file(
             "small_files", N=1)
 
@@ -129,8 +130,7 @@ class qa_source (gr_unittest.TestCase):
         self.assertComplexTuplesAlmostEqual(data, written_data)
 
     def test_repeat(self):
-
-        # Test to ensure that repeat works correctly
+        """Test to ensure that repeat works correctly"""
         N = 1000
         annos = [{
             "core:sample_start": 1,
