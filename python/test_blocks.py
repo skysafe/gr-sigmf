@@ -169,6 +169,6 @@ class tag_collector(gr.sync_block):
                     offset and t["key"] == key and t["value"] == val]) == 1
 
     def assertTagExistsMsg(self, offset, key, val, msg, unit_test):
-        unit_test.asssertEqual(
+        unit_test.assertEqual(
             len([t for t in self.tags if t["offset"] ==
                  offset and t["key"] == key and t["value"] == val]), 1, msg)
