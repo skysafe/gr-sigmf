@@ -195,6 +195,8 @@ class qa_source (gr_unittest.TestCase):
         self.assertComplexTuplesAlmostEqual(last_partial, partial_data)
 
     def test_bad_metafile(self):
+        """Test that if a metafile does not contain valid json,
+        then an exception should be thrown on initialization"""
         data, meta_json, filename, meta_file = self.make_file("bad_meta")
         with open(meta_file, "r+") as f:
             f.seek(0)
@@ -202,15 +204,8 @@ class qa_source (gr_unittest.TestCase):
             # corrupt the first byte
             f.write("A")
 
-        try:
+        with self.assertRaises(RuntimeError):
             sigmf.source(filename, "cf32_le")
-        except:
-
-            # TODO: I should probably throw a better exception here...
-            assert True
-            return
-
-        assert False
 
     def test_nonexistant_files(self):
         data, meta_json, filename, meta_file = self.make_file("no_meta")
