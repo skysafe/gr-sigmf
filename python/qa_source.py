@@ -40,6 +40,7 @@ class qa_source (gr_unittest.TestCase):
             global_data=None,
             N=1000,
             type="cf32_le"):
+        """convenience function to make files for testing with source block"""
         if (not filename.startswith("/")):
             filename = os.path.join(self.test_dir, filename)
         samp_rate = 200000
