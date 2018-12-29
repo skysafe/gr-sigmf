@@ -433,6 +433,45 @@ class qa_source (gr_unittest.TestCase):
         collector.assertTagExists(1, "test:null", None)
         collector.assertTagExists(1, "test:string", "foo")
 
+    def test_multiple_work_calls_tag_offsets(self):
+        '''Test that if the work is called multiple times,
+        tags still end up in the right places'''
+
+        # generate a file
+        num_samps = 4000000
+        data, meta_json, filename, meta_file = self.make_file(
+            "multi_work", N=num_samps)
+
+        # Add a capture in the middle
+        meta_json["captures"].append({
+            "core:sample_start": num_samps / 2,
+            "test:a": 1
+        })
+        # and on the last sample
+        meta_json["captures"].append({
+            "core:sample_start": num_samps - 1,
+            "test:b": 2
+        })
+        with open(meta_file, "w") as f:
+            json.dump(meta_json, f)
+
+        file_source = sigmf.source(filename, "cf32_le")
+        sink = blocks.vector_sink_c()
+        collector = tag_collector()
+        tb = gr.top_block()
+        tb.connect(file_source, collector)
+        tb.connect(collector, sink)
+        tb.start()
+        tb.wait()
+        print(collector.tags)
+        collector.assertTagExistsMsg(
+            num_samps / 2, "test:a", 1, "missing tag!", self)
+        collector.assertTagExistsMsg(
+            num_samps - 1, "test:b", 2, "missing tag!", self)
+
+        # import pdb; pdb.set_trace()
+
+
 
 if __name__ == '__main__':
     gr_unittest.run(qa_source, "qa_source.xml")

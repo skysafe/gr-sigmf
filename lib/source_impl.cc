@@ -277,6 +277,35 @@ namespace gr {
       return d_captures;
     }
 
+    void
+    source_impl::emit_tags(uint64_t start_offset_abs, int length) {
+      // how much window we have left to send out tags for
+      int window_remaining = length;
+      // where we are starting to get tags from
+      uint64_t start = start_offset_abs;
+      while(window_remaining > 0) {
+        // The lower bound for tags
+        uint64_t tag_start = start % d_num_samples_in_file;
+        // amount to adjust tag offsets by
+        uint64_t offset_adjust = start - tag_start;
+        // distance to the end of the file from where the current tags started
+        uint64_t distance_to_file_end = (d_num_samples_in_file - tag_start);
+        // the size of the chunk of the window that we are getting tags for
+        uint64_t window_chunk = std::min(distance_to_file_end, static_cast<uint64_t>(window_remaining));
+        // Upper bound for tags
+        uint64_t tag_end = tag_start + window_chunk;
+        auto start_it = d_tags_to_output.lower_bound(tag_start);
+        auto end_it = d_tags_to_output.upper_bound(tag_end);
+        for(auto it = start_it; it != end_it; it++) {
+          auto tag_to_output = it->second;
+          tag_to_output.offset = tag_to_output.offset + offset_adjust;
+          add_item_tag(0, tag_to_output);
+        }
+        window_remaining -= window_chunk;
+        start += window_chunk;
+      }
+    }
+
     int
     source_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
@@ -289,43 +318,16 @@ namespace gr {
       // This is in base units
       int base_size = size * d_num_samps_to_base;
 
-      uint64_t window_start = nitems_written(0);
+      uint64_t start_offset_abs = nitems_written(0);
 
-      uint64_t adjusted_start = window_start % d_num_samples_in_file;
-      int tag_space = size;
-      uint64_t cur_start = adjusted_start;
-      uint64_t offset_adjust = window_start;
-      while(true) {
-        auto start_it = d_tags_to_output.lower_bound(cur_start);
-        std::multimap<uint64_t, tag_t>::iterator end_it;
-        // Figure out how many times we need to jump through the tags for the file
-        if ((cur_start + tag_space) > d_num_samples_in_file) {
-          end_it = d_tags_to_output.end();
-          tag_space -= (d_num_samples_in_file - cur_start);
-        } else {
-          end_it = d_tags_to_output.upper_bound(cur_start + tag_space);
-          tag_space = 0;
-        }
-        // add tags in current tag window
-        for(auto it = start_it; it != end_it; it++) {
-          auto tag_to_output = it->second;
-          tag_to_output.offset = tag_to_output.offset + offset_adjust;
-          add_item_tag(0, tag_to_output);
-        }
-        if (tag_space <= 0) {
-          break;
-        }
-        // update for the next run
-        offset_adjust += (d_num_samples_in_file - cur_start);
-        cur_start = 0;
-      }
+      emit_tags(start_offset_abs, size);
 
       while(base_size > 0) {
 
         // Add stream tag whenever the file starts again
         if(d_file_begin) {
           if(d_add_begin_tag != pmt::PMT_NIL) {
-            add_item_tag(0, window_start + noutput_items - (base_size / d_num_samps_to_base),
+            add_item_tag(0, start_offset_abs + noutput_items - (base_size / d_num_samps_to_base),
                          d_add_begin_tag, pmt::from_long(d_repeat_count), d_id);
           }
           pmt::pmt_t msg = d_global.get();
