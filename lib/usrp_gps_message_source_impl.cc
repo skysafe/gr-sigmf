@@ -138,15 +138,12 @@ namespace gr {
     pmt::pmt_t
     usrp_gps_message_source_impl::poll_now()
     {
-      uint64_t gps_time;
-      bool gps_locked;
       try {
-        gps_time = d_usrp->get_mboard_sensor("gps_time", d_mboard).to_int();
-        gps_locked = d_usrp->get_mboard_sensor("gps_locked", d_mboard).to_bool();
+        uint64_t gps_time = d_usrp->get_mboard_sensor("gps_time", d_mboard).to_int();
+        bool gps_locked = d_usrp->get_mboard_sensor("gps_locked", d_mboard).to_bool();
       } catch(const uhd::value_error &e) {
         GR_LOG_DEBUG(d_logger, "UHD timeout getting GPS sensors: " << e.what());
-        gps_time = 0;
-        gps_locked = false;
+        return;
       }
       const std::string gps_gpgga = d_usrp->get_mboard_sensor("gps_gpgga", d_mboard).to_pp_string();
 
