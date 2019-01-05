@@ -46,7 +46,7 @@ namespace gr {
       bool start();
       bool stop();
 
-      pmt::pmt_t poll_now();
+      void poll_now();
     };
 
   } // namespace sigmf

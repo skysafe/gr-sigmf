@@ -135,12 +135,14 @@ namespace gr {
       return gr::block::stop();
     }
 
-    pmt::pmt_t
+    void
     usrp_gps_message_source_impl::poll_now()
     {
+      uint64_t gps_time;
+      bool gps_locked;
       try {
-        uint64_t gps_time = d_usrp->get_mboard_sensor("gps_time", d_mboard).to_int();
-        bool gps_locked = d_usrp->get_mboard_sensor("gps_locked", d_mboard).to_bool();
+        gps_time = d_usrp->get_mboard_sensor("gps_time", d_mboard).to_int();
+        gps_locked = d_usrp->get_mboard_sensor("gps_locked", d_mboard).to_bool();
       } catch(const uhd::value_error &e) {
         GR_LOG_DEBUG(d_logger, "UHD timeout getting GPS sensors: " << e.what());
         return;
@@ -182,7 +184,7 @@ namespace gr {
       values = pmt::dict_add(values, pmt::intern("num_sats"), pmt::from_long(num_sats));
       values = pmt::dict_add(values, pmt::intern("gps_gpgga"), pmt::string_to_symbol(gps_gpgga));
 
-      return values;
+      message_port_pub(pmt::intern("out"), values);
     }
 
     void
@@ -192,8 +194,7 @@ namespace gr {
         boost::chrono::time_point<boost::chrono::steady_clock> now = boost::chrono::steady_clock::now();
         boost::chrono::time_point<boost::chrono::steady_clock> next_tick = now + boost::chrono::milliseconds((int) (d_poll_interval * 1000.0));
 
-        pmt::pmt_t values = poll_now();
-        message_port_pub(pmt::intern("out"), values);
+        poll_now();
         try {
           boost::this_thread::sleep_until(next_tick);
         } catch(const boost::thread_interrupted &e) {
