@@ -158,6 +158,10 @@ namespace gr {
       }
 
       // Extract and parse fields
+      if(tokens[2].empty() || tokens[4].empty()) {
+        GR_LOG_DEBUG(d_logger, "Got empty lat/lon, not emitting GPS message.");
+        return;
+      }
       double lat = parse_nmea_latitude(tokens[2], tokens[3]);
       double lon = parse_nmea_longitude(tokens[4], tokens[5]);
 
