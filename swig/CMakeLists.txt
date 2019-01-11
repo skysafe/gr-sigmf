@@ -47,12 +47,12 @@ set(GR_SWIG_LIBRARIES gnuradio-sigmf)
 set(GR_SWIG_DOC_FILE ${CMAKE_CURRENT_BINARY_DIR}/sigmf_swig_doc.i)
 set(GR_SWIG_DOC_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-GR_SWIG_MAKE(sigmf_swig sigmf_swig.i)
+GR_SWIG_MAKE(gr_sigmf_swig sigmf_swig.i)
 
 ########################################################################
 # Install the build swig module
 ########################################################################
-GR_SWIG_INSTALL(TARGETS sigmf_swig DESTINATION ${GR_PYTHON_DIR}/sigmf)
+GR_SWIG_INSTALL(TARGETS gr_sigmf_swig DESTINATION ${GR_PYTHON_DIR}/gr_sigmf)
 
 ########################################################################
 # Install swig .i files for development
