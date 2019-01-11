@@ -902,7 +902,7 @@ class qa_sink(gr_unittest.TestCase):
         try:
             file_sink = sigmf.sink("cf32" + bad_ending, "")  # noqa: F841
         except Exception as e:
-            exception_msg = e.message
+            exception_msg = str(e)
         assert "endianness" in exception_msg
 
     def test_inconsistent_data_on_kill(self):
