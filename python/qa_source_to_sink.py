@@ -5,7 +5,7 @@ import os
 import shutil
 import math
 from gnuradio import gr_unittest, gr, analog, blocks
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 from test_blocks import (advanced_tag_injector,
                          tag_collector)
 

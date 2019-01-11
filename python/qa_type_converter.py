@@ -2,7 +2,7 @@ from gnuradio import gr, gr_unittest, blocks, analog
 import tempfile
 import shutil
 import os
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 import numpy as np
 import struct
 

@@ -9,7 +9,7 @@ import numpy as np
 from uuid import uuid4
 from test_utils import sig_source_c
 
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 
 
 class qa_crop(gr_unittest.TestCase):
