@@ -2,6 +2,18 @@
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
 
+## 2.0.0
+
+* Renamed module to gr_sigmf to avoid name conflict with official gnuradio sigmf python module
+* Fix an error in parsing of certain gps messages in gps_message_source
+* Fix a bug in the source block that caused some tags to have bad offsets
+* Improved a few tests
+* open throws an exception on an error, rather than return false
+* Remove `core:length` support, as it was removed from the standard
+* Improved error messages for `sigmf-record`
+* Added more tests
+* Fixed a bug in source block releated to repeats
+
 ## 1.1.6
 * Add support for writing `core:length` to capture segments
 * Update `sigmf-record` to write `core:recorder` field
