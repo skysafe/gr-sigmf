@@ -17,7 +17,7 @@ import pmt
 from multiprocessing import Process, Queue
 from gnuradio import gr, gr_unittest, blocks, analog
 
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 
 from test_blocks import (simple_tag_injector, sample_counter,
                          sample_producer, msg_sender)

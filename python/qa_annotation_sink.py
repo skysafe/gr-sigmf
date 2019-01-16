@@ -30,7 +30,7 @@ import json
 from gnuradio import blocks
 import os
 
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 
 
 class qa_annotation_sink (gr_unittest.TestCase):

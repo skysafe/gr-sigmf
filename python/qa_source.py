@@ -10,7 +10,7 @@ import math
 from time import sleep
 from test_blocks import message_generator, tag_collector
 
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 
 
 def sig_source_c(samp_rate, freq, amp, N):

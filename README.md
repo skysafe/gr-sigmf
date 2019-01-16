@@ -37,6 +37,9 @@ To make a SigMF recording using an Ettus Research USRP:
 
     $ sigmf-record --sample-rate 10e6 --freq 88.5e6 --gain 30 example.sigmf
 
+Note that the gr-sigmf python module is named `gr_sigmf` to avoid conflicts with the
+[official GNURadio sigmf module](https://github.com/gnuradio/SigMF).
+
 ## Design Principles
 
 * Correctly and completely implement the [SigMF Specification](https://github.com/gnuradio/SigMF/blob/master/sigmf-spec.md).

@@ -1,6 +1,6 @@
 from gnuradio import gr, blocks, analog
 from subprocess import Popen, PIPE
-from sigmf import sigmf_swig as sigmf
+from gr_sigmf import gr_sigmf_swig as sigmf
 
 SIGMF_METADATA_EXT = ".sigmf-meta"
 SIGMF_DATASET_EXT = ".sigmf-data"
