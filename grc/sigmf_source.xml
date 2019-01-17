@@ -3,9 +3,9 @@
   <name>SigMF Source</name>
   <key>sigmf_source</key>
   <category>[SigMF]</category>
-  <import>import sigmf</import>
+  <import>import gr_sigmf</import>
   <import>import sys</import>
-  <make>sigmf.source($filename, "$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $repeat)</make>
+  <make>gr_sigmf.source($filename, "$type.sigmf_type" + ("_le" if sys.byteorder == "little" else "_be"), $repeat)</make>
 
   <param>
     <name>File</name>
@@ -13,7 +13,7 @@
     <value></value>
     <type>file_open</type>
   </param>
-  
+
   <param>
     <name>Output Type</name>
     <key>type</key>
@@ -69,7 +69,7 @@
       <opt>sigmf_type:ri8</opt>
     </option>
   </param>
-  
+
   <param>
     <name>Repeat</name>
     <key>repeat</key>
@@ -84,24 +84,24 @@
       <key>False</key>
     </option>
   </param>
-  
+
   <sink>
     <name>command</name>
     <type>message</type>
     <optional>1</optional>
   </sink>
-  
+
   <source>
     <name>out</name>
     <type>$type</type>
   </source>
-  
+
   <source>
     <name>meta</name>
     <type>message</type>
     <optional>1</optional>
   </source>
-  
+
   <doc>
     Stream data from a SigMF recording.
   </doc>

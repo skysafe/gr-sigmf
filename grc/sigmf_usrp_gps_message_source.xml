@@ -3,8 +3,8 @@
   <name>USRP GPS Message Source</name>
   <key>sigmf_usrp_gps_message_source</key>
   <category>[SigMF]</category>
-  <import>import sigmf</import>
-  <make>sigmf.usrp_gps_message_source($uhd_args, $poll_interval)</make>
+  <import>import gr_sigmf</import>
+  <make>gr_sigmf.usrp_gps_message_source($uhd_args, $poll_interval)</make>
 
   <param>
     <name>UHD Args</name>

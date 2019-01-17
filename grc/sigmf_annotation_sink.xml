@@ -3,11 +3,11 @@
   <name>Annotation Sink</name>
   <key>sigmf_annotation_sink</key>
   <category>[SigMF]</category>
-  <import>import sigmf</import>
+  <import>import gr_sigmf</import>
   <make>#if $annotation_mode() == 'clear'
-sigmf.annotation_sink($filename, sigmf.annotation_mode.$annotation_mode()($filter_key), $time_mode)
+gr_sigmf.annotation_sink($filename, gr_sigmf.annotation_mode.$annotation_mode()($filter_key), $time_mode)
 #else
-sigmf.annotation_sink($filename, sigmf.annotation_mode.$annotation_mode()(), $time_mode)
+gr_sigmf.annotation_sink($filename, gr_sigmf.annotation_mode.$annotation_mode()(), $time_mode)
 #end if</make>
   <param>
     <name>SigMF File</name>
@@ -42,11 +42,11 @@ sigmf.annotation_sink($filename, sigmf.annotation_mode.$annotation_mode()(), $ti
     <type>enum</type>
     <option>
       <name>Absolute</name>
-      <key>sigmf.sigmf_time_mode_absolute</key>
+      <key>gr_sigmf.sigmf_time_mode_absolute</key>
     </option>
     <option>
       <name>Relative</name>
-      <key>sigmf.sigmf_time_mode_relative</key>
+      <key>gr_sigmf.sigmf_time_mode_relative</key>
     </option>
   </param>
   <sink>

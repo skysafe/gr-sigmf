@@ -3,8 +3,8 @@
   <name>SigMF Sink</name>
   <key>sigmf_sink</key>
   <category>[SigMF]</category>
-  <import>import sigmf</import>
-  <make>sigmf.sink("$type.sigmf_type", $filename, $time_mode, $append)
+  <import>import gr_sigmf</import>
+  <make>gr_sigmf.sink("$type.sigmf_type", $filename, $time_mode, $append)
 self.$(id).set_global_meta("core:sample_rate", $samp_rate)
 #if $description != ""
 self.$(id).set_global_meta("core:description", $description)
@@ -24,7 +24,7 @@ self.$(id).set_global_meta("core:hw", $hardware)
 #set $field_type = $getVar('field_' + str($i) + '_type')
 #if $field_type() == 'string'
 self.$(id).set_global_meta('$field_key()', '$field_val()')
-#else 
+#else
 self.$(id).set_global_meta('$field_key()', $field_val())
 #end if
 #end for
@@ -99,15 +99,15 @@ self.$(id).set_global_meta('$field_key()', $field_val())
   <param>
     <name>Time Handling Mode</name>
     <key>time_mode</key>
-    <value>sigmf.sigmf_time_mode_relative</value>
+    <value>gr_sigmf.sigmf_time_mode_relative</value>
     <type>enum</type>
     <option>
       <name>Absolute</name>
-      <key>sigmf.sigmf_time_mode_absolute</key>
+      <key>gr_sigmf.sigmf_time_mode_absolute</key>
     </option>
     <option>
       <name>Relative</name>
-      <key>sigmf.sigmf_time_mode_relative</key>
+      <key>gr_sigmf.sigmf_time_mode_relative</key>
     </option>
   </param>
   <param>
@@ -1189,7 +1189,7 @@ self.$(id).set_global_meta('$field_key()', $field_val())
       <key>False</key>
     </option>
   </param>
-  
+
   <sink>
     <name>in</name>
     <type>$type</type>
