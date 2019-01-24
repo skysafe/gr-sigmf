@@ -250,7 +250,7 @@ install(FILES cmake/Modules/sigmfConfig.cmake
 file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}"           prefix)
 file(TO_NATIVE_PATH "\${prefix}"                        exec_prefix)
 file(TO_NATIVE_PATH "\${exec_prefix}/${GR_LIBRARY_DIR}" libdir)
-file(TO_NATIVE_PATH "\${prefix}/${GR_INCLUDE_DIR}"      includedir)
+file(TO_NATIVE_PATH "\${prefix}/include"                includedir)
 file(TO_NATIVE_PATH "${SYSCONFDIR}"                     SYSCONFDIR)
 file(TO_NATIVE_PATH "${GR_PREFSDIR}"                    GR_PREFSDIR)
 
