@@ -65,7 +65,7 @@ target_link_libraries (sigmf-record ${CMAKE_THREAD_LIBS_INIT})
 #     message(STATUS "${_variableName}=${${_variableName}}")
 # endforeach()
 
-target_link_libraries(sigmf-record 
+target_link_libraries(sigmf-record
     ${UHD_LIBRARIES}
     ${Boost_LIBRARIES}
     ${GNURADIO_ALL_LIBRARIES}
@@ -86,7 +86,7 @@ add_executable(sigmf-play
     ${SIGMF_PLAY_SRCFILES}
 )
 
-target_link_libraries(sigmf-play 
+target_link_libraries(sigmf-play
     ${UHD_LIBRARIES}
     ${Boost_LIBRARIES}
     ${GNURADIO_ALL_LIBRARIES}
