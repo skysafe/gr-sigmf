@@ -173,7 +173,7 @@ namespace gr {
       // return a pmt which we can use to emit a message
       pmt::pmt_t values = pmt::make_dict();
 
-      GR_LOG_DEBUG(d_logger,
+      GR_LOG_INFO(d_logger,
                    "gps time: " << gps_time << ", gps_locked: " << gps_locked << ", latitude: " << lat
                                 << ", longitude: " << lon << ", altitude: " << alt
                                 << ", fix quality: " << fix_quality << ", hdop: " << hdop
