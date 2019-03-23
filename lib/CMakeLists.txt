@@ -33,6 +33,7 @@ add_definitions(-DBOOST_DATE_TIME_POSIX_TIME_STD_CONFIG)
 
 list(APPEND sigmf_sources
     meta_namespace.cc
+    nmea_parser.cc
     sink_impl.cc
     source_impl.cc
     sigmf_utils.cc

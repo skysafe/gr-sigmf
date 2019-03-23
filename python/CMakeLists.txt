@@ -49,3 +49,4 @@ GR_ADD_TEST(qa_source ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_source
 GR_ADD_TEST(qa_source_to_sink ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_source_to_sink.py)
 GR_ADD_TEST(qa_type_converter ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_type_converter.py)
 GR_ADD_TEST(qa_crop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_crop.py)
+GR_ADD_TEST(qa_nmea_parser ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_nmea_parser.py)
