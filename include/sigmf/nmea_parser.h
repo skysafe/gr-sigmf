@@ -36,7 +36,7 @@ namespace gr {
         uint32_t timestamp;
         std::string date;
         std::string time;
-        bool active;
+        bool valid;
         double lat;
         double lon;
         double speed_knots;
@@ -46,7 +46,7 @@ namespace gr {
         gprmc_message(uint32_t timestamp,
                       std::string date,
                       std::string time,
-                      bool active,
+                      bool valid,
                       double lat,
                       double lon,
                       double speed_knots,

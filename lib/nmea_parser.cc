@@ -35,7 +35,7 @@ namespace gr {
     gprmc_message::gprmc_message(uint32_t timestamp,
                                  std::string date,
                                  std::string time,
-                                 bool active,
+                                 bool valid,
                                  double lat,
                                  double lon,
                                  double speed_knots,
@@ -44,7 +44,7 @@ namespace gr {
       timestamp(timestamp),
       date(date),
       time(time),
-      active(active),
+      valid(valid),
       lat(lat),
       lon(lon),
       speed_knots(speed_knots),
@@ -66,18 +66,28 @@ namespace gr {
         throw std::invalid_argument("insufficient number of fields for GPRMC");
       }
       std::string time = fields[1];
-      bool active = (fields[2] == "A");
+      bool valid = (fields[2] == "A");
       double lat = nmea_parse_degrees(fields[3], fields[4]);
       double lon = nmea_parse_degrees(fields[5], fields[6]);
-      double speed_knots = std::stod(fields[7]);
-      double track_angle = std::stod(fields[8]);
+      double speed_knots;
+      if (fields[7] == "") {
+        speed_knots = 0.0;
+      } else {
+        speed_knots = std::stod(fields[7]);
+      }
+      double track_angle;
+      if (fields[8] == "") {
+        track_angle = 0.0;
+      } else {
+        track_angle = std::stod(fields[8]);
+      }
       std::string date = fields[9];
       double magnetic_variation = nmea_parse_magnetic_variation(fields[10], fields[11]);
 
       std::time_t t = nmea_parse_datetime(date, time);
       uint32_t timestamp = static_cast<uint32_t>(t);
 
-      return gprmc_message(timestamp, date, time, active, lat, lon,
+      return gprmc_message(timestamp, date, time, valid, lat, lon,
                            speed_knots, track_angle, magnetic_variation);
     }
 
@@ -118,10 +128,20 @@ namespace gr {
       size_t fix_quality = std::stoi(fields[6]);
       size_t num_sats = std::stoi(fields[7]);
       double hdop = std::stod(fields[8]);
-      double altitude_msl = std::stod(fields[9]);
-      // ignoring altitude units field 10
-      double geoid_hae = std::stod(fields[11]);
-      // ignoring geoid hae units field 12
+      double altitude_msl;
+      if (fields[9] == "") {
+        altitude_msl = 0.0;
+      } else {
+        altitude_msl = std::stod(fields[9]);
+      }
+      // XXX ignoring altitude units (field 10) maybe we should make sure it's M?
+      double geoid_hae;
+      if (fields[11] == "") {
+        geoid_hae = 0.0;
+      } else {
+        geoid_hae = std::stod(fields[11]);
+      }
+      // XXX ignoring geoid hae units (field 12) maybe we should make sure it's M?
       // ignoring dgps update age field 13
       // ignoring dgps station id number field 14
 
@@ -186,7 +206,9 @@ namespace gr {
     {
       int sign;
       size_t digits;
-      if (dir == "W") {
+      if (value == "") {
+        return 0.0;
+      } else if (dir == "W") {
         sign = -1;
         digits = 3;
       } else if (dir == "E") {
@@ -209,7 +231,9 @@ namespace gr {
     double nmea_parse_magnetic_variation(std::string value, std::string dir)
     {
       int sign;
-      if (dir == "W") {
+      if (value == "") {
+        return 0.0;
+      } else if (dir == "W") {
         sign = -1;
       } else if (dir == "E") {
         sign = 1;
@@ -221,6 +245,9 @@ namespace gr {
 
     std::time_t nmea_parse_datetime(std::string date, std::string time)
     {
+      if ((date == "") || (time == "")) {
+        return std::time_t();
+      }
       int mday = std::stoi(date.substr(0, 2));
       int month = std::stoi(date.substr(2, 2));
       int year = std::stoi(date.substr(4, 2));
