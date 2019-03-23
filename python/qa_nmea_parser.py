@@ -4,15 +4,24 @@ from gnuradio import gr_unittest
 from gr_sigmf import gr_sigmf_swig as sigmf
 
 
+# Example NMEA sentences from reference docs
 good_gprmc = \
     "$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A"
 good_gpgga = \
     "$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"
 good_datetime = datetime(1994, 3, 23, 12, 35, 19)
 
+# Sentences emitted by Jackson Labs LC_XO with no fix
+good_gprmc_nofix = \
+    "$GPRMC,015534.00,V,0000.0000,N,00000.0000,E,0.0,0.0,060106,,*23"
+good_gpgga_nofix = \
+    "$GPGGA,015534.00,0000.0000,N,00000.0000,E,0,99,1.0,0.0,M,0.0,M,,*5A"
+
+# Sentences emitted by u-Blox LEA-M8 with no fix
 good_gprmc_empty = "$GPRMC,,V,,,,,,,,,*31"
 good_gpgga_empty = "$GPGGA,,,,,,0,00,99.99,,,,,,*48"
 
+# Intentionally malformed sentences
 bad_gprmc_missing_start = \
     "GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A"
 bad_gprmc_missing_end = \
@@ -54,6 +63,10 @@ class qa_nmea_parser(gr_unittest.TestCase):
         self.assertEqual(msg.date, "230394")
         self.assertEqual(msg.time, "123519")
 
+    def test_parse_gprmc_nofix(self):
+        msg = sigmf.gprmc_message.parse(good_gprmc_nofix)
+        self.assertFalse(msg.valid)
+
     def test_parse_gprmc_empty(self):
         msg = sigmf.gprmc_message.parse(good_gprmc_empty)
         self.assertFalse(msg.valid)
@@ -69,6 +82,10 @@ class qa_nmea_parser(gr_unittest.TestCase):
         self.assertAlmostEqual(msg.geoid_hae, 46.9)
 
         self.assertEqual(msg.time, "123519")
+
+    def test_parse_gpgga_nofix(self):
+        msg = sigmf.gpgga_message.parse(good_gpgga_nofix)
+        self.assertEqual(msg.fix_quality, 0)
 
     def test_parse_gpgga_empty(self):
         msg = sigmf.gpgga_message.parse(good_gpgga_empty)
