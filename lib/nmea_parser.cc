@@ -224,7 +224,7 @@ namespace gr {
         throw std::invalid_argument("invalid direction");
       }
       double degrees = sign * std::stod(value.substr(0, digits));
-      double minutes = std::stod(value.substr(digits, value.size() - digits));
+      double minutes = std::stod(value.substr(digits));
       return degrees + (minutes / 60.0);
     }
 
