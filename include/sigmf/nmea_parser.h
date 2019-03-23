@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_SIGMF_USRP_GPS_MESSAGE_SOURCE_IMPL_H
-#define INCLUDED_SIGMF_USRP_GPS_MESSAGE_SOURCE_IMPL_H
+#ifndef INCLUDED_SIGMF_NMEA_PARSER_H
+#define INCLUDED_SIGMF_NMEA_PARSER_H
 
 #include <string>
 #include <vector>
@@ -92,5 +92,5 @@ namespace gr {
   } // namespace sigmf
 } // namespace gr
 
-#endif /* INCLUDED_SIGMF_USRP_GPS_MESSAGE_SOURCE_IMPL_H */
+#endif /* INCLUDED_SIGMF_NMEA_PARSER_H */
 
