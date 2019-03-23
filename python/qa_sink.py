@@ -1144,5 +1144,6 @@ class qa_sink(gr_unittest.TestCase):
         tb.stop()
         tb.wait()
 
+
 if __name__ == '__main__':
     gr_unittest.run(qa_sink, "qa_sink.xml")

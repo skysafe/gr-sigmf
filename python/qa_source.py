@@ -469,9 +469,6 @@ class qa_source (gr_unittest.TestCase):
         collector.assertTagExistsMsg(
             num_samps - 1, "test:b", 2, "missing tag!", self)
 
-        # import pdb; pdb.set_trace()
-
-
 
 if __name__ == '__main__':
     gr_unittest.run(qa_source, "qa_source.xml")
