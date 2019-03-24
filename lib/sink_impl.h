@@ -42,8 +42,20 @@ namespace gr {
     static const pmt::pmt_t COMMAND = pmt::string_to_symbol("command");
     static const pmt::pmt_t GPS = pmt::string_to_symbol("gps");
     static const pmt::pmt_t SYSTEM = pmt::string_to_symbol("system");
-    static const pmt::pmt_t LATITUDE = pmt::string_to_symbol("latitude");
-    static const pmt::pmt_t LONGITUDE = pmt::string_to_symbol("longitude");
+
+    static const pmt::pmt_t GPS_VALID = pmt::string_to_symbol("valid");
+    static const pmt::pmt_t GPS_LATITUDE = pmt::string_to_symbol("latitude");
+    static const pmt::pmt_t GPS_LONGITUDE = pmt::string_to_symbol("longitude");
+    static const pmt::pmt_t GPS_SPEED_KNOTS = pmt::string_to_symbol("speed_knots");
+    static const pmt::pmt_t GPS_TRACK_ANGLE = pmt::string_to_symbol("track_angle");
+    static const pmt::pmt_t GPS_MAGNETIC_VARIATION = pmt::string_to_symbol("magnetic_variation");
+
+    static const pmt::pmt_t GPS_FIX_QUALITY = pmt::string_to_symbol("fix_quality");
+    static const pmt::pmt_t GPS_NUM_SATS = pmt::string_to_symbol("num_sats");
+    static const pmt::pmt_t GPS_HDOP = pmt::string_to_symbol("hdop");
+    static const pmt::pmt_t GPS_ALTITUDE = pmt::string_to_symbol("altitude");
+    static const pmt::pmt_t GPS_GEOID_HAE = pmt::string_to_symbol("geoid_hae");
+    static const pmt::pmt_t GPS_HAE = pmt::string_to_symbol("hae");
 
     inline size_t
     type_to_size(const std::string type)
