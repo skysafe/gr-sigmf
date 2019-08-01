@@ -564,6 +564,10 @@ namespace gr {
                   }
                   capture_val_full_seconds = capture_val_full_seconds - start_full_seconds;
                   capture_val_frac_seconds = capture_val_frac_seconds - start_frac_seconds;
+                  if (capture_val_frac_seconds < 0) {
+                    capture_val_frac_seconds += 1;
+                    capture_val_full_seconds -= 1;
+                  }
                   // Then handle adding in the time recorded in d_relative_start_ts
                   posix::ptime epoch(boost::gregorian::date(1970, 1, 1));
                   auto duration = d_relative_start_ts - epoch;
@@ -690,6 +694,10 @@ namespace gr {
             std::tie(tag_full_seconds, tag_frac_seconds) = pmt_utils::extract_uhd_time(tag->value);
             tag_full_seconds -= start_full_seconds;
             tag_frac_seconds -= start_frac_seconds;
+            if (tag_frac_seconds < 0) {
+              tag_frac_seconds += 1;
+              tag_full_seconds -= 1;
+            }
             // Add tag seconds to initial timestamp
             posix::ptime adjusted_time =
               d_relative_start_ts +
