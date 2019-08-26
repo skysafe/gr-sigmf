@@ -31,6 +31,7 @@
 #include <pmt/pmt.h>
 #include "usrp_gps_message_source_impl.h"
 #include <boost/thread.hpp>
+#include "sigmf/nmea_parser.h"
 
 namespace gr {
   namespace sigmf {
@@ -147,46 +148,44 @@ namespace gr {
         GR_LOG_DEBUG(d_logger, "UHD timeout getting GPS sensors: " << e.what());
         return;
       }
-      const std::string gps_gpgga = d_usrp->get_mboard_sensor("gps_gpgga", d_mboard).to_pp_string();
+      const std::string gpgga_raw = d_usrp->get_mboard_sensor("gps_gpgga", d_mboard).to_pp_string();
+      const std::string gprmc_raw = d_usrp->get_mboard_sensor("gps_gprmc", d_mboard).to_pp_string();
 
-      // Tokenize gpgga sentence
-      std::vector<std::string> tokens;
-      std::stringstream stream_gpgga(gps_gpgga);
-      std::string tok;
-      while(std::getline(stream_gpgga, tok, ',')) {
-        tokens.push_back(tok);
-      }
+      std::string foo = nmea_extract(gpgga_raw);
 
-      // Extract and parse fields
-      if(tokens[2].empty() || tokens[4].empty()) {
-        GR_LOG_DEBUG(d_logger, "Got empty lat/lon, not emitting GPS message.");
-        return;
-      }
-      double lat = parse_nmea_latitude(tokens[2], tokens[3]);
-      double lon = parse_nmea_longitude(tokens[4], tokens[5]);
+      gpgga_message gpgga_msg = gpgga_message::parse(gpgga_raw);
+      gprmc_message gprmc_msg = gprmc_message::parse(gprmc_raw);
 
-      int fix_quality = std::stoi(tokens[6]);
-      int num_sats = std::stoi(tokens[7]);
-      double hdop = std::stod(tokens[8]);
-      double alt = std::stod(tokens[9]);
-
-      // return a pmt which we can use to emit a message
       pmt::pmt_t values = pmt::make_dict();
 
-      GR_LOG_INFO(d_logger,
-                   "gps time: " << gps_time << ", gps_locked: " << gps_locked << ", latitude: " << lat
-                                << ", longitude: " << lon << ", altitude: " << alt
-                                << ", fix quality: " << fix_quality << ", hdop: " << hdop
-                                << ", num_sats: " << num_sats << ", gps_gpgga: " << gps_gpgga);
+      GR_LOG_INFO(d_logger, "gps time:" << gps_time
+                   << ", gps_locked: " << gps_locked
+                   << ", latitude: " << gprmc_msg.lat
+                   << ", longitude: " << gprmc_msg.lon
+                   << ", altitude: " << gpgga_msg.altitude_msl
+                   << ", fix quality: " << gpgga_msg.fix_quality);
+
+      // Fields directly from USRP sensors
       values = pmt::dict_add(values, pmt::intern("gps_time"), pmt::from_uint64(gps_time));
       values = pmt::dict_add(values, pmt::intern("gps_locked"), pmt::from_bool(gps_locked));
-      values = pmt::dict_add(values, pmt::intern("latitude"), pmt::from_double(lat));
-      values = pmt::dict_add(values, pmt::intern("longitude"), pmt::from_double(lon));
-      values = pmt::dict_add(values, pmt::intern("altitude"), pmt::from_double(alt));
-      values = pmt::dict_add(values, pmt::intern("fix_quality"), pmt::from_long(fix_quality));
-      values = pmt::dict_add(values, pmt::intern("hdop"), pmt::from_double(hdop));
-      values = pmt::dict_add(values, pmt::intern("num_sats"), pmt::from_long(num_sats));
-      values = pmt::dict_add(values, pmt::intern("gps_gpgga"), pmt::string_to_symbol(gps_gpgga));
+      values = pmt::dict_add(values, pmt::intern("gps_gpgga"), pmt::string_to_symbol(gpgga_raw));
+      values = pmt::dict_add(values, pmt::intern("gps_gprmc"), pmt::string_to_symbol(gprmc_raw));
+
+      // Fields from GPRMC
+      values = pmt::dict_add(values, pmt::intern("valid"), pmt::from_double(gprmc_msg.valid));
+      values = pmt::dict_add(values, pmt::intern("latitude"), pmt::from_double(gprmc_msg.lat));
+      values = pmt::dict_add(values, pmt::intern("longitude"), pmt::from_double(gprmc_msg.lon));
+      values = pmt::dict_add(values, pmt::intern("speed_knots"), pmt::from_double(gprmc_msg.speed_knots));
+      values = pmt::dict_add(values, pmt::intern("track_angle"), pmt::from_double(gprmc_msg.track_angle));
+      values = pmt::dict_add(values, pmt::intern("magnetic_variation"), pmt::from_double(gprmc_msg.magnetic_variation));
+
+      // Fields from GPGGA
+      values = pmt::dict_add(values, pmt::intern("fix_quality"), pmt::from_long(gpgga_msg.fix_quality));
+      values = pmt::dict_add(values, pmt::intern("num_sats"), pmt::from_long(gpgga_msg.num_sats));
+      values = pmt::dict_add(values, pmt::intern("hdop"), pmt::from_double(gpgga_msg.hdop));
+      values = pmt::dict_add(values, pmt::intern("altitude"), pmt::from_double(gpgga_msg.altitude_msl));
+      values = pmt::dict_add(values, pmt::intern("geoid_hae"), pmt::from_double(gpgga_msg.geoid_hae));
+      values = pmt::dict_add(values, pmt::intern("hae"), pmt::from_double(gpgga_msg.geoid_hae + gpgga_msg.altitude_msl));
 
       message_port_pub(pmt::intern("out"), values);
     }

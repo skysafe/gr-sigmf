@@ -320,12 +320,31 @@ namespace gr {
       uint64_t sample_start = nitems_read(0);
       uint64_t sample_count = 0;
 
-      if(pmt::dict_has_key(msg, LATITUDE) && pmt::dict_has_key(msg, LONGITUDE)) {
-        pmt::pmt_t lat = pmt::dict_ref(msg, LATITUDE, pmt::PMT_NIL);
-        pmt::pmt_t lon = pmt::dict_ref(msg, LONGITUDE, pmt::PMT_NIL);
+      if(pmt::is_true(pmt::dict_ref(msg, GPS_VALID, pmt::PMT_F))) {
+        pmt::pmt_t lat = pmt::dict_ref(msg, GPS_LATITUDE, pmt::PMT_NIL);
+        pmt::pmt_t lon = pmt::dict_ref(msg, GPS_LONGITUDE, pmt::PMT_NIL);
+
         set_annotation_meta(sample_start, sample_count, "core:latitude", lat);
         set_annotation_meta(sample_start, sample_count, "core:longitude", lon);
-        set_annotation_meta(sample_start, sample_count, "core:generator", pmt::string_to_symbol("USRP GPS Message"));
+        set_annotation_meta(sample_start, sample_count, "core:generator", pmt::string_to_symbol("gr_sigmf"));
+
+        std::vector<std::pair<std::string, pmt::pmt_t>> keys;
+        keys.push_back(std::make_pair("gr_sigmf:speed_knots", GPS_SPEED_KNOTS));
+        keys.push_back(std::make_pair("gr_sigmf:track_angle", GPS_TRACK_ANGLE));
+        keys.push_back(std::make_pair("gr_sigmf:magnetic_variation", GPS_MAGNETIC_VARIATION));
+        keys.push_back(std::make_pair("gr_sigmf:fix_quality", GPS_FIX_QUALITY));
+        keys.push_back(std::make_pair("gr_sigmf:num_sats", GPS_NUM_SATS));
+        keys.push_back(std::make_pair("gr_sigmf:hdop", GPS_HDOP));
+        keys.push_back(std::make_pair("gr_sigmf:altitude", GPS_ALTITUDE));
+        keys.push_back(std::make_pair("gr_sigmf:geoid_hae", GPS_GEOID_HAE));
+        keys.push_back(std::make_pair("gr_sigmf:hae", GPS_HAE));
+
+        for (std::pair<std::string, pmt::pmt_t> key: keys) {
+          pmt::pmt_t value = pmt::dict_ref(msg, key.second, pmt::PMT_NIL);
+          if(!pmt::is_null(value)) {
+            set_annotation_meta(sample_start, sample_count, key.first, value);
+          }
+        }
       }
     }
 

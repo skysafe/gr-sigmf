@@ -382,7 +382,7 @@ main(int argc, char *argv[])
 
   // Check what the gain is and set that on the first capture segment
   double gain_at_start = usrp_source->get_gain();
-  file_sink->set_capture_meta(0, "uhd:rx_gain", pmt::mp(gain_at_start));
+  file_sink->set_capture_meta(0, "gr_sigmf:rx_gain", pmt::mp(gain_at_start));
 
   std::cout << "Writing SigMF recording to:" << std::endl;
   std::cout << "  Samples: " << file_sink->get_data_path() << std::endl;
