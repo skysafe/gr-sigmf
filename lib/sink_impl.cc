@@ -702,7 +702,7 @@ namespace gr {
             posix::ptime adjusted_time =
               d_relative_start_ts +
               posix::seconds(tag_full_seconds) +
-              posix::nanoseconds(boost::numeric_cast<uint64_t>(std::floor(tag_frac_seconds * 1000000000)));
+              posix::nanoseconds(boost::numeric_cast<int64_t>(std::floor(tag_frac_seconds * 1000000000)));
             // And set the adjusted time as the new time
             std::string ts_iso = posix::to_iso_extended_string(adjusted_time) + "Z";
             capture_segment.set("core:datetime", ts_iso);
