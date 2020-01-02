@@ -41,7 +41,7 @@ templates:
     imports: |-
         import gr_sigmf
         import sys
-    make: gr_sigmf.source(${filename}, "$type.sigmf_type" + ("_le" if sys.byteorder
+    make: gr_sigmf.source(${filename}, "${type.sigmf_type}" + ("_le" if sys.byteorder
         == "little" else "_be"), ${repeat})
 
 documentation: |-
