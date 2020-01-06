@@ -1,7 +1,6 @@
 /*!
- * \defgroup block GNU Radio SIGMF C++ Signal Processing Blocks
- * \brief All C++ blocks that can be used from the SIGMF GNU Radio
+ * \defgroup block GNU Radio CLASSIFY C++ Signal Processing Blocks
+ * \brief All C++ blocks that can be used from the CLASSIFY GNU Radio
  *        module are listed here or in the subcategories below.
  *
  */
-
