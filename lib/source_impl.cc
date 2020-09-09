@@ -97,7 +97,7 @@ namespace gr {
       std::fseek(d_data_fp, 0, SEEK_END);
       d_num_samples_in_file = std::ftell(d_data_fp) / d_sample_size;
 
-      GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
+      // GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
 
       std::fseek(d_data_fp, 0, SEEK_SET);
       set_output_signature(gr::io_signature::make(1, 1, d_sample_size));
@@ -219,9 +219,9 @@ namespace gr {
       for(auto it = d_tags_to_output.begin(); it != d_tags_to_output.end(); it++) {
         auto key = it->first;
         auto tag_to_output = it->second;
-        GR_LOG_DEBUG(d_logger, "key = " << key << ", ");
-        GR_LOG_DEBUG(d_logger, "val = " << tag_to_output.value << ", ");
-        GR_LOG_DEBUG(d_logger, "offset = " << tag_to_output.offset << ", ");
+        // GR_LOG_DEBUG(d_logger, "key = " << key << ", ");
+        // GR_LOG_DEBUG(d_logger, "val = " << tag_to_output.value << ", ");
+        // GR_LOG_DEBUG(d_logger, "offset = " << tag_to_output.offset << ", ");
       }
       GR_LOG_DEBUG(d_logger, "End of tags to output");
     }

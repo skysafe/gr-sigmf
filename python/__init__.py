@@ -29,18 +29,18 @@ from gnuradio import uhd
 # Prepare gr_sigmf swig module to allow passing a string for device_addr_t.
 def _prepare_sigmf_swig():
     try:
-        import gr_sigmf_swig
+        from . import gr_sigmf_swig
     except ImportError:
         # This path is for running make test without an installed package.
         import os
         dirname, filename = os.path.split(os.path.abspath(__file__))
         __path__.append(os.path.join(dirname, "..", "..", "swig"))
         try:
-            import gr_sigmf_swig
+            from . import gr_sigmf_swig
         except ImportError:
             # This path is for running pytest with an installed package.
             __path__.append(os.path.join(dirname, "..", "build", "swig"))
-            import gr_sigmf_swig
+            from . import gr_sigmf_swig
 
     old_constructor = gr_sigmf_swig.usrp_gps_message_source
 
@@ -61,4 +61,4 @@ def _prepare_sigmf_swig():
 
 
 _prepare_sigmf_swig()
-from gr_sigmf_swig import *
+from .gr_sigmf_swig import *

@@ -20,7 +20,8 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.8)
+
 project(gr-sigmf CXX C)
 enable_testing()
 
@@ -44,26 +45,14 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
 # Set the version information here
 set(VERSION_INFO_MAJOR_VERSION 2)
-set(VERSION_INFO_API_COMPAT    0)
+set(VERSION_INFO_API_COMPAT    1)
 set(VERSION_INFO_MINOR_VERSION 0)
 set(VERSION_INFO_MAINT_VERSION git)
 
 # Set cmake policies.
 # This will suppress developer warnings during the cmake process that can occur
 # if a newer cmake version than the minimum is used.
-
-if(POLICY CMP0026)
-    cmake_policy(SET CMP0026 OLD)
-endif()
-if(POLICY CMP0043)
-    cmake_policy(SET CMP0043 OLD)
-endif()
-if(POLICY CMP0045)
-    cmake_policy(SET CMP0045 OLD)
-endif()
-if(POLICY CMP0046)
-    cmake_policy(SET CMP0046 OLD)
-endif()
+cmake_policy(SET CMP0011 NEW)
 
 ########################################################################
 # Compiler specific setup
@@ -101,7 +90,8 @@ set(Boost_ADDITIONAL_VERSIONS
     "1.60.0" "1.60" "1.61.0" "1.61" "1.62.0" "1.62" "1.63.0" "1.63" "1.64.0" "1.64"
     "1.65.0" "1.65" "1.66.0" "1.66" "1.67.0" "1.67" "1.68.0" "1.68" "1.69.0" "1.69"
 )
-find_package(Boost "1.58" COMPONENTS filesystem system regex chrono)
+find_package(Boost "1.58" COMPONENTS filesystem system regex chrono program_options
+  log thread)
 
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "Boost required to compile sigmf")
@@ -110,6 +100,8 @@ endif()
 ########################################################################
 # Install directories
 ########################################################################
+find_package(Gnuradio "3.8" REQUIRED COMPONENTS runtime uhd blocks)
+include(GrVersion)
 include(GrPlatform) #define LIB_SUFFIX
 set(GR_RUNTIME_DIR      bin)
 set(GR_LIBRARY_DIR      lib${LIB_SUFFIX})
@@ -149,15 +141,8 @@ endif(APPLE)
 ########################################################################
 find_package(CppUnit)
 find_package(Doxygen)
-
-# Search for GNU Radio and its components and versions. Add any
-# components required to the list of GR_REQUIRED_COMPONENTS (in all
-# caps such as FILTER or FFT) and change the version to the minimum
-# API compatible version required.
-set(GR_REQUIRED_COMPONENTS RUNTIME BLOCKS UHD PMT)
-find_package(Gnuradio "3.7.2" REQUIRED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
-include(GrVersion)
+
 
 if(NOT CPPUNIT_FOUND)
     message(FATAL_ERROR "CppUnit required to compile sigmf")

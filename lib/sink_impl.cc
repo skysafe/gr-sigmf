@@ -303,7 +303,7 @@ namespace gr {
           return;
         }
         uint64_t index_int = pmt::to_uint64(index);
-        GR_LOG_INFO(d_logger, "setting capture meta(" << index_int << "," << key << ", " << val << ")");
+        // GR_LOG_INFO(d_logger, "setting capture meta(" << index_int << "," << key << ", " << val << ")");
         set_capture_meta(index_int, pmt::symbol_to_string(key), val);
 
       }else {

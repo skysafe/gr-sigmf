@@ -8,6 +8,8 @@ author:
   - Paul Wicks <paul@skysafe.io>
   - Cate Miller <cate@skysafe.io>
   - Scott Torborg <scott@skysafe.io>
+  - Kyle Logue <kyle.logue@aero.org>
+  - Terry Ferrett <terry.ferrett@aero.org>
 copyright_owner:
   - SkySafe Inc <info@skysafe.io>
 license: GPLv3

@@ -9,5 +9,4 @@ The main blocks in this module are:
 - sink: A block for writing SigMF data
 - usrp_gps_message_source: A block to make getting gps metadata from a USRP radio easier
 - annotation_sink: A block for writing annotation data only
-
 */
