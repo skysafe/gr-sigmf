@@ -18,8 +18,8 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    sigmf_sink.xml
-    sigmf_source.xml
-    sigmf_annotation_sink.xml
-    sigmf_usrp_gps_message_source.xml DESTINATION share/gnuradio/grc/blocks
+    sigmf_sink.block.yml
+    sigmf_source.block.yml
+    sigmf_annotation_sink.block.yml
+    sigmf_usrp_gps_message_source.block.yml DESTINATION share/gnuradio/grc/blocks
 )

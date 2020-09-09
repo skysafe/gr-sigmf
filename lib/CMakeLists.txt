@@ -53,7 +53,9 @@ add_library(gnuradio-sigmf SHARED ${sigmf_sources})
 target_link_libraries(gnuradio-sigmf
     ${UHD_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${GNURADIO_ALL_LIBRARIES}
+    gnuradio::gnuradio-runtime
+    gnuradio::gnuradio-uhd
+    gnuradio::gnuradio-blocks
     )
 set_target_properties(gnuradio-sigmf PROPERTIES DEFINE_SYMBOL "gnuradio_sigmf_EXPORTS")
 
@@ -85,7 +87,7 @@ add_executable(test-sigmf ${test_sigmf_sources})
 
 target_link_libraries(
   test-sigmf
-  ${GNURADIO_RUNTIME_LIBRARIES}
+  gnuradio::gnuradio-runtime
   ${Boost_LIBRARIES}
   ${CPPUNIT_LIBRARIES}
   gnuradio-sigmf

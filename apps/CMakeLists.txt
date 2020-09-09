@@ -23,27 +23,12 @@
 # Dependencies
 ########################################################################
 
-## Boost
-# if(WIN32)
-#     set(Boost_USE_STATIC_LIBS ON)
-#     add_definitions("-DBOOST_ALL_NO_LIB")
-# endif()
-
-find_package(Boost
-#   1.61
-  REQUIRED
-  COMPONENTS system program_options filesystem log thread)
-
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${RapidJson_INCLUDE_DIR})
 
 ## UHD
 find_package(UHD REQUIRED)
 include_directories(${UHD_INCLUDE_DIRS})
-
-## Gnuradio
-# find_package(Gnuradio "3.7.2" REQUIRED)
-# include_directories(${GNURADIO_ALL_INCLUDE_DIRS})
 
 ####################################################
 ############### sigmf-record #######################
@@ -68,7 +53,9 @@ target_link_libraries (sigmf-record ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(sigmf-record
     ${UHD_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${GNURADIO_ALL_LIBRARIES}
+    gnuradio::gnuradio-runtime
+    gnuradio::gnuradio-uhd
+    gnuradio::gnuradio-blocks    
     gnuradio-sigmf
     )
 
@@ -89,7 +76,9 @@ add_executable(sigmf-play
 target_link_libraries(sigmf-play
     ${UHD_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${GNURADIO_ALL_LIBRARIES}
+    gnuradio::gnuradio-runtime
+    gnuradio::gnuradio-uhd
+    gnuradio::gnuradio-blocks
     gnuradio-sigmf
     )
 
@@ -110,7 +99,9 @@ add_executable(sigmf-crop
 target_link_libraries(sigmf-crop
     ${UHD_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${GNURADIO_ALL_LIBRARIES}
+    gnuradio::gnuradio-runtime
+    gnuradio::gnuradio-uhd
+    gnuradio::gnuradio-blocks
     gnuradio-sigmf
     )
 

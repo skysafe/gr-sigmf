@@ -1,6 +1,8 @@
 # Changelog
 All notable changes to gr-sigmf will be documented in this file.
 Note that changes before 1.0.2 are not reflected in this file.
+## 2.1.0
+* Migrated module to GNU Radio 3.8
 
 ## 2.0.0
 
