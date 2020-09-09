@@ -1,17 +1,17 @@
 /* -*- c++ -*- */
-/* 
+/*
  * Copyright 2018 Paul Wicks
- * 
+ *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street,
@@ -124,7 +124,7 @@ namespace gr {
           // then convert all of it to sample counts
           uint64_t sample_start = (secs_diff * d_sample_rate) + (frac_secs_diff * d_sample_rate);
 
-          GR_LOG_DEBUG(d_logger, "Annotation sample start is :" << sample_start);
+          // GR_LOG_DEBUG(d_logger, "Annotation sample start is :" << sample_start);
           uint64_t sample_count =
             (duration_secs * d_sample_rate) + (duration_frac_secs * d_sample_rate);
           sample_start_pmt = pmt::from_uint64(sample_start);
@@ -172,7 +172,7 @@ namespace gr {
             for (size_t i = 0; i < pmt::length(keys); i++) {
               pmt::pmt_t key(pmt::nth(i, keys));
               pmt::pmt_t val(pmt::dict_ref(annotation_msg, key, pmt::PMT_NIL));
-              anno.set(key, val); 
+              anno.set(key, val);
             }
             break;
           }
@@ -191,7 +191,7 @@ namespace gr {
       d_global = ns.global;
       d_captures = ns.captures;
       d_annotations = ns.annotations;
-      
+
       if (d_filter_strategy == annotation_filter_strategy::clear_existing) {
         for(meta_namespace &anno_ns: d_annotations) {
           auto keys = anno_ns.keys();
@@ -199,7 +199,7 @@ namespace gr {
           for(const auto &key: keys) {
             // Check if key matches regex
             if (std::regex_match(key, m, d_filter_key_regex)) {
-              // then we keep will drop it 
+              // then we keep will drop it
               anno_ns.del(key);
             }
           }
@@ -254,4 +254,3 @@ namespace gr {
     }
   } /* namespace sigmf */
 } /* namespace gr */
-

@@ -144,7 +144,7 @@ namespace gr {
         gps_time = d_usrp->get_mboard_sensor("gps_time", d_mboard).to_int();
         gps_locked = d_usrp->get_mboard_sensor("gps_locked", d_mboard).to_bool();
       } catch(const uhd::value_error &e) {
-        GR_LOG_DEBUG(d_logger, "UHD timeout getting GPS sensors: " << e.what());
+        // GR_LOG_DEBUG(d_logger, "UHD timeout getting GPS sensors: " << e.what());
         return;
       }
       const std::string gps_gpgga = d_usrp->get_mboard_sensor("gps_gpgga", d_mboard).to_pp_string();
@@ -173,11 +173,11 @@ namespace gr {
       // return a pmt which we can use to emit a message
       pmt::pmt_t values = pmt::make_dict();
 
-      GR_LOG_INFO(d_logger,
-                   "gps time: " << gps_time << ", gps_locked: " << gps_locked << ", latitude: " << lat
-                                << ", longitude: " << lon << ", altitude: " << alt
-                                << ", fix quality: " << fix_quality << ", hdop: " << hdop
-                                << ", num_sats: " << num_sats << ", gps_gpgga: " << gps_gpgga);
+      // GR_LOG_INFO(d_logger,
+      //              "gps time: " << gps_time << ", gps_locked: " << gps_locked << ", latitude: " << lat
+      //                           << ", longitude: " << lon << ", altitude: " << alt
+      //                           << ", fix quality: " << fix_quality << ", hdop: " << hdop
+      //                           << ", num_sats: " << num_sats << ", gps_gpgga: " << gps_gpgga);
       values = pmt::dict_add(values, pmt::intern("gps_time"), pmt::from_uint64(gps_time));
       values = pmt::dict_add(values, pmt::intern("gps_locked"), pmt::from_bool(gps_locked));
       values = pmt::dict_add(values, pmt::intern("latitude"), pmt::from_double(lat));
@@ -209,4 +209,3 @@ namespace gr {
     }
   } /* namespace sigmf */
 } /* namespace gr */
-
