@@ -69,7 +69,7 @@ namespace gr {
 
       // command message port
       message_port_register_in(COMMAND);
-      set_msg_handler(COMMAND, boost::bind(&source_impl::on_command_message, this, _1));
+      set_msg_handler(COMMAND, [this](pmt::pmt_t msg) { this->on_command_message(msg); });
 
       // metadata message port
       message_port_register_out(META);

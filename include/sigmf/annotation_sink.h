@@ -69,7 +69,7 @@ namespace gr {
     class SIGMF_API annotation_sink : virtual public gr::block
     {
      public:
-      typedef boost::shared_ptr<annotation_sink> sptr;
+      typedef std::shared_ptr<annotation_sink> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of sigmf::annotation_sink.

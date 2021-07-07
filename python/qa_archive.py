@@ -1,10 +1,12 @@
 import tempfile
-from gnuradio import gr_unittest
 import os
 import shutil
-import apps_test_helper
 import tarfile
+
 import numpy as np
+from gnuradio import gr_unittest
+
+import apps_test_helper
 
 
 class qa_archive(gr_unittest.TestCase):

@@ -36,7 +36,7 @@ namespace gr {
      */
     class SIGMF_API sink : virtual public gr::sync_block {
       public:
-      typedef boost::shared_ptr<sink> sptr;
+      typedef std::shared_ptr<sink> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of sigmf::sink.

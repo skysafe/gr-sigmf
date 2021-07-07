@@ -1,15 +1,24 @@
 import tempfile
-from gnuradio import gr_unittest, blocks, gr
 import json
 import struct
 import os
 import shutil
-from subprocess import PIPE, Popen
-import numpy as np
-from uuid import uuid4
-from test_utils import sig_source_c
 
-from gr_sigmf import gr_sigmf_swig as sigmf
+from subprocess import PIPE, Popen
+from uuid import uuid4
+
+import numpy as np
+from gnuradio import gr_unittest, blocks, gr
+
+try:
+    import gr_sigmf as sigmf
+except ImportError:
+    import sys
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    sys.path.append(os.path.join(dirname, "bindings"))
+    import gr_sigmf as sigmf
+
+from test_utils import sig_source_c
 
 
 class qa_crop(gr_unittest.TestCase):

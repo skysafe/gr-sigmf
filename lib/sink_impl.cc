@@ -26,6 +26,8 @@
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/endian/conversion.hpp>
+#include "boost/filesystem.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include <random>
 #include <algorithm>
 #include <fcntl.h>
@@ -100,9 +102,9 @@ namespace gr {
 
       // command message port
       message_port_register_in(COMMAND);
-      set_msg_handler(COMMAND, boost::bind(&sink_impl::on_command_message, this, _1));
+      set_msg_handler(COMMAND, [this](pmt::pmt_t msg) { this->on_command_message(msg); });
       message_port_register_in(GPS);
-      set_msg_handler(GPS, boost::bind(&sink_impl::on_gps_message, this, _1));
+      set_msg_handler(GPS, [this](pmt::pmt_t msg) { this->on_gps_message(msg); });
 
       message_port_register_out(SYSTEM);
     }

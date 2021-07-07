@@ -2,29 +2,36 @@ import sys
 import os
 import re
 import struct
-import exceptions
 import json
 import math
 import time
-from datetime import datetime
-from time import sleep
 import tempfile
 import shutil
 import uuid
+
+from time import sleep
+from datetime import datetime
 from threading import Event
+from multiprocessing import Process, Queue
+
 import numpy
 import pmt
-from multiprocessing import Process, Queue
 from gnuradio import gr, gr_unittest, blocks, analog
 
-from gr_sigmf import gr_sigmf_swig as sigmf
+try:
+    import gr_sigmf as sigmf
+except ImportError:
+    import sys
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    sys.path.append(os.path.join(dirname, "bindings"))
+    import gr_sigmf as sigmf
 
 from test_blocks import (simple_tag_injector, sample_counter,
                          sample_producer, msg_sender)
 
 
 def sig_source_c(samp_rate, freq, amp, N):
-    t = map(lambda x: float(x) / samp_rate, xrange(N))
+    t = map(lambda x: float(x) / samp_rate, range(N))
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
     return y
@@ -1102,7 +1109,7 @@ class qa_sink(gr_unittest.TestCase):
         # Make a data file with a weird name that doesn't exist
         data_file = os.path.join("/tmp", dirname, filename)
         # Try to instantiate the sink, this should error
-        with self.assertRaises(exceptions.RuntimeError):
+        with self.assertRaises(RuntimeError):
             sigmf.sink("cf32_le",
                        data_file)
 

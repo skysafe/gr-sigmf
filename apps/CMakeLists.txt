@@ -17,7 +17,7 @@
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
 
-# include(GrPython)
+include(GrPython)
 
 ########################################################################
 # Dependencies
@@ -38,7 +38,7 @@ set(SIGMF_RECORD_SRCFILES
     "sigmf_record.cc"
 )
 
-find_package (Threads)
+find_package(Threads)
 
 add_executable(sigmf-record
     ${SIGMF_RECORD_SRCFILES}
@@ -55,7 +55,7 @@ target_link_libraries(sigmf-record
     ${Boost_LIBRARIES}
     gnuradio::gnuradio-runtime
     gnuradio::gnuradio-uhd
-    gnuradio::gnuradio-blocks    
+    gnuradio::gnuradio-blocks
     gnuradio-sigmf
     )
 

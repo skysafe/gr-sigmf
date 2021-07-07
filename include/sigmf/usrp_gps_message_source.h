@@ -37,7 +37,7 @@ namespace gr {
     class SIGMF_API usrp_gps_message_source : virtual public gr::block
     {
      public:
-      typedef boost::shared_ptr<usrp_gps_message_source> sptr;
+      typedef std::shared_ptr<usrp_gps_message_source> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of sigmf::usrp_gps_message_source.

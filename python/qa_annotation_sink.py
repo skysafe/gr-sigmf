@@ -1,36 +1,23 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# Copyright 2018 Paul Wicks
-#
-# This is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
-#
-# This software is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this software; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street,
-# Boston, MA 02110-1301, USA.
-#
-
-from gnuradio import gr, gr_unittest
-from test_utils import sig_source_c
-from test_blocks import msg_sender
-from time import sleep
 import tempfile
-import pmt
 import shutil
 import json
-from gnuradio import blocks
 import os
 
-from gr_sigmf import gr_sigmf_swig as sigmf
+from time import sleep
+
+import pmt
+from gnuradio import gr, gr_unittest, blocks
+
+try:
+    import gr_sigmf as sigmf
+except ImportError:
+    import sys
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    sys.path.append(os.path.join(dirname, "bindings"))
+    import gr_sigmf as sigmf
+
+from test_utils import sig_source_c
+from test_blocks import msg_sender
 
 
 class qa_annotation_sink (gr_unittest.TestCase):

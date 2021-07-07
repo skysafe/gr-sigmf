@@ -1,4 +1,6 @@
-INCLUDE(FindPkgConfig)
+if(NOT PKG_CONFIG_FOUND)
+    INCLUDE(FindPkgConfig)
+endif()
 PKG_CHECK_MODULES(PC_SIGMF sigmf)
 
 FIND_PATH(
@@ -22,9 +24,10 @@ FIND_LIBRARY(
           /usr/local/lib64
           /usr/lib
           /usr/lib64
-)
+          )
+
+include("${CMAKE_CURRENT_LIST_DIR}/sigmfTarget.cmake")
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SIGMF DEFAULT_MSG SIGMF_LIBRARIES SIGMF_INCLUDE_DIRS)
 MARK_AS_ADVANCED(SIGMF_LIBRARIES SIGMF_INCLUDE_DIRS)
-

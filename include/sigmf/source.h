@@ -35,7 +35,7 @@ namespace gr {
      */
     class SIGMF_API source : virtual public gr::sync_block {
       public:
-      typedef boost::shared_ptr<source> sptr;
+      typedef std::shared_ptr<source> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of sigmf::source.

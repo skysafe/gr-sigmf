@@ -4,14 +4,23 @@ import tempfile
 import os
 import shutil
 import math
+
 from gnuradio import gr_unittest, gr, analog, blocks
-from gr_sigmf import gr_sigmf_swig as sigmf
+
+try:
+    import gr_sigmf as sigmf
+except ImportError:
+    import sys
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    sys.path.append(os.path.join(dirname, "bindings"))
+    import gr_sigmf as sigmf
+
 from test_blocks import (advanced_tag_injector,
                          tag_collector)
 
 
 def sig_source_c(samp_rate, freq, amp, N):
-    t = map(lambda x: float(x) / samp_rate, xrange(N))
+    t = map(lambda x: float(x) / samp_rate, range(N))
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
     return y

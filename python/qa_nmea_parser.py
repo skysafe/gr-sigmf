@@ -1,7 +1,14 @@
 from datetime import datetime
 
 from gnuradio import gr_unittest
-from gr_sigmf import gr_sigmf_swig as sigmf
+
+try:
+    import gr_sigmf as sigmf
+except ImportError:
+    import sys
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    sys.path.append(os.path.join(dirname, "bindings"))
+    import gr_sigmf as sigmf
 
 
 # Example NMEA sentences from reference docs

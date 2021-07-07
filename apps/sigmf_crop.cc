@@ -22,7 +22,7 @@
 #include <regex>
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/algorithm/string/find.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/skiphead.h>

@@ -1,20 +1,27 @@
-from gnuradio import gr, gr_unittest
-from gnuradio import blocks
 import array
 import tempfile
 import shutil
-import pmt
 import json
 import os
 import math
 from time import sleep
-from test_blocks import message_generator, tag_collector
 
-from gr_sigmf import gr_sigmf_swig as sigmf
+import pmt
+from gnuradio import gr, gr_unittest, blocks
+
+try:
+    import gr_sigmf as sigmf
+except ImportError:
+    import sys
+    dirname, filename = os.path.split(os.path.abspath(__file__))
+    sys.path.append(os.path.join(dirname, "bindings"))
+    import gr_sigmf as sigmf
+
+from test_blocks import message_generator, tag_collector
 
 
 def sig_source_c(samp_rate, freq, amp, N):
-    t = map(lambda x: float(x) / samp_rate, xrange(N))
+    t = map(lambda x: float(x) / samp_rate, range(N))
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
     return y

@@ -56,7 +56,9 @@ namespace gr {
     {
       message_port_register_in(pmt::mp("annotations"));
       set_msg_handler(pmt::mp("annotations"),
-                      boost::bind(&annotation_sink_impl::add_annotation, this, _1));
+                      [this](pmt::pmt_t msg) {
+                        this->add_annotation(msg);
+                      });
       // Open and load metadata here
       open();
       load_metadata();
