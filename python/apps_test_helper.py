@@ -17,13 +17,14 @@ SIGMF_DATASET_EXT = ".sigmf-data"
 
 
 class AppRunner:
-    def __init__(self, testdir, app="sigmf_archive.py"):
+    def __init__(self, testdir, app):
         self.testdir = testdir
         self.app = app
 
     def run(self, argstr):
         cmdargs = [self.app]
         cmdargs.extend(argstr.split())
+        print("running cmdargs: %r" % cmdargs)
         proc = Popen(cmdargs, stdout=PIPE, stderr=PIPE)
         return proc
 

@@ -112,8 +112,8 @@ install(TARGETS sigmf-crop DESTINATION bin)
 ####################################################
 GR_PYTHON_INSTALL(
     PROGRAMS
-    sigmf_archive.py
-    sigmf_hash.py
+    sigmf-archive
+    sigmf-hash
     DESTINATION ${GR_RUNTIME_DIR}
     COMPONENT "sigmf_python"
 )
