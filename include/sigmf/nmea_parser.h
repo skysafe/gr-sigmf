@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <ctime>
 #include <sigmf/api.h>
 
 namespace gr {
