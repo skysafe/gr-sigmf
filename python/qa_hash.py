@@ -37,7 +37,7 @@ class qa_hash(gr_unittest.TestCase):
         # check
         proc = runner.run("check " + data_file)
         out, err = proc.communicate()
-        assert out == "Hash match\n"
+        assert out == b"Hash match\n"
 
         meta = open(meta_file, "r")
         data = json.loads(meta.read())
