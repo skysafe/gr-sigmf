@@ -102,7 +102,7 @@ class qa_sink(gr_unittest.TestCase):
 
         # check that data file equals data
         read_data = []
-        with open(data_file, "r") as f:
+        with open(data_file, "rb") as f:
             try:
                 while True:
                     real = struct.unpack('f', f.read(4))[0]

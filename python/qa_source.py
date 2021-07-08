@@ -451,7 +451,7 @@ class qa_source (gr_unittest.TestCase):
 
         # Add a capture in the middle
         meta_json["captures"].append({
-            "core:sample_start": num_samps / 2,
+            "core:sample_start": num_samps // 2,
             "test:a": 1
         })
         # and on the last sample
@@ -472,7 +472,7 @@ class qa_source (gr_unittest.TestCase):
         tb.wait()
         print(collector.tags)
         collector.assertTagExistsMsg(
-            num_samps / 2, "test:a", 1, "missing tag!", self)
+            num_samps // 2, "test:a", 1, "missing tag!", self)
         collector.assertTagExistsMsg(
             num_samps - 1, "test:b", 2, "missing tag!", self)
 

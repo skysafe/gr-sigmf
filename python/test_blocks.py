@@ -151,20 +151,21 @@ class tag_collector(gr.sync_block):
         self.tags = []
 
     def work(self, input_items, output_items):
-        tags = self.get_tags_in_window(0, 0, len(input_items[0]))
-        if (tags):
-            for tag in tags:
-                self.tags.append({
-                    "key": pmt.to_python(tag.key),
-                    "offset": tag.offset,
-                    "value": pmt.to_python(tag.value)
-                })
+        nread = self.nitems_read(0)
+        tags = self.get_tags_in_range(0, nread, nread + len(input_items[0]))
+        for tag in tags:
+            self.tags.append({
+                "key": pmt.to_python(tag.key),
+                "offset": tag.offset,
+                "value": pmt.to_python(tag.value)
+            })
         output_items[0][:] = input_items[0]
         return len(output_items[0])
 
     def assertTagExists(self, offset, key, val):
-        assert len([t for t in self.tags if t["offset"] ==
-                    offset and t["key"] == key and t["value"] == val]) == 1
+        matching = [t for t in self.tags if t["offset"] ==
+                    offset and t["key"] == key and t["value"] == val]
+        assert len(matching) == 1, "got tags: %r" % matching
 
     def assertTagExistsMsg(self, offset, key, val, msg, unit_test):
         unit_test.assertEqual(
