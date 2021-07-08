@@ -21,7 +21,6 @@ from gnuradio import gr, gr_unittest, blocks, analog
 try:
     import gr_sigmf as sigmf
 except ImportError:
-    import sys
     dirname, filename = os.path.split(os.path.abspath(__file__))
     sys.path.append(os.path.join(dirname, "bindings"))
     import gr_sigmf as sigmf
@@ -34,7 +33,7 @@ def sig_source_c(samp_rate, freq, amp, N):
     t = map(lambda x: float(x) / samp_rate, range(N))
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
-    return y
+    return list(y)
 
 
 def parse_iso_ts(ts):
@@ -1153,4 +1152,4 @@ class qa_sink(gr_unittest.TestCase):
 
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_sink, "qa_sink.xml")
+    gr_unittest.run(qa_sink)

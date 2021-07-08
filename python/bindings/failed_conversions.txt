@@ -1,2 +1,3 @@
 ./include/sigmf/sink.hNo c++ parser found. Please install castxml.
 ./include/sigmf/sink.hError occurred while running CASTXML:  status:1
+./include/sigmf/nmea_parser.hError occurred while running CASTXML:  status:1

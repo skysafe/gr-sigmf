@@ -30,6 +30,7 @@ include(GrPybind)
 
 list(APPEND sigmf_python_files
     time_mode_python.cc
+    nmea_parser_python.cc
     sink_python.cc
     source_python.cc
     annotation_sink_python.cc

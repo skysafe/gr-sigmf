@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from gnuradio import gr_unittest
@@ -44,15 +45,15 @@ class qa_nmea_parser(gr_unittest.TestCase):
         self.assertTrue(payload.startswith("GPRMC"))
 
     def test_extract_missing_start(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             sigmf.nmea_extract(bad_gprmc_missing_start)
 
     def test_extract_missing_end(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             sigmf.nmea_extract(bad_gprmc_missing_end)
 
     def test_extract_bad_checksum(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             sigmf.nmea_extract(bad_gprmc_bad_checksum)
 
     def test_parse_gprmc(self):
@@ -100,4 +101,4 @@ class qa_nmea_parser(gr_unittest.TestCase):
 
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_nmea_parser, "qa_nmea_parser.xml")
+    gr_unittest.run(qa_nmea_parser)

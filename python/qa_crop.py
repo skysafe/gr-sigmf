@@ -65,9 +65,9 @@ class qa_crop(gr_unittest.TestCase):
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         std_out, std_err = p.communicate()
         if (p.returncode == 0):
-            with open(out_file, "r") as f:
+            with open(out_file, "rb") as f:
                 raw_data = f.read()
-            num_samps = len(raw_data) / 8
+            num_samps = len(raw_data) // 8
             s = struct.Struct("ff" * num_samps)
             out_tuple = s.unpack(raw_data)
             out_data = [complex(x, y)
@@ -111,7 +111,7 @@ class qa_crop(gr_unittest.TestCase):
             "-s 100 -l 200000000", filename)
         self.assertEqual(rc, 0, "Return code not equal to 0")
         self.assertIn(
-            "Warning: specified limits go beyond the extent of the file",
+            b"Warning: specified limits go beyond the extent of the file",
             out, "No warning for bad length")
         np.testing.assert_almost_equal(data[100:], out_data)
 
@@ -122,7 +122,7 @@ class qa_crop(gr_unittest.TestCase):
         self.assertNotEqual(rc, 0, "Return code equal to 0")
         self.assertFalse(os.path.exists(out_file),
                          "Error, but output file exists")
-        self.assertIn("End is before start!", err, "Missing error message")
+        self.assertIn(b"End is before start!", err, "Missing error message")
 
     def test_crop_global_meta(self):
         data, meta_json, filename, meta_file = self.make_file("normal")
@@ -166,4 +166,4 @@ class qa_crop(gr_unittest.TestCase):
 
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_crop, "qa_crop.xml")
+    gr_unittest.run(qa_crop)

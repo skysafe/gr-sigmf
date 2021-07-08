@@ -22,6 +22,7 @@ namespace py = pybind11;
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
   void bind_time_mode(py::module& m);
+  void bind_nmea_parser(py::module& m);
   void bind_sink(py::module& m);
   void bind_source(py::module& m);
   void bind_annotation_sink(py::module& m);
@@ -55,6 +56,7 @@ PYBIND11_MODULE(sigmf_python, m)
     /**************************************/
     // BINDING_FUNCTION_CALLS(
     bind_time_mode(m);
+    bind_nmea_parser(m);
     bind_sink(m);
     bind_source(m);
     bind_annotation_sink(m);

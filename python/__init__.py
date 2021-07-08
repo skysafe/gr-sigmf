@@ -16,3 +16,9 @@ from .sigmf_python import *
 
 # import any pure python here
 #
+
+annotation_mode_clear = annotation_mode.clear
+annotation_mode_keep = annotation_mode.keep
+
+sigmf_time_mode_absolute = sigmf_time_mode.absolute
+sigmf_time_mode_relative = sigmf_time_mode.relative

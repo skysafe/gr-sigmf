@@ -46,4 +46,4 @@ class qa_hash(gr_unittest.TestCase):
 
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_hash, "qa_hash.xml")
+    gr_unittest.run(qa_hash)

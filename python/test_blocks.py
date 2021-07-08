@@ -124,9 +124,7 @@ class message_generator(gr.basic_block):
         self.timer = None
 
     def send_msg(self):
-        msg = self.message
-        if not isinstance(msg, pmt.pmt_swig.swig_int_ptr):
-            msg = pmt.to_pmt(msg)
+        msg = pmt.to_pmt(self.message)
         self.message_port_pub(pmt.intern('messages'), msg)
 
     def stop(self):

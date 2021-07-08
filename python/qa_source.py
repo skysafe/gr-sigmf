@@ -24,7 +24,7 @@ def sig_source_c(samp_rate, freq, amp, N):
     t = map(lambda x: float(x) / samp_rate, range(N))
     y = map(lambda x: amp * math.cos(2. * math.pi * freq * x) +
             1j * amp * math.sin(2. * math.pi * freq * x), t)
-    return y
+    return list(y)
 
 
 class qa_source (gr_unittest.TestCase):
@@ -364,7 +364,7 @@ class qa_source (gr_unittest.TestCase):
             a.append(1)
         for i in range(normal_samples * 2):
             a.append(2)
-        with open(filename_data, "w") as f:
+        with open(filename_data, "wb") as f:
             a.tofile(f)
         metadata = {
             "global": {
@@ -478,4 +478,4 @@ class qa_source (gr_unittest.TestCase):
 
 
 if __name__ == '__main__':
-    gr_unittest.run(qa_source, "qa_source.xml")
+    gr_unittest.run(qa_source)
