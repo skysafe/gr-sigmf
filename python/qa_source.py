@@ -351,8 +351,6 @@ class qa_source (gr_unittest.TestCase):
         '''Test to check that if the first capture segment
         has a non-zero start index, then we should skip that part
         of the file'''
-        # XXX this test aborts
-        return
 
         filename_data = os.path.join(
             self.test_dir, "capture_not_zero.sigmf-data")
