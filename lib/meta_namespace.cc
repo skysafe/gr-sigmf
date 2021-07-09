@@ -48,7 +48,12 @@ namespace gr {
       for(size_t i = 0; i < num_captures; i++) {
         meta_ns.captures.push_back(json_value_to_pmt(doc["captures"][i]));
       }
-      size_t num_annotations = doc["annotations"].Size();
+      size_t num_annotations;
+      if(doc.HasMember("annotations")) {
+        num_annotations = doc["annotations"].Size();
+      } else {
+        num_annotations = 0;
+      }
 
       for(size_t i = 0; i < num_annotations; i++) {
         meta_ns.annotations.push_back(json_value_to_pmt(doc["annotations"][i]));
