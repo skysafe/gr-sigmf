@@ -11,6 +11,12 @@ fine too, but will be met with more success if you make an issue first.
 Data correctness issues will be prioritized over reliability issues, which will
 in turn be prioritized over new feature development.
 
+## Spec Version
+
+Note that `gr-sigmf` does not yet target version 1.0 of the SigMF
+specification. Once a SigMF 1.0 spec is finalized, this OOT module will be
+updated soon after.
+
 ## Quick Start
 
 Dependencies required:
@@ -37,13 +43,17 @@ To make a SigMF recording using an Ettus Research USRP:
 
     $ sigmf-record --sample-rate 10e6 --freq 88.5e6 --gain 30 example.sigmf
 
-Note that the gr-sigmf python module is named `gr_sigmf` to avoid conflicts with the
-[official GNURadio sigmf module](https://github.com/gnuradio/SigMF).
+Note that the `gr-sigmf` Python module is named `gr_sigmf` to avoid conflicts with the
+[official GNURadio sigmf module](https://github.com/gnuradio/SigMF). This is
+*different* from the typical GNU Radio OOT module convention, where the Python
+module would simply be named `sigmf`.
 
 ## Design Principles
 
-* Correctly and completely implement the [SigMF Specification](https://github.com/gnuradio/SigMF/blob/master/sigmf-spec.md).
-* Be a "good GNU Radio citizen", and interact in useful ways with the existing core blocks, existing OOT blocks, and hardware interfaces such as ``gr-uhd``.
+* Correctly and completely implement the [SigMF
+  Specification](https://github.com/gnuradio/SigMF/blob/master/sigmf-spec.md).
+* Be a "good GNU Radio citizen", and interact in useful ways with the existing
+  core blocks, existing OOT blocks, and hardware interfaces such as ``gr-uhd``.
 
 ## Contents
 
@@ -51,11 +61,13 @@ Note that the gr-sigmf python module is named `gr_sigmf` to avoid conflicts with
   * sink: Create SigMF datasets
   * source: Read SigMF datasets
   * annotation_sink: Write SigMF metadata only
-  * usrp_gps_message_source: Surface gps metadata from a usrp as messages so it can easily be used by a SigMF sink.
+  * usrp_gps_message_source: Surface gps metadata from a usrp as messages so it
+    can easily be used by a SigMF sink.
 
-* A set of command line tools for creating/working with SigMF datasets. They include:
-  * sigmf-record: Create SigMF datasets from Ettus radios
-  * sigmf-play: Replay SigMF datasets to Ettus radios
+* A set of command line tools for creating/working with SigMF datasets. They
+  include:
+  * sigmf-record: Create SigMF datasets from NI/Ettus radios
+  * sigmf-play: Replay SigMF datasets to NI/Ettus radios
   * sigmf-archive: Convert SigMF datasets to and from archive files
   * sigmf-crop: Extract subsections from SigMF datasets
   * sigmf-hash: Verify and calculate hashes for SigMF datasets
@@ -69,7 +81,8 @@ Note that the gr-sigmf python module is named `gr_sigmf` to avoid conflicts with
   SigMF blocks.
 * Make waterfall, frequency, and time sinks interact well with stream tags as
   translated from metadata.
-* Build stream tag converter block to convert uhd stream tags to tags with keys that match sigmf keys
+* Build stream tag converter block to convert uhd stream tags to tags with keys
+  that match sigmf keys
 
 ### Farther Future
 
