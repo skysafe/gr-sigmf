@@ -1,6 +1,7 @@
 #include "writer_utils.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1
+#include <algorithm>
 #include <rapidjson/document.h>
 #include <rapidjson/filewritestream.h>
 #include <rapidjson/prettywriter.h>
