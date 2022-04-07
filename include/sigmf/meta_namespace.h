@@ -33,7 +33,7 @@ using json = nlohmann::json;
 namespace gr {
   namespace sigmf {
 
-    static const char *SIGMF_VERSION = "0.0.2";
+    static const char *SIGMF_VERSION = "1.0.0";
 
     /*!
      * meta_namespace is essentially a light wrapper around a pmt
