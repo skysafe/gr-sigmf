@@ -101,7 +101,10 @@ namespace gr {
       // GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
 
       std::fseek(d_data_fp, 0, SEEK_SET);
-      set_output_signature(gr::io_signature::make(1, 1, d_sample_size));
+
+      d_num_channels = d_global.get_uint64_t("core:num_channels", 1);
+      set_output_signature(gr::io_signature::make(1, d_num_channels, d_sample_size));
+
 
       d_convert_func = get_convert_function(input_datatype, type);
 

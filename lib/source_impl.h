@@ -46,6 +46,8 @@ namespace gr {
       size_t d_input_size;
       int d_num_samps_to_base;
 
+      uint64_t d_num_channels;
+
       bool d_repeat;
       bool d_file_begin;
 
