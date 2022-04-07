@@ -29,6 +29,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/regex.hpp>
+#include <boost/format.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <gnuradio/io_signature.h>
 #include "sigmf/sigmf_utils.h"
