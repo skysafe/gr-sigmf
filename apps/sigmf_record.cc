@@ -213,7 +213,7 @@ main(int argc, char *argv[])
     ("hardware", po::value<std::string>(&hardware)->default_value(""), "Set hardware for this recording (if left empty, then USRP will be queried)")
     ("duration", po::value<double>(&duration_seconds), "If set, then only capture for this many seconds")
     ("overwrite", po::bool_switch(&overwrite)->default_value(false), "Overwrite output file")
-    ("global-meta", po::value<std::vector<std::string> >(&extra_global_meta), "Additional global metadata")
+    ("global-meta", po::value<std::vector<std::string> >(&extra_global_meta)->multitoken(), "Additional global metadata")
     ("output-file", po::value<std::string>(&output_filename)->default_value(""), "File to write to");
   // clang-format on
   po::positional_options_description positional_options;
@@ -240,6 +240,10 @@ main(int argc, char *argv[])
     return 1;
   }
 
+  if (extra_global_meta.size() % 2 != 0) {
+    std::cerr << "Invalid values for global meta" << std::endl;
+    return 1;
+  }
 
 
   // TODO: DO i need to make this check? or can I just let stuff explode...
@@ -383,33 +387,12 @@ main(int argc, char *argv[])
   std::cout << "  Metadata: " << file_sink->get_meta_path() << std::endl;
 
   // Add any extra global metadata
-  for(size_t i = 0; i < extra_global_meta.size(); i++) {
-    std::string meta = extra_global_meta[i];
-    boost::iterator_range<std::string::iterator> second_comma = algo::find_nth(meta, ":", 1);
-    std::string key = meta.substr(0, second_comma.begin() - meta.begin());
-    std::string val =
-      meta.substr(second_comma.begin() - meta.begin() + 1, meta.end() - second_comma.begin());
-    json::Document document;
-    document.Parse(val.c_str());
-    if(document.HasParseError()) {
-      json::ParseErrorCode err_code = document.GetParseError();
-      if(err_code == json::kParseErrorValueInvalid) {
-        // Might be a string that needs quotes
-        std::string val_with_quotes = "\"" + val + "\"";
-        document.Parse(val_with_quotes.c_str());
-        if(document.HasParseError()) {
-          std::cerr << "Error parsing metadata value\n";
-          return -1;
-        }
-      } else {
-        std::cerr << "Error parsing metadata value\n";
-        return -1;
-      }
-    }
-    if(document.IsString()) {
-      std::string str_val(document.GetString());
-      file_sink->set_global_meta(key, pmt::mp(str_val));
-    }
+  for(size_t i = 0; i < extra_global_meta.size(); i += 2) {
+    auto key = extra_global_meta[i];
+    auto value = extra_global_meta[i + 1];
+    json val_json = json::parse(value);
+    pmt::pmt_t val_pmt = val_json;
+    file_sink->set_global_meta(key, val_pmt);
   }
 
   gr::top_block_sptr tb(gr::make_top_block("sigmf_record"));
