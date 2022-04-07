@@ -105,6 +105,15 @@ namespace gr {
       d_num_channels = d_global.get_uint64_t("core:num_channels", 1);
       set_output_signature(gr::io_signature::make(1, d_num_channels, d_sample_size));
 
+      if (d_num_channels == 1) {
+        d_work_func = std::bind(&source_impl::single_channel_work, this, std::placeholders::_1,
+                                std::placeholders::_2, std::placeholders::_3);
+      } else {
+        d_work_func = std::bind(&source_impl::multi_channel_work, this, std::placeholders::_1,
+                                std::placeholders::_2, std::placeholders::_3);
+      }
+
+      d_output_bufs.resize(d_num_channels);
 
       d_convert_func = get_convert_function(input_datatype, type);
 
@@ -311,7 +320,92 @@ namespace gr {
     }
 
     int
-    source_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+    source_impl::multi_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+    {
+      // Copy the output bufs for convenience
+      for(size_t i = 0; i < d_num_channels; i++) {
+        d_output_bufs[i] = static_cast<char *>(output_items[i]);
+      }
+
+      char *output_buf = static_cast<char *>(output_items[0]);
+      int items_read;
+
+      // This is in samples
+      int size = noutput_items;
+
+      // This is in base units
+      int base_size = size * d_num_samps_to_base;
+
+      uint64_t start_offset_abs = nitems_written(0);
+
+      emit_tags(start_offset_abs, size);
+
+      while(base_size > 0) {
+
+        // Add stream tag whenever the file starts again
+        if(d_file_begin) {
+          if(d_add_begin_tag != pmt::PMT_NIL) {
+            add_item_tag(0, start_offset_abs + noutput_items - (base_size / d_num_samps_to_base),
+                         d_add_begin_tag, pmt::from_long(d_repeat_count), d_id);
+          }
+          pmt::pmt_t msg = d_global.get();
+          message_port_pub(META, msg);
+          // Check if the first capture segment starts at 0 or not
+          // NOTE: this may change if the sigmf spec changes
+          pmt::pmt_t first_capture_start_position = d_captures[0].get("core:sample_start");
+          uint64_t offset_samples = pmt::to_uint64(first_capture_start_position);
+          uint64_t offset_bytes = offset_samples * d_sample_size;
+          // If we ever do this when d_data_fp isn't at 0, something is wrong
+          assert(std::ftell(d_data_fp) == 0);
+          std::fseek(d_data_fp, offset_bytes, SEEK_SET);
+          d_file_begin = false;
+        }
+
+        // Read as many items as possible
+        items_read = d_convert_func(output_buf, d_input_size, base_size, d_data_fp);
+        base_size -= items_read;
+
+        // advance output pointer
+        output_buf += items_read * d_base_size;
+
+        if(base_size == 0) {
+          break;
+        }
+
+        // short read, try again
+        if(items_read > 0) {
+          continue;
+        }
+
+        if(!d_repeat) {
+          break;
+        }
+
+        if(std::fseek((FILE *)d_data_fp, 0, SEEK_SET) == -1) {
+          std::fprintf(stderr, "[%s] fseek failed\n", __FILE__);
+        }
+        d_repeat_count++;
+        d_file_begin = true;
+      }
+
+      // EOF or error
+      if(base_size > 0) {
+
+        // we didn't read anything; say we're done
+        if((base_size / d_num_samps_to_base) == noutput_items) {
+          return -1;
+        }
+
+        // else return partial result
+        else {
+          return noutput_items - (base_size / d_num_samps_to_base);
+        }
+      }
+
+      return noutput_items;
+    }
+    int
+    source_impl::single_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
       char *output_buf = static_cast<char *>(output_items[0]);
       int items_read;
@@ -389,6 +483,12 @@ namespace gr {
       }
 
       return noutput_items;
+    }
+
+    int
+    source_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+    {
+      return d_work_func(noutput_items, input_items, output_items);
     }
 
   } /* namespace sigmf */

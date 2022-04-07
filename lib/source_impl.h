@@ -71,6 +71,8 @@ namespace gr {
       std::vector<meta_namespace> d_captures;
       std::vector<meta_namespace> d_annotations;
 
+      std::vector<char*> d_output_bufs;
+
       boost::posix_time::ptime iso_string_to_ptime(const std::string &str);
 
       void on_command_message(pmt::pmt_t msg);
@@ -81,6 +83,11 @@ namespace gr {
       void add_global_tags(const meta_namespace &global_segment);
       void add_tags_from_meta_list(const std::vector<meta_namespace> &meta_list, uint64_t shift_amount);
       void emit_tags(uint64_t window_start, int window_length);
+
+      int single_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+      int multi_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+
+      std::function<int(int, gr_vector_const_void_star&, gr_vector_void_star&)> d_work_func;
 
       public:
       source_impl(std::string filename, std::string type, bool repeat);
