@@ -4,6 +4,7 @@ import shutil
 import json
 import os
 import math
+from pathlib import Path
 from time import sleep
 
 import pmt
@@ -39,21 +40,23 @@ class qa_source (gr_unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    def make_file(
+    def make_file_with_data(
             self,
+            data,
             filename,
             annotations=None,
             captures=None,
             global_data=None,
-            N=1000,
             type="cf32_le"):
-        """convenience function to make files for testing with source block"""
+
         if (not filename.startswith("/")):
             filename = os.path.join(self.test_dir, filename)
-        samp_rate = 200000
-
-        data = sig_source_c(samp_rate, 1000, 1, N)
-        src = blocks.vector_source_c(data)
+        
+        if type.startswith("cf32"):
+            src = blocks.vector_source_c(data)
+        else:
+            # TODO: make this less hardcoded?
+            src = blocks.vector_source_s(data)
 
         file_sink = sigmf.sink(type, filename)
         data_path = file_sink.get_data_path()
@@ -98,6 +101,20 @@ class qa_source (gr_unittest.TestCase):
         with open(meta_path, "r") as f:
             meta_json = json.load(f)
         return data, meta_json, data_path, meta_path
+
+    def make_file(
+            self,
+            filename,
+            annotations=None,
+            captures=None,
+            global_data=None,
+            N=1000,
+            type="cf32_le"):
+        """convenience function to make files for testing with source block"""
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        return self.make_file_with_data(data, filename, annotations, captures, global_data, type)
 
     def test_normal_run(self):
         """Test a bog-standard run through a normal file and
@@ -473,6 +490,40 @@ class qa_source (gr_unittest.TestCase):
             num_samps // 2, "test:a", 1, "missing tag!", self)
         collector.assertTagExistsMsg(
             num_samps - 1, "test:b", 2, "missing tag!", self)
+
+    def test_multichannel_real(self):
+        # Make some test data
+        type_str = "ru16_le"
+        test_data = bytearray()
+        for i in range(0, 1000, 4):
+            test_data.append(1)
+            test_data.append(1)
+            test_data.append(2)
+            test_data.append(2)
+        data, meta_json, filename, meta_file = self.make_file_with_data(test_data, "multichannel_real", type=type_str, global_data={"core:num_channels": 2})
+        file_source = sigmf.source(filename, type_str)
+        sink1 = blocks.vector_sink_s()
+        sink2 = blocks.vector_sink_s()
+        tb = gr.top_block()
+        tb.connect((file_source, 0), (sink1, 0))
+        tb.connect((file_source, 1), (sink2, 0))
+        tb.start()
+        tb.wait()
+
+        sink1_data = sink1.data()
+        sink2_data = sink2.data()
+
+        assert len(sink1_data) == len(sink2_data), "sinks should be equal in size"
+
+        for sample in sink1_data:
+            assert sample == 1, "sink1 should only have 1's"
+        for sample in sink2_data:
+            assert sample == 2, "sink2 should only have 2's"
+
+
+    def test_multichannel_complex(self):
+        pass
+
 
 
 if __name__ == '__main__':
