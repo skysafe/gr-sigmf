@@ -224,8 +224,8 @@ namespace gr {
     bool
     meta_namespace::validate_key(const std::string &key)
     {
-      boost::regex key_regex("(^\\w+:\\w+$)");
-      return boost::regex_match(key, key_regex);
+      std::regex key_regex("(^\\w+:\\w+$)");
+      return std::regex_match(key, key_regex);
     }
 
     void

@@ -25,6 +25,7 @@
 #include <ctime>
 #include <chrono>
 #include <future>
+#include <regex>
 #include <thread>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/top_block.h>
