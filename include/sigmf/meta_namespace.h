@@ -145,6 +145,9 @@ namespace gr {
       */
       std::string get_str(const std::string &key) const;
 
+      uint64_t get_uint64_t(const std::string &key, uint64_t default_val) const;
+      // TODO: Add a more full set of methods to go with this
+
       /*! \brief Check if a given key exists
       * @param key the key to check
       * @return true if the key is present and false otherwise

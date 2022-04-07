@@ -157,6 +157,16 @@ namespace gr {
       return pmt::symbol_to_string(ref);
     }
 
+    uint64_t 
+    meta_namespace::get_uint64_t(const std::string &key, uint64_t default_val) const {
+      auto val = get(key);
+      if(pmt::eqv(val, pmt::get_PMT_NIL())) {
+        return default_val;
+      } else {
+        return pmt::to_uint64(val);
+      }
+    }
+
     bool
     meta_namespace::has(const std::string &key) const
     {
