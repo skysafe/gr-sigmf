@@ -33,13 +33,6 @@
 #include <fcntl.h>
 #include <gnuradio/io_signature.h>
 
-#define RAPIDJSON_HAS_STDSTRING 1
-
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/writer.h>
-
 #include "sigmf/sigmf_utils.h"
 #include "tag_keys.h"
 #include "writer_utils.h"

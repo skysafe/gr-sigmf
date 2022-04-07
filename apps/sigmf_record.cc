@@ -37,19 +37,12 @@
 
 #include <boost/algorithm/string/find.hpp>
 
-#define RAPIDJSON_HAS_STDSTRING 1
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/writer.h>
-
 #include "app_utils.h"
 #include "sigmf/sigmf_utils.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace algo = boost::algorithm;
-namespace json = rapidjson;
 
 bool
 check_valid_uhd_format(const std::string &str)

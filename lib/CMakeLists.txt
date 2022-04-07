@@ -45,6 +45,7 @@ target_link_libraries(gnuradio-sigmf
     gnuradio::gnuradio-runtime
     gnuradio::gnuradio-uhd
     gnuradio::gnuradio-blocks
+    nlohmann_json::nlohmann_json
     )
 target_include_directories(gnuradio-sigmf
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>

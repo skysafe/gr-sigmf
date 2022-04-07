@@ -20,8 +20,8 @@ namespace gr {
        */
       void write_meta_to_fp(FILE *fp,
                             const meta_namespace &global,
-                            std::vector<meta_namespace> &captures,
-                            std::vector<meta_namespace> &annotations);
+                            const std::vector<meta_namespace> &captures,
+                            const std::vector<meta_namespace> &annotations);
     }
   } // namespace sigmf
 } // namespace gr

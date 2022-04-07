@@ -24,20 +24,12 @@
 #include <iostream>
 #include <pmt/pmt.h>
 
-#ifndef RAPIDJSON_HAS_STDSTRING
-#define RAPIDJSON_HAS_STDSTRING 1
-#endif
-
-#include <rapidjson/document.h>
-
-#ifdef RAPIDJSON_HAS_STDSTRING
-#undef RAPIDJSON_HAS_STDSTRING
-#endif
-
 #include <set>
 #include <sigmf/api.h>
 #include <string>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 namespace gr {
   namespace sigmf {
 
@@ -230,8 +222,12 @@ namespace gr {
         }
       }
       pmt::pmt_t d_data;
+      friend void to_json(json& j, const meta_namespace& ns);
+      friend void from_json(const json& j, meta_namespace& ns);
     };
 
+    void to_json(json& j, const meta_namespace& ns) SIGMF_API;
+    void from_json(const json& j, meta_namespace& ns) SIGMF_API;
 
     struct SIGMF_API metafile_namespaces {
       meta_namespace global;
@@ -240,8 +236,12 @@ namespace gr {
     };
 
     metafile_namespaces load_metafile(FILE *fp) SIGMF_API;
-    pmt::pmt_t json_value_to_pmt(const rapidjson::Value &val) SIGMF_API;
+
   }
+}
+namespace pmt {
+  void to_json(json& j, const pmt_t& pmt_data) SIGMF_API;
+  void from_json(const json& j, pmt_t& pmt_data) SIGMF_API;
 }
 
 #endif /* INCLUDED_META_NAMESPACE_H */

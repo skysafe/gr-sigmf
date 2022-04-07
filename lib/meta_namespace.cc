@@ -19,94 +19,48 @@
  */
 
 #include "sigmf/meta_namespace.h"
-#include <boost/regex.hpp>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/writer.h>
+#include <boost/format.hpp>
+#include <regex>
+#include <stdexcept>
+#include <fstream>
 
-using namespace rapidjson;
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace gr {
   namespace sigmf {
 
     metafile_namespaces
     load_metafile(FILE *fp)
     {
-      char buffer[65536];
       metafile_namespaces meta_ns;
-      FileReadStream file_stream(fp, buffer, sizeof(buffer));
-      Document doc;
-      doc.ParseStream<0, UTF8<>, FileReadStream>(file_stream);
+      json meta_file;
+      try {
+        meta_file = json::parse(fp);
+      } catch (const json::parse_error &e){
 
-      if(doc.HasParseError()) {
-        throw std::runtime_error("Meta namespace parse error - invalid metadata.");
+        throw std::runtime_error((boost::format("Meta namespace parse error '%1%' at byte %1%") % e.what() % e.byte).str());
       }
 
-      meta_ns.global = json_value_to_pmt(doc["global"]);
-      size_t num_captures = doc["captures"].Size();
+      meta_ns.global = meta_file["global"];
+      size_t num_captures = meta_file["captures"].size();
 
       for(size_t i = 0; i < num_captures; i++) {
-        meta_ns.captures.push_back(json_value_to_pmt(doc["captures"][i]));
+        meta_ns.captures.push_back(meta_file["captures"][i]);
       }
       size_t num_annotations;
-      if(doc.HasMember("annotations")) {
-        num_annotations = doc["annotations"].Size();
+      if(meta_file.contains("annotations")) {
+        num_annotations = meta_file["annotations"].size();
       } else {
         num_annotations = 0;
       }
 
       for(size_t i = 0; i < num_annotations; i++) {
-        meta_ns.annotations.push_back(json_value_to_pmt(doc["annotations"][i]));
+        meta_ns.annotations.push_back(meta_file["annotations"][i]);
       }
       return meta_ns;
     }
-
-    pmt::pmt_t
-    json_value_to_pmt(const Value &val)
-    {
-      if(val.IsObject()) {
-        pmt::pmt_t obj = pmt::make_dict();
-        for(Value::ConstMemberIterator itr = val.MemberBegin(); itr != val.MemberEnd(); ++itr) {
-          std::string key_str = itr->name.GetString();
-          pmt::pmt_t key = pmt::string_to_symbol(key_str);
-          if (key_str == "core:sample_rate") {
-            // Coerce this to a double to prevent badness
-            pmt::pmt_t val_for_key = pmt::from_double(itr->value.GetDouble());
-            obj = pmt::dict_add(obj, key, val_for_key);
-          } else {
-            pmt::pmt_t val_for_key = json_value_to_pmt(itr->value);
-            obj = pmt::dict_add(obj, key, val_for_key);
-          }
-        }
-        return obj;
-      } else if(val.IsArray()) {
-        pmt::pmt_t array = pmt::make_vector(val.Size(), pmt::get_PMT_NIL());
-        size_t index = 0;
-        for(Value::ConstValueIterator itr = val.Begin(); itr != val.End(); ++itr) {
-          pmt::vector_set(array, index, json_value_to_pmt(*itr));
-          index++;
-        }
-        return array;
-      } else if(val.IsBool()) {
-        return pmt::from_bool(val.GetBool());
-      } else if(val.IsUint64()) {
-        return pmt::from_uint64(val.GetUint64());
-      } else if(val.IsInt64()) {
-        return pmt::from_long(val.GetInt64());
-      } else if (val.IsInt()) {
-        return pmt::from_long(val.GetInt());
-      } else if(val.IsDouble()) {
-        return pmt::from_double(val.GetDouble());
-      } else if(val.IsNull()) {
-        return pmt::get_PMT_NIL();
-      } else if(val.IsString()) {
-        return pmt::string_to_symbol(val.GetString());
-      } else {
-        std::cerr << "Invalid type in json" << std::endl;
-        return NULL;
-      }
-    }
-
 
     meta_namespace
     meta_namespace::build_global_object(std::string datatype, std::string version)
@@ -240,5 +194,82 @@ namespace gr {
       pmt::print(d_data);
     }
 
+    void to_json(json& j, const meta_namespace& ns) {
+      j = ns.d_data;
+    }
+    void from_json(const json& j, meta_namespace& ns) {
+      ns.d_data = j;
+    }
   } // namespace sigmf
 } // namespace gr
+
+namespace pmt {
+  void
+  to_json(json &j, const pmt::pmt_t &pmt_data)
+  {
+    if(pmt::is_dict(pmt_data)) {
+      pmt::pmt_t item_keys = pmt::dict_keys(pmt_data);
+      size_t num_items = pmt::length(item_keys);
+      for(size_t i = 0; i < num_items; i++) {
+        pmt::pmt_t item_key = pmt::nth(i, item_keys);
+        pmt::pmt_t val_for_key = pmt::dict_ref(pmt_data, item_key, pmt::get_PMT_NIL());
+        ::std::string key_str = pmt::symbol_to_string(item_key);
+        j[key_str] = val_for_key;
+      }
+    } else if(pmt::is_bool(pmt_data)) {
+      j = pmt::to_bool(pmt_data);
+    } else if(pmt::is_integer(pmt_data)) {
+      j = pmt::to_long(pmt_data);
+    } else if(pmt::is_real(pmt_data)) {
+      j = pmt::to_double(pmt_data);
+    } else if(pmt::is_vector(pmt_data)) {
+      size_t num_items = pmt::length(pmt_data);
+      for(size_t i = 0; i < num_items; i++) {
+        pmt::pmt_t item = pmt::vector_ref(pmt_data, i);
+        j[i] = item;
+      }
+    } else if(pmt::is_symbol(pmt_data)) {
+      j = pmt::symbol_to_string(pmt_data);
+    } else if(pmt::is_uint64(pmt_data)) {
+      j = pmt::to_uint64(pmt_data);
+    } else {
+      throw ::std::runtime_error("Unhandled pmt value in to_json");
+    }
+  }
+  void from_json(const json& j, pmt_t& pmt_data) {
+    if(j.is_object()) {
+      pmt_data = pmt::make_dict();
+      for(auto itr = j.begin(); itr != j.end(); ++itr) {
+        std::string key_str = itr.key();
+        pmt::pmt_t key = pmt::string_to_symbol(key_str);
+        if(key_str == "core:sample_rate") {
+          // Coerce this to a double to prevent badness
+          pmt::pmt_t val_for_key = pmt::from_double(itr.value().get<double>());
+          pmt_data = pmt::dict_add(pmt_data, key, val_for_key);
+        } else {
+          pmt::pmt_t val_for_key = itr.value();
+          pmt_data = pmt::dict_add(pmt_data, key, val_for_key);
+        }
+      }
+    } else if(j.is_array()) {
+      pmt_data = pmt::make_vector(j.size(), pmt::get_PMT_NIL());
+      size_t index = 0;
+      for(auto itr = j.begin(); itr != j.end(); ++itr) {
+        pmt::vector_set(pmt_data, index, *itr);
+        index++;
+      }
+    } else if(j.is_boolean()) {
+      pmt_data = pmt::from_bool(j.get<bool>());
+    } else if(j.is_number_unsigned()) {
+      pmt_data = pmt::from_uint64(j.get<uint64_t>());
+    } else if(j.is_number_integer()) {
+      pmt_data = pmt::from_long(j.get<int64_t>());
+    } else if(j.is_number_float()) {
+      pmt_data = pmt::from_double(j.get<double>());
+    } else if(j.is_null()) {
+      pmt_data = pmt::get_PMT_NIL();
+    } else if(j.is_string()) {
+      pmt_data = pmt::string_to_symbol(j.get<std::string>());
+    }
+  }
+}

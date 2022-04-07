@@ -22,13 +22,11 @@ updated soon after.
 Dependencies required:
 
 * GNU Radio
-* RapidJSON
-* Swig (for Python support)
 * UHD (for USRP recording and playback tools)
 
 To install dependencies on Ubuntu 18.04 LTS:
 
-    $ sudo apt install rapidjson-dev swig gnuradio libuhd-dev
+    $ sudo apt install gnuradio libuhd-dev
 
 To install from source:
 
