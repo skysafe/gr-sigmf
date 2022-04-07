@@ -6,7 +6,7 @@ import tarfile
 import numpy as np
 from gnuradio import gr_unittest
 
-import apps_test_helper
+from . import apps_test_helper
 
 
 class qa_archive(gr_unittest.TestCase):
@@ -82,8 +82,8 @@ class qa_archive(gr_unittest.TestCase):
                              filename + apps_test_helper.SIGMF_DATASET_EXT),
                              "rb")
         data_actual = open(os.path.join(self.test_dir, d_file.name), "rb")
-        de = np.fromstring(data_expected.read()).all()
-        da = np.fromstring(data_actual.read()).all()
+        de = np.frombuffer(data_expected.read()).all()
+        da = np.frombuffer(data_actual.read()).all()
         assert de == da
 
 

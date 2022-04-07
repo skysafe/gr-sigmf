@@ -12,7 +12,8 @@ description here (python/__init__.py).
 '''
 import os
 
-from .sigmf_python import *
+from gr_sigmf.sigmf_python import *
+from gr_sigmf import *
 
 # import any pure python here
 #

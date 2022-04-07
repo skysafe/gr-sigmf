@@ -18,7 +18,7 @@ except ImportError:
     sys.path.append(os.path.join(dirname, "bindings"))
     import gr_sigmf as sigmf
 
-from test_utils import sig_source_c
+from .test_utils import sig_source_c
 
 
 class qa_crop(gr_unittest.TestCase):

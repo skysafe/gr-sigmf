@@ -17,7 +17,7 @@ except ImportError:
     sys.path.append(os.path.join(dirname, "bindings"))
     import gr_sigmf as sigmf
 
-from test_blocks import message_generator, tag_collector
+from .test_blocks import message_generator, tag_collector
 
 
 def sig_source_c(samp_rate, freq, amp, N):

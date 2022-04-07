@@ -5,8 +5,7 @@ import json
 
 from gnuradio import gr_unittest
 
-import apps_test_helper
-
+from . import apps_test_helper
 
 class qa_hash(gr_unittest.TestCase):
 

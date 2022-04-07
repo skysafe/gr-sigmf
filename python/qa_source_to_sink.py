@@ -15,7 +15,7 @@ except ImportError:
     sys.path.append(os.path.join(dirname, "bindings"))
     import gr_sigmf as sigmf
 
-from test_blocks import (advanced_tag_injector,
+from .test_blocks import (advanced_tag_injector,
                          tag_collector)
 
 
