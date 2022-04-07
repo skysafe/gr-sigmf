@@ -26,10 +26,10 @@
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/endian/conversion.hpp>
-#include "boost/filesystem.hpp"
 #include "boost/format.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <random>
+#include <filesystem>
 #include <algorithm>
 #include <fcntl.h>
 #include <gnuradio/io_signature.h>
@@ -59,7 +59,7 @@
 
 #define PVAR(v) std::cout << #v << " = " << v << std::endl;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 namespace posix = boost::posix_time;
 namespace greg = boost::gregorian;
 namespace endian = boost::endian;
@@ -148,8 +148,8 @@ namespace gr {
       return rand_string;
     }
 
-    boost::filesystem::path
-    sink_impl::convert_to_temp_path(const boost::filesystem::path &path){
+    std::filesystem::path
+    sink_impl::convert_to_temp_path(const std::filesystem::path &path){
       auto filename = path.filename();
       auto file_dir = path.parent_path();
       std::string filename_str = filename.native();

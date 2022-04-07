@@ -19,11 +19,11 @@
  */
 
 #include "sigmf/sigmf_utils.h"
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 #include <boost/lexical_cast.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace gr {
   namespace sigmf {
@@ -47,10 +47,10 @@ namespace gr {
     parse_format_str(const std::string &format_str)
     {
 
-      boost::regex format_regex("(r|c)((f|i|u)(8|16|32))(_(le|be))?");
-      boost::smatch result;
+      std::regex format_regex("(r|c)((f|i|u)(8|16|32))(_(le|be))?");
+      std::smatch result;
 
-      if(boost::regex_match(format_str, result, format_regex)) {
+      if(std::regex_match(format_str, result, format_regex)) {
         format_detail_t detail;
         detail.is_complex = result[1] == "c";
         detail.type_str = result[2];

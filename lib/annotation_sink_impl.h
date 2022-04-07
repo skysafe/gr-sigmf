@@ -38,8 +38,8 @@ namespace gr {
       annotation_filter_strategy d_filter_strategy;
       std::regex d_filter_key_regex;
 
-      boost::filesystem::path d_data_path;
-      boost::filesystem::path d_meta_path;
+      std::filesystem::path d_data_path;
+      std::filesystem::path d_meta_path;
       FILE *d_meta_fp;
 
       meta_namespace d_global;

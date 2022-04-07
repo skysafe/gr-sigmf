@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
 #include <csignal>
+#include <filesystem>
 #include <ctime>
 #include <chrono>
 #include <future>
@@ -41,7 +41,7 @@
 #include "sigmf/sigmf_utils.h"
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 namespace algo = boost::algorithm;
 
 bool

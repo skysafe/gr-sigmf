@@ -62,8 +62,8 @@ namespace gr {
 
       boost::mutex d_open_mutex;
 
-      boost::filesystem::path d_data_path;
-      boost::filesystem::path d_meta_path;
+      std::filesystem::path d_data_path;
+      std::filesystem::path d_meta_path;
 
       convert_function_t d_convert_func;
 

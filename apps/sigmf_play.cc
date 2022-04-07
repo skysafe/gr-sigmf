@@ -18,9 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 #include <csignal>
+#include <filesystem>
 #include <gnuradio/blocks/head.h>
 #include <gnuradio/top_block.h>
 #include <gnuradio/uhd/usrp_sink.h>
@@ -29,7 +29,7 @@
 #include "app_utils.h"
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 gr::top_block_sptr running_tb;
 void

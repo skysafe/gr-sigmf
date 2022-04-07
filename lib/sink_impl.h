@@ -21,11 +21,11 @@
 #ifndef INCLUDED_SIGMF_SINK_IMPL_H
 #define INCLUDED_SIGMF_SINK_IMPL_H
 
-#include <boost/filesystem/path.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <string>
+#include <filesystem>
 #include <vector>
 #include <unordered_map>
 
@@ -126,13 +126,13 @@ namespace gr {
       std::string d_license;
       std::string d_hardware;
 
-      boost::filesystem::path d_data_path;
-      boost::filesystem::path d_temp_data_path;
-      boost::filesystem::path d_meta_path;
+      std::filesystem::path d_data_path;
+      std::filesystem::path d_temp_data_path;
+      std::filesystem::path d_meta_path;
 
-      boost::filesystem::path d_new_data_path;
-      boost::filesystem::path d_new_temp_data_path;
-      boost::filesystem::path d_new_meta_path;
+      std::filesystem::path d_new_data_path;
+      std::filesystem::path d_new_temp_data_path;
+      std::filesystem::path d_new_meta_path;
 
       // Note that samp_rate is needed for timekeeping as well, since we might
       // have to start a new capture segment without having a corresponding
@@ -154,7 +154,7 @@ namespace gr {
       boost::posix_time::ptime d_relative_start_ts;
       pmt::pmt_t d_relative_time_at_start = pmt::get_PMT_NIL();
 
-      boost::filesystem::path convert_to_temp_path(const boost::filesystem::path &path);
+      std::filesystem::path convert_to_temp_path(const std::filesystem::path &path);
       std::string generate_random_string(size_t length);
 
       std::string add_endianness(const std::string &type);

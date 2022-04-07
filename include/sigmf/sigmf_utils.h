@@ -21,26 +21,26 @@
 #pragma once
 
 #include <sigmf/api.h>
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 namespace gr {
   namespace sigmf {
 
     /*!
      * \brief convert a filename to the path of a .sigmf-data file
      * @param filename the filename
-     * @return the path as a boost::filesystem::path object
+     * @return the path as an std::filesystem::path object
      *
      * For example, filename is `/foo/bar/baz` then the returned path would
      * be `/foo/bar/bas.sigmf-data`. Any existing extension will be replaced
      */
-    boost::filesystem::path to_data_path(const std::string &filename) SIGMF_API;
+    std::filesystem::path to_data_path(const std::string &filename) SIGMF_API;
 
     /*!
      * \brief convert a data path to the path of a .sigmf-meta file
      * @param data_path path to data
-     * @return the path as a boost::filesystem::path object
+     * @return the path as an std::filesystem::path object
      */
-    boost::filesystem::path meta_path_from_data(boost::filesystem::path data_path) SIGMF_API;
+    std::filesystem::path meta_path_from_data(std::filesystem::path data_path) SIGMF_API;
 
     //! An enum describing endianness
     enum endian_t {

@@ -20,9 +20,9 @@
 
 #include <iostream>
 #include <regex>
+#include <filesystem>
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/algorithm/string/find.hpp>
 #include <gnuradio/top_block.h>
 #include <gnuradio/blocks/skiphead.h>
@@ -35,7 +35,7 @@
 
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 namespace algo = boost::algorithm;
 
 static const auto YELLOW = isatty(fileno(stdin)) ? "\033[1;33m" : "";
