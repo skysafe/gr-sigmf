@@ -108,6 +108,9 @@ namespace gr {
       // True if the metadata for the current file has been written
       bool d_meta_written = false;
 
+      // Number of incoming channels in file
+      int d_num_channels;
+
       // The offset of the start of the current recording from
       // what the block believes
       uint64_t d_recording_start_offset;
@@ -185,7 +188,8 @@ namespace gr {
       sink_impl(std::string type,
                 std::string filename,
                 sigmf_time_mode time_mode,
-                bool append);
+                bool append,
+		int num_channels);
       ~sink_impl();
 
       void open(const char *filename);

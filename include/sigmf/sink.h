@@ -49,7 +49,8 @@ namespace gr {
       static sptr make(std::string type,
                        std::string filename,
                        sigmf_time_mode time_mode = sigmf_time_mode::absolute,
-                       bool append = false);
+                       bool append = false,
+		       int num_channels = 1);
 
       /*!
        * \brief Get the path the the current .sigmf-data file as a string

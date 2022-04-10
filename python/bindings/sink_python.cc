@@ -41,6 +41,7 @@ void bind_sink(py::module& m)
            py::arg("filename"),
            py::arg("time_mode") = ::gr::sigmf::sigmf_time_mode::absolute,
            py::arg("append") = false,
+           py::arg("num_channels") = 1,
            D(sink,make)
         )
         
