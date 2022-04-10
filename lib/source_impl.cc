@@ -91,21 +91,25 @@ namespace gr {
       format_detail_t output_detail = parse_format_str(type);
 
       // Need to divide by 8 to convert to bytes
-      d_sample_size = (output_detail.width * (output_detail.is_complex ? 2 : 1)) / 8;
+      d_output_sample_size_bytes = (output_detail.width * (output_detail.is_complex ? 2 : 1)) / 8;
 
-      d_num_samps_to_base = output_detail.is_complex ? 2 : 1;
-      d_base_size = output_detail.width / 8;
-      d_input_size = input_detail.width / 8;
+      d_output_num_samps_to_base = output_detail.is_complex ? 2 : 1;
+      d_output_base_size = output_detail.width / 8;
+      d_input_base_size = input_detail.width / 8;
+
+      d_input_file_sample_size_bytes = (input_detail.width * (input_detail.is_complex ? 2 : 1)) / 8;
 
       std::fseek(d_data_fp, 0, SEEK_END);
-      d_num_samples_in_file = std::ftell(d_data_fp) / d_sample_size;
+      d_num_samples_in_file = std::ftell(d_data_fp) / d_input_file_sample_size_bytes;
+      D(d_num_samples_in_file);
+      
 
       // GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
 
       std::fseek(d_data_fp, 0, SEEK_SET);
 
       d_num_channels = d_global.get_uint64_t("core:num_channels", 1);
-      set_output_signature(gr::io_signature::make(1, d_num_channels, d_sample_size));
+      set_output_signature(gr::io_signature::make(1, d_num_channels, d_output_sample_size_bytes));
 
       if (d_num_channels == 1) {
         d_work_func = std::bind(&source_impl::single_channel_work, this, std::placeholders::_1,
@@ -324,6 +328,8 @@ namespace gr {
     int
     source_impl::multi_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
+      D(noutput_items);
+      GR_LOG_DEBUG(d_logger, "MULTI!!");
       // Copy the output bufs for convenience
       for(size_t i = 0; i < d_num_channels; i++) {
         d_output_bufs[i] = static_cast<char *>(output_items[i]);
@@ -333,21 +339,23 @@ namespace gr {
       int items_read;
 
       // This is in samples
-      int size = noutput_items;
+      int output_size_samples = noutput_items;
 
       // This is in base units
-      int base_size = size * d_num_samps_to_base;
+      int output_base_remaining = output_size_samples * d_output_num_samps_to_base;
 
       uint64_t start_offset_abs = nitems_written(0);
 
-      emit_tags(start_offset_abs, size);
+      emit_tags(start_offset_abs, output_size_samples);
+      // TODO: This should be done smareter so we aren't calling malloc on every work call, but that's an optimization for later
+      d_multichannel_deinterlace_buffer = static_cast<char*>(std::malloc(output_size_samples * d_input_file_sample_size_bytes * d_num_channels));
 
-      while(base_size > 0) {
+      while(output_base_remaining > 0) {
 
         // Add stream tag whenever the file starts again
         if(d_file_begin) {
           if(d_add_begin_tag != pmt::PMT_NIL) {
-            add_item_tag(0, start_offset_abs + noutput_items - (base_size / d_num_samps_to_base),
+            add_item_tag(0, start_offset_abs + noutput_items - (output_base_remaining / d_output_num_samps_to_base),
                          d_add_begin_tag, pmt::from_long(d_repeat_count), d_id);
           }
           pmt::pmt_t msg = d_global.get();
@@ -356,21 +364,50 @@ namespace gr {
           // NOTE: this may change if the sigmf spec changes
           pmt::pmt_t first_capture_start_position = d_captures[0].get("core:sample_start");
           uint64_t offset_samples = pmt::to_uint64(first_capture_start_position);
-          uint64_t offset_bytes = offset_samples * d_sample_size;
+          uint64_t offset_bytes = offset_samples * d_output_sample_size_bytes;
           // If we ever do this when d_data_fp isn't at 0, something is wrong
           assert(std::ftell(d_data_fp) == 0);
           std::fseek(d_data_fp, offset_bytes, SEEK_SET);
           d_file_begin = false;
         }
 
-        // Read as many items as possible
-        items_read = d_convert_func(output_buf, d_input_size, base_size, d_data_fp);
-        base_size -= items_read;
+        // Read input samples from file * the number of output bufs, recording the number of samples we actually read
+        // int samples_read = std::fread(d_multichannel_deinterlace_buffer, d_input_file_sample_size_bytes,
+        //                               output_size * d_num_channels, d_data_fp);
+
+        // // Deinterlace the input into some contiguous buffers so we can do conversion
+        // for(size_t i = 0; i < samples_read; i++) {
+        //   int target_deint_buf = i % d_num_channels;
+        //   int target_deint_index = i / d_num_channels;
+        //   std::memcpy(d_deinterlaced_bufs[target_deint_buf][target_deint_index], bytes_from_file[i * d_input_size_bytes], d_input_size_bytes);
+        // }
+
+        // // Do the conversion from the input to output
+        // for(size_t channel_num = 0; channel_num < d_num_channels; channel_num++) {
+        //   d_convert_func(d_output_bufs[channel_num], d_input_size, base_size, d_deinterlaced_bufs[channel_num]);
+        //   // advance output pointers
+        //   d_output_bufs[channel_num] += samples_read * d_output_base_size_bytes * d_output_num_samps_to_bytes;
+        // }
+        // output_base_size -= samples_read * d_input_num_samps_to_base;
+
+	D(output_base_remaining);
+        // Read as many items as possible and convert them before deinterlacing
+        items_read =
+          d_convert_func(d_multichannel_deinterlace_buffer, d_input_base_size, output_base_remaining, d_data_fp);
+
+	std::cout << "items read: " << items_read << std::endl;
+        output_base_remaining -= items_read;
+        for(size_t item_index = 0; item_index < items_read; item_index++) {
+          int target_output_buf = item_index % d_num_channels;
+          int target_output_index = item_index / d_num_channels;
+          std::memcpy(d_output_bufs[target_output_buf], &d_multichannel_deinterlace_buffer[item_index * d_output_sample_size_bytes], d_output_sample_size_bytes);
+          d_output_bufs[target_output_buf] += d_output_sample_size_bytes;
+        }
 
         // advance output pointer
-        output_buf += items_read * d_base_size;
+        output_buf += items_read * d_output_base_size;
 
-        if(base_size == 0) {
+        if(output_base_remaining == 0) {
           break;
         }
 
@@ -391,24 +428,29 @@ namespace gr {
       }
 
       // EOF or error
-      if(base_size > 0) {
+      if(output_base_remaining > 0) {
 
         // we didn't read anything; say we're done
-        if((base_size / d_num_samps_to_base) == noutput_items) {
+        if((output_base_remaining / d_output_num_samps_to_base) == noutput_items) {
           return -1;
         }
 
         // else return partial result
         else {
-          return noutput_items - (base_size / d_num_samps_to_base);
+	  D(noutput_items - (output_base_remaining / d_output_num_samps_to_base));
+
+          return (noutput_items - (output_base_remaining / d_output_num_samps_to_base)) / d_num_channels;
         }
       }
-
-      return noutput_items;
+      D(noutput_items);
+      return noutput_items / d_num_channels;
     }
+
     int
     source_impl::single_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
+
+      GR_LOG_DEBUG(d_logger, "SINGLE!!");
       char *output_buf = static_cast<char *>(output_items[0]);
       int items_read;
 
@@ -416,7 +458,7 @@ namespace gr {
       int size = noutput_items;
 
       // This is in base units
-      int base_size = size * d_num_samps_to_base;
+      int base_size = size * d_output_num_samps_to_base;
 
       uint64_t start_offset_abs = nitems_written(0);
 
@@ -427,7 +469,7 @@ namespace gr {
         // Add stream tag whenever the file starts again
         if(d_file_begin) {
           if(d_add_begin_tag != pmt::PMT_NIL) {
-            add_item_tag(0, start_offset_abs + noutput_items - (base_size / d_num_samps_to_base),
+            add_item_tag(0, start_offset_abs + noutput_items - (base_size / d_output_num_samps_to_base),
                          d_add_begin_tag, pmt::from_long(d_repeat_count), d_id);
           }
           pmt::pmt_t msg = d_global.get();
@@ -436,7 +478,7 @@ namespace gr {
           // NOTE: this may change if the sigmf spec changes
           pmt::pmt_t first_capture_start_position = d_captures[0].get("core:sample_start");
           uint64_t offset_samples = pmt::to_uint64(first_capture_start_position);
-          uint64_t offset_bytes = offset_samples * d_sample_size;
+          uint64_t offset_bytes = offset_samples * d_output_sample_size_bytes;
           // If we ever do this when d_data_fp isn't at 0, something is wrong
           assert(std::ftell(d_data_fp) == 0);
           std::fseek(d_data_fp, offset_bytes, SEEK_SET);
@@ -444,11 +486,11 @@ namespace gr {
         }
 
         // Read as many items as possible
-        items_read = d_convert_func(output_buf, d_input_size, base_size, d_data_fp);
+        items_read = d_convert_func(output_buf, d_input_base_size, base_size, d_data_fp);
         base_size -= items_read;
 
         // advance output pointer
-        output_buf += items_read * d_base_size;
+        output_buf += items_read * d_output_base_size;
 
         if(base_size == 0) {
           break;
@@ -474,13 +516,13 @@ namespace gr {
       if(base_size > 0) {
 
         // we didn't read anything; say we're done
-        if((base_size / d_num_samps_to_base) == noutput_items) {
+        if((base_size / d_output_num_samps_to_base) == noutput_items) {
           return -1;
         }
 
         // else return partial result
         else {
-          return noutput_items - (base_size / d_num_samps_to_base);
+          return noutput_items - (base_size / d_output_num_samps_to_base);
         }
       }
 

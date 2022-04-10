@@ -494,13 +494,12 @@ class qa_source (gr_unittest.TestCase):
     def test_multichannel_real(self):
         # Make some test data
         type_str = "ru16_le"
-        test_data = bytearray()
-        for i in range(0, 1000, 4):
+        test_data = []
+        for i in range(0, 1000, 2):
             test_data.append(1)
-            test_data.append(1)
-            test_data.append(2)
             test_data.append(2)
         data, meta_json, filename, meta_file = self.make_file_with_data(test_data, "multichannel_real", type=type_str, global_data={"core:num_channels": 2})
+
         file_source = sigmf.source(filename, type_str)
         sink1 = blocks.vector_sink_s()
         sink2 = blocks.vector_sink_s()
@@ -514,6 +513,7 @@ class qa_source (gr_unittest.TestCase):
         sink2_data = sink2.data()
 
         assert len(sink1_data) == len(sink2_data), "sinks should be equal in size"
+        assert len(sink1_data) == 500, "sink size should be 500"
 
         for sample in sink1_data:
             assert sample == 1, "sink1 should only have 1's"

@@ -38,13 +38,22 @@ namespace gr {
       FILE *d_data_fp;
       FILE *d_meta_fp;
 
-      // size of a sample
-      size_t d_sample_size;
+      // size of a sample of output data
+      size_t d_output_sample_size_bytes;
 
-      // base size of a data, might be item_size / 2
-      size_t d_base_size;
-      size_t d_input_size;
-      int d_num_samps_to_base;
+      // base size of output data, might be sample_size / 2 for complex data
+      size_t d_output_base_size;
+      // base size of input data, might be sample_size / 2 for complex data
+      size_t d_input_base_size;
+      // factor to convert from number of samples to base units for the output type
+      int d_output_num_samps_to_base;
+
+      // Size of a single sample from the input file in bytes
+      size_t d_input_file_sample_size_bytes;
+
+      // Buffer to hold data from the file before deinterlacing
+      char* d_multichannel_deinterlace_buffer;
+
 
       uint64_t d_num_channels;
 
