@@ -78,7 +78,6 @@ namespace gr {
       message_port_register_out(META);
 
       open();
-      load_metadata();
       std::string input_datatype = d_global.get_str("core:datatype");
       if (type == "") {
         type = input_datatype;
@@ -262,12 +261,7 @@ namespace gr {
       // hold mutex for duration of this function
       gr::thread::scoped_lock guard(d_open_mutex);
 
-      d_data_fp = fopen(d_data_path.c_str(), "r");
-      if(d_data_fp == NULL) {
-        std::stringstream s;
-        s << "failed to open data file, errno = " << errno << std::endl;
-        throw std::runtime_error(s.str());
-      }
+      D(d_meta_path.string());
       d_meta_fp = fopen(d_meta_path.c_str(), "r");
       if(d_meta_fp == NULL) {
         std::stringstream s;
@@ -275,6 +269,16 @@ namespace gr {
         throw std::runtime_error(s.str());
       }
 
+      load_metadata();
+      if (d_global.has("metadata_only")) {
+        throw std::runtime_error(d_meta_path.string() + " is a metadata only dataset, nothing to stream!");
+      }
+      d_data_fp = fopen(d_data_path.c_str(), "r");
+      if(d_data_fp == NULL) {
+        std::stringstream s;
+        s << "failed to open data file, errno = " << errno << std::endl;
+        throw std::runtime_error(s.str());
+      }
       return true;
     }
 

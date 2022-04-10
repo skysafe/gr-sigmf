@@ -524,7 +524,17 @@ class qa_source (gr_unittest.TestCase):
     def test_multichannel_complex(self):
         pass
 
+    def test_metadata_only(self):
+        data, meta_json, filename, meta_file = self.make_file("just_meta", global_data = {"metadata_only":True})
+        os.remove(filename)
 
+        got_exception = False
+        try:
+            file_source = sigmf.source(meta_file, "cf32_le")
+        except RuntimeError as e:
+            got_exception = True
+            assert "nothing to stream" in str(e), "Bad exception message"
+        assert got_exception, "didn't get exception"
 
 if __name__ == '__main__':
     gr_unittest.run(qa_source)
