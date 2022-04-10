@@ -41,6 +41,8 @@
 namespace posix = boost::posix_time;
 namespace algo = boost::algorithm;
 
+#define D(v) std::cout << __LINE__ << " " <<  #v << " = " << v << std::endl;
+
 namespace gr {
   namespace sigmf {
 
