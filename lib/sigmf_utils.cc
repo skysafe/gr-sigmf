@@ -20,8 +20,8 @@
 
 #include "sigmf/sigmf_utils.h"
 #include <filesystem>
-#include <boost/lexical_cast.hpp>
 #include <regex>
+#include <string>
 
 namespace fs = std::filesystem;
 
@@ -54,7 +54,13 @@ namespace gr {
         format_detail_t detail;
         detail.is_complex = result[1] == "c";
         detail.type_str = result[2];
-        detail.width = boost::lexical_cast<size_t>(result[4]);
+        try {
+          detail.width = std::stol(result[4]);
+        } catch (const std::invalid_argument& e) {
+          throw std::runtime_error("bad format str");
+        } catch (const std::out_of_range& e) {
+          throw std::runtime_error("bad format str");
+        }
         if(result[6].matched) {
           detail.endianness = result[6] == "le" ? LITTLE : BIG;
         }
