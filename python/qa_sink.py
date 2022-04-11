@@ -1150,6 +1150,68 @@ class qa_sink(gr_unittest.TestCase):
         tb.stop()
         tb.wait()
 
+    def test_multichannel_sink(self):
+        N = 1000
+        samp_rate = 200000
+
+        src1_data = [1 for i in range(500)]
+        src2_data = [2 for i in range(500)]
+        src1 = blocks.vector_source_s(src1_data)
+        src2 = blocks.vector_source_s(src2_data)
+
+        description = "This is a test of the sigmf sink."
+        author = "Just some person"
+        file_license = "CC-0"
+        hardware = "Vector Source"
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("ru16_le",
+                               data_file, num_channels=2)
+
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("core:description", description)
+        file_sink.set_global_meta("core:author", author)
+        file_sink.set_global_meta("core:sample_rate", author)
+        file_sink.set_global_meta("core:license", file_license)
+        file_sink.set_global_meta("core:hw", hardware)
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect((src1, 0), (file_sink, 0))
+        tb.connect((src2, 0), (file_sink, 1))
+        tb.run()
+        tb.wait()
+
+        output_file_size = os.path.getsize(data_file)
+        assert output_file_size == 2 * 1000, "bad size for output file"
+
+        # check that data file equals data
+        read_data = []
+        with open(data_file, "rb") as f:
+            try:
+                while True:
+                    one = struct.unpack('<H', f.read(2))[0]
+                    two = struct.unpack('<H', f.read(2))[0]
+                    print(one)
+                    print(two)
+                    assert one == 1, "bad value for 1"
+                    assert two == 2, "bad value for 2"
+            except:
+                pass
+
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            print(meta["global"])
+            assert meta["global"]["core:datatype"] == "ru16_le"
+            assert meta["global"]["core:num_channels"] == 2
+            assert meta["global"]["core:description"] == description
+            assert meta["global"]["core:author"] == author
+            assert meta["global"]["core:license"] == file_license
+            assert meta["global"]["core:hw"] == hardware
+
 
 if __name__ == '__main__':
     gr_unittest.run(qa_sink)

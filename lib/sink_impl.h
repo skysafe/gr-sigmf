@@ -111,6 +111,9 @@ namespace gr {
       // Number of incoming channels in file
       int d_num_channels;
 
+      // Convenience vector for input buffers
+      std::vector<char*> d_input_bufs;
+
       // The offset of the start of the current recording from
       // what the block believes
       uint64_t d_recording_start_offset;

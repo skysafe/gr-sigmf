@@ -57,7 +57,7 @@
 #define OUR_O_LARGEFILE 0
 #endif
 
-#define PVAR(v) std::cout << #v << " = " << v << std::endl;
+#define D(v) std::cout << __LINE__ << " " <<  #v << " = " << v << std::endl;
 
 namespace fs = std::filesystem;
 namespace posix = boost::posix_time;
@@ -89,7 +89,7 @@ namespace gr {
     : gr::sync_block("sink",
                      gr::io_signature::make(1, num_channels, type_to_size(type)),
                      gr::io_signature::make(0, 0, 0)),
-      d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_num_channels(num_channels), d_itemsize(type_to_size(type)),
+      d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_num_channels(num_channels), d_input_bufs(num_channels), d_itemsize(type_to_size(type)),
       d_type(add_endianness(type)), d_sink_time_mode(time_mode)
     {
       init_meta();
@@ -188,6 +188,10 @@ namespace gr {
     void
     sink_impl::init_meta() {
       reset_meta();
+      if (d_num_channels > 1) {
+          D(d_num_channels);
+          d_global.set("core:num_channels", d_num_channels);
+      }
       d_captures.push_back(meta_namespace::build_capture_segment(0));
     }
 
@@ -822,7 +826,12 @@ namespace gr {
 
     int
     sink_impl::work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
-    {
+    { 
+
+      for(int channel_num = 0; channel_num < d_num_channels; channel_num++) {
+        d_input_bufs[channel_num] = (char *)input_items[channel_num];
+      }
+
       char *inbuf = (char *)input_items[0];
       int nwritten = 0;
 
@@ -854,9 +863,25 @@ namespace gr {
       if(d_temp_tags.size() > 0) {
         handle_tags(d_temp_tags);
       }
+      char *file_source_buf;
+      int total_output_items = noutput_items * d_num_channels;
+      char *d_interlaced_buffer = (char*)std::malloc(d_itemsize * total_output_items);
+      D(noutput_items);
+      if (d_num_channels > 1) {
+          // interlace into a buffer
+          for(int item_index = 0; item_index < total_output_items; item_index++) {
+              int target_input_buf = item_index % d_num_channels; 
+              std::memcpy(d_interlaced_buffer, d_input_bufs[target_input_buf],d_itemsize);
+              d_input_bufs[target_input_buf] += d_itemsize;
+          }
+          file_source_buf = d_interlaced_buffer;
+      } else {
+          file_source_buf = d_input_bufs[0];
+      }
 
-      while(nwritten < noutput_items) {
-        int count = std::fwrite(inbuf, d_itemsize, noutput_items - nwritten, d_fp);
+      while(nwritten < total_output_items) {
+        int count = std::fwrite(file_source_buf, d_itemsize, total_output_items - nwritten, d_fp);
+        D(count);
         if(count == 0) {
           if(std::ferror(d_fp)) {
             std::stringstream s;
