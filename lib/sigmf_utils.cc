@@ -52,19 +52,21 @@ namespace gr {
 
       if(std::regex_match(format_str, result, format_regex)) {
         format_detail_t detail;
-        detail.is_complex = result[1] == "c";
-        detail.type_str = result[2];
+        auto is_complex = result[1] == "c";
+        auto type_str = result[2];
+        size_t width;
         try {
-          detail.width = std::stol(result[4]);
+          width = std::stol(result[4]);
         } catch (const std::invalid_argument& e) {
           throw std::runtime_error("bad format str");
         } catch (const std::out_of_range& e) {
           throw std::runtime_error("bad format str");
         }
+        endian_t endianness;
         if(result[6].matched) {
-          detail.endianness = result[6] == "le" ? LITTLE : BIG;
+          endianness = result[6] == "le" ? LITTLE : BIG;
         }
-        return detail;
+        return format_detail_t{is_complex, type_str, width, endianness, (width / 8) * (is_complex ? 2 : 1)};
       } else {
         throw std::runtime_error("bad format str");
       }

@@ -83,13 +83,16 @@ namespace gr {
      */
     sink_impl::sink_impl(std::string type, std::string filename, sigmf_time_mode time_mode, bool append, int num_channels)
     : gr::sync_block("sink",
-                     gr::io_signature::make(1, num_channels, type_to_size(type)),
+                     gr::io_signature::make(1, 1, sizeof(float)),
                      gr::io_signature::make(0, 0, 0)),
       d_fp(nullptr), d_new_fp(nullptr), d_append(append), d_num_channels(num_channels),
-      d_input_bufs(num_channels), d_interlaced_buffer(0xFFFF), d_itemsize(type_to_size(type)),
+      d_input_bufs(num_channels), d_interlaced_buffer(0xFFFF),
+      d_format_detail(parse_format_str(type)), d_itemsize(d_format_detail.sample_size),
       d_type(add_endianness(type)), d_sink_time_mode(time_mode)
     {
       init_meta();
+      set_input_signature(gr::io_signature::make(1, num_channels, d_format_detail.sample_size));
+
       open(filename.c_str());
       d_temp_tags.reserve(32);
 

@@ -93,7 +93,7 @@ namespace gr {
       d_output_base_size = output_detail.width / 8;
       d_input_base_size = input_detail.width / 8;
 
-      d_input_file_sample_size_bytes = (input_detail.width * (input_detail.is_complex ? 2 : 1)) / 8;
+      d_input_file_sample_size_bytes = input_detail.sample_size;
 
       std::fseek(d_data_fp, 0, SEEK_END);
       d_num_samples_in_file = std::ftell(d_data_fp) / d_input_file_sample_size_bytes;

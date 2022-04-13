@@ -60,6 +60,8 @@ namespace gr {
       size_t width;
       //! endinness of the format
       endian_t endianness;
+      //! size of a sample in bytes
+      size_t sample_size;
     };
 
     /*!

@@ -33,7 +33,6 @@
 #include <sigmf/meta_namespace.h>
 #include <sigmf/sink.h>
 
-
 namespace gr {
   namespace sigmf {
 
@@ -45,52 +44,6 @@ namespace gr {
     static const pmt::pmt_t SYSTEM = pmt::string_to_symbol("system");
     static const pmt::pmt_t LATITUDE = pmt::string_to_symbol("latitude");
     static const pmt::pmt_t LONGITUDE = pmt::string_to_symbol("longitude");
-
-    inline size_t
-    type_to_size(const std::string type)
-    {
-      size_t underscore_pos = type.find("_");
-      std::string type_minus_endianness = type.substr(0, underscore_pos);
-      if(type_minus_endianness == "cf64") {
-        return 16;
-      } else if(type_minus_endianness == "cf32") {
-        return 8;
-      } else if(type_minus_endianness == "ci64") {
-        return 16;
-      } else if(type_minus_endianness == "ci32") {
-        return 8;
-      } else if(type_minus_endianness == "ci16") {
-        return 4;
-      } else if(type_minus_endianness == "ci8") {
-        return 2;
-      } else if(type_minus_endianness == "rf64") {
-        return 8;
-      } else if(type_minus_endianness == "rf32") {
-        return 4;
-      } else if(type_minus_endianness == "ri64") {
-        return 8;
-      } else if(type_minus_endianness == "ri32") {
-        return 4;
-      } else if(type_minus_endianness == "ri16") {
-        return 2;
-      } else if(type_minus_endianness == "ri8") {
-        return 1;
-      } else if(type_minus_endianness == "cu32") {
-        return 8;
-      } else if(type_minus_endianness == "cu16") {
-        return 4;
-      } else if(type_minus_endianness == "ru32") {
-        return 4;
-      } else if(type_minus_endianness == "ru16") {
-        return 2;
-      } else {
-        std::stringstream s;
-        s << "unknown sigmf type " << type << std::endl;
-        throw std::runtime_error(s.str());
-      }
-    }
-
-
 
     class sink_impl : public sink {
       private:
@@ -120,6 +73,8 @@ namespace gr {
       // The offset of the start of the current recording from
       // what the block believes
       uint64_t d_recording_start_offset;
+
+      format_detail_t d_format_detail;
 
       boost::mutex d_mutex;
       size_t d_itemsize;
