@@ -372,31 +372,12 @@ namespace gr {
           d_file_begin = false;
         }
 
-        // Read input samples from file * the number of output bufs, recording the number of samples we actually read
-        // int samples_read = std::fread(d_multichannel_deinterlace_buffer, d_input_file_sample_size_bytes,
-        //                               output_size * d_num_channels, d_data_fp);
-
-        // // Deinterlace the input into some contiguous buffers so we can do conversion
-        // for(size_t i = 0; i < samples_read; i++) {
-        //   int target_deint_buf = i % d_num_channels;
-        //   int target_deint_index = i / d_num_channels;
-        //   std::memcpy(d_deinterlaced_bufs[target_deint_buf][target_deint_index], bytes_from_file[i * d_input_size_bytes], d_input_size_bytes);
-        // }
-
-        // // Do the conversion from the input to output
-        // for(size_t channel_num = 0; channel_num < d_num_channels; channel_num++) {
-        //   d_convert_func(d_output_bufs[channel_num], d_input_size, base_size, d_deinterlaced_bufs[channel_num]);
-        //   // advance output pointers
-        //   d_output_bufs[channel_num] += samples_read * d_output_base_size_bytes * d_output_num_samps_to_bytes;
-        // }
-        // output_base_size -= samples_read * d_input_num_samps_to_base;
-
-	D(output_base_remaining);
+        D(output_base_remaining);
         // Read as many items as possible and convert them before deinterlacing
         items_read =
           d_convert_func(d_multichannel_deinterlace_buffer, d_input_base_size, output_base_remaining, d_data_fp);
 
-	std::cout << "items read: " << items_read << std::endl;
+        std::cout << "items read: " << items_read << std::endl;
         output_base_remaining -= items_read;
         for(size_t item_index = 0; item_index < items_read; item_index++) {
           int target_output_buf = item_index % d_num_channels;
