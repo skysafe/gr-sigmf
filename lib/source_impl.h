@@ -22,6 +22,7 @@
 #define INCLUDED_SIGMF_SOURCE_IMPL_H
 
 #include <cstdio>
+#include <string>
 #include <sigmf/meta_namespace.h>
 #include <sigmf/source.h>
 #include "type_converter.h"
@@ -32,6 +33,8 @@ namespace gr {
     static const pmt::pmt_t COMMAND = pmt::mp("command");
     static const pmt::pmt_t META = pmt::mp("meta");
     static const pmt::pmt_t TAG_KEY = pmt::string_to_symbol("tag");
+
+    static const std::string UNKNOWN_PREFIX = "unknown:";
 
     class source_impl : public source {
       private:

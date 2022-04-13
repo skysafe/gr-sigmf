@@ -28,9 +28,7 @@
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/regex.hpp>
 #include <boost/format.hpp>
-#include <boost/algorithm/string/regex.hpp>
 #include <gnuradio/io_signature.h>
 #include "sigmf/sigmf_utils.h"
 #include "source_impl.h"
@@ -189,9 +187,8 @@ namespace gr {
             tag.key = FREQ_KEY;
           } else if (key == "core:datetime") {
             tag.key = TIME_KEY;
-          } else if (algo::starts_with(key, "unknown:")) {
-            boost::regex unknown_regex("^unknown:");
-            std::string unknown_key = algo::erase_regex_copy(key, unknown_regex);
+          } else if (algo::starts_with(key, UNKNOWN_PREFIX)) {
+            std::string unknown_key = key.substr(UNKNOWN_PREFIX.length());
             tag.key = pmt::mp(unknown_key);
           } else {
             tag.key = pmt::mp(key);
