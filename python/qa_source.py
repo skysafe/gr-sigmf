@@ -2,6 +2,7 @@ import array
 import tempfile
 import shutil
 import json
+import struct
 import os
 import math
 from pathlib import Path
@@ -33,7 +34,7 @@ class qa_source (gr_unittest.TestCase):
     def setUp(self):
 
         # Create a temporary directory
-        self.test_dir = tempfile.mkdtemp()
+        self.test_dir = Path(tempfile.mkdtemp())
 
     def tearDown(self):
 
@@ -535,6 +536,32 @@ class qa_source (gr_unittest.TestCase):
             got_exception = True
             assert "nothing to stream" in str(e), "Bad exception message"
         assert got_exception, "didn't get exception"
+
+    def test_cf64_input(self):
+        data_file = self.test_dir / "f64.sigmf-data"
+        meta_file = self.test_dir / "f64.sigmf-meta"
+        with open(data_file, "wb") as f:
+            for i in range(1000):
+                f.write(struct.pack("<d", 1.2))
+        meta = {
+            "global": {
+                "core:datatype": "cf64_le",
+                "core:version": "1.0.0"
+            },
+            "captures": [
+                {
+                    "core:sample_start": 0,
+                }
+            ]
+        }
+        with open(meta_file, "w") as f:
+            json.dump(meta, f)
+        try:
+            file_source = sigmf.source(str(meta_file), "cf64_le")
+        except:
+            assert False, "Using cf64 shouldn't cause an exception!"
+
+
 
 if __name__ == '__main__':
     gr_unittest.run(qa_source)

@@ -47,7 +47,7 @@ namespace gr {
     parse_format_str(const std::string &format_str)
     {
 
-      std::regex format_regex("(r|c)((f|i|u)(8|16|32))(_(le|be))?");
+      std::regex format_regex("(r|c)((f|i|u)(8|16|32|64))(_(le|be))?");
       std::smatch result;
 
       if(std::regex_match(format_str, result, format_regex)) {
