@@ -19,7 +19,6 @@
  */
 
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
 #include <csignal>
 #include <filesystem>
 #include <ctime>
@@ -53,9 +52,9 @@ check_valid_uhd_format(const std::string &str)
 size_t
 format_str_to_size(const std::string &format_str)
 {
-  boost::regex format_regex("(r|c)(\\w)(\\d+)_(le|be)");
-  boost::smatch result;
-  if(boost::regex_search(format_str, result, format_regex)) {
+  std::regex format_regex("(r|c)(\\w)(\\d+)_(le|be)");
+  std::smatch result;
+  if(std::regex_search(format_str, result, format_regex)) {
     int multiplier = result[1] == "c" ? 2 : 1;
     int num_bits = boost::lexical_cast<int>(result[3]);
     return (num_bits / 8) * multiplier;

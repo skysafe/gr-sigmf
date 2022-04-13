@@ -28,7 +28,6 @@
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/format.hpp>
 #include <gnuradio/io_signature.h>
 #include "sigmf/sigmf_utils.h"
 #include "source_impl.h"

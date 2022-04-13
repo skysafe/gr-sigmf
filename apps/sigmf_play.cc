@@ -19,6 +19,7 @@
  */
 
 #include <boost/program_options.hpp>
+#include <boost/format.hpp>
 #include <csignal>
 #include <filesystem>
 #include <gnuradio/blocks/head.h>
