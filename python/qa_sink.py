@@ -1187,16 +1187,20 @@ class qa_sink(gr_unittest.TestCase):
         # check that data file equals data
         read_data = []
         with open(data_file, "rb") as f:
-            try:
-                while True:
-                    one = struct.unpack('<H', f.read(2))[0]
-                    two = struct.unpack('<H', f.read(2))[0]
-                    print(one)
-                    print(two)
-                    assert one == 1, "bad value for 1"
-                    assert two == 2, "bad value for 2"
-            except:
-                pass
+            data_bytes = f.read()
+
+        print(data_bytes)
+        count = 0
+        print(len(data_bytes))
+        for i in range(0, len(data_bytes), 2):
+            # print(i)
+            val = struct.unpack('<H', data_bytes[i:i+2])[0]
+            # print(val)
+            count += 1
+            if count % 2 == 0:
+                assert val == 2, "bad value for 2"
+            else:
+                assert val == 1, "bad value for 1"
 
         # check that the metadata matches up
         with open(json_file, "r") as f:
