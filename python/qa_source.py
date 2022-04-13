@@ -523,7 +523,33 @@ class qa_source (gr_unittest.TestCase):
 
 
     def test_multichannel_complex(self):
-        pass
+        # Make some test data
+        type_str = "cf32_le"
+        test_data = []
+        for i in range(0, 1000, 2):
+            test_data.append(1 + 2j)
+            test_data.append(3 + 4j)
+        data, meta_json, filename, meta_file = self.make_file_with_data(test_data, "multichannel_complex", type=type_str, global_data={"core:num_channels": 2})
+
+        file_source = sigmf.source(filename, type_str)
+        sink1 = blocks.vector_sink_c()
+        sink2 = blocks.vector_sink_c()
+        tb = gr.top_block()
+        tb.connect((file_source, 0), (sink1, 0))
+        tb.connect((file_source, 1), (sink2, 0))
+        tb.start()
+        tb.wait()
+
+        sink1_data = sink1.data()
+        sink2_data = sink2.data()
+
+        assert len(sink1_data) == len(sink2_data), "sinks should be equal in size"
+        assert len(sink1_data) == 500, "sink size should be 500"
+
+        for sample in sink1_data:
+            assert sample == (1 + 2j), "sink1 should only have 1+2j"
+        for sample in sink2_data:
+            assert sample == (3 + 4j), "sink2 should only have 3+4j"
 
     def test_metadata_only(self):
         data, meta_json, filename, meta_file = self.make_file("just_meta", global_data = {"metadata_only":True})
