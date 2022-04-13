@@ -228,14 +228,14 @@ namespace gr {
     sink_impl::on_command_message(pmt::pmt_t msg)
     {
       if(!pmt::is_dict(msg)) {
-        GR_LOG_WARN(d_logger, boost::format("Command message is not a dict: %s") % msg);
+        d_logger->warn("Command message is not a dict: {:s}", msg);
         return;
       }
 
       // Look for a command
       pmt::pmt_t command_pmt = pmt::dict_ref(msg, COMMAND, pmt::get_PMT_NIL());
       if(pmt::eqv(command_pmt, pmt::get_PMT_NIL())) {
-        GR_LOG_WARN(d_logger, boost::format("Command key not found in dict: %s") % msg);
+        d_logger->warn("Command key not found in dict: {:s}", msg);
         return;
       }
       std::string command_str = pmt::symbol_to_string(command_pmt);
@@ -246,8 +246,7 @@ namespace gr {
         if(pmt::is_symbol(filename_pmt)) {
           open(pmt::symbol_to_string(filename_pmt));
         } else {
-          GR_LOG_ERROR(d_logger,
-                       boost::format("Invalid filename for open command in dict: %s") % msg);
+          d_logger->error("Invalid filename for open command in dict: {:s}", msg);
           return;
         }
       } else if(command_str == "close") {
@@ -263,13 +262,13 @@ namespace gr {
         auto val = pmt::dict_ref(msg, pmt::mp("val"), pmt::get_PMT_NIL());
 
         if (pmt::eqv(sample_start, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Sample start key not found in dict: %s") % msg);
+          d_logger->error("Sample start key not found in dict: {:s}", msg);
           return;
         } else if (pmt::eqv(sample_count, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Sample count key not found in dict: %s") % msg);
+          d_logger->error("Sample count key not found in dict: {:s}", msg);
           return;
         } else if (pmt::eqv(key, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Data key not found in dict: %s") % msg);
+          d_logger->error("Data key not found in dict: {:s}", msg);
           return;
         }
 
@@ -281,7 +280,7 @@ namespace gr {
         auto val = pmt::dict_ref(msg, pmt::mp("val"), pmt::get_PMT_NIL());
 
         if (pmt::eqv(key, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Data key not found in dict: %s") % msg);
+          d_logger->error("Data key not found in dict: {:s}", msg);
           return;
         }
 
@@ -294,20 +293,18 @@ namespace gr {
         auto val = pmt::dict_ref(msg, pmt::mp("val"), pmt::get_PMT_NIL());
 
         if (pmt::eqv(key, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Data key not found in dict: %s") % msg);
+          d_logger->error("Data key not found in dict: {:s}", msg);
           return;
         }
         if (pmt::eqv(index, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Index key not found in dict: %s") % msg);
+          d_logger->error("Index key not found in dict: {:s}", msg);
           return;
         }
         uint64_t index_int = pmt::to_uint64(index);
-        // GR_LOG_INFO(d_logger, "setting capture meta(" << index_int << "," << key << ", " << val << ")");
         set_capture_meta(index_int, pmt::symbol_to_string(key), val);
 
       }else {
-        GR_LOG_ERROR(d_logger,
-                     boost::format("Invalid command string received in dict: %s") % msg);
+        d_logger->error("Invalid command string received in dict: {:s}", msg);
         return;
       }
     }
@@ -397,7 +394,7 @@ namespace gr {
           auto &capture = d_captures.at(index);
           capture.set(key, val);
         } catch (const std::out_of_range &e) {
-          GR_LOG_ERROR(d_logger, "Invalid capture index");
+          d_logger->error("Invalid capture index");
         }
       }
     }
@@ -456,7 +453,7 @@ namespace gr {
         std::string error_msg = (boost::format("Failed to open file descriptor for path '%s', error was: %s")
                      % d_new_temp_data_path
                      % open_error).str();
-        GR_LOG_ERROR(d_logger, error_msg);
+        d_logger->error(error_msg);
         throw std::runtime_error(error_msg);
       }
 
@@ -471,7 +468,7 @@ namespace gr {
         std::string error_msg = (boost::format("Failed to open file pointer for path '%s', error was: %s")
                      % d_new_temp_data_path
                      % fd_open_error).str();
-        GR_LOG_ERROR(d_logger, error_msg);
+        d_logger->error(error_msg);
         // don't leak file descriptor if fdopen fails
         ::close(fd);
 
@@ -605,7 +602,7 @@ namespace gr {
           // If no datetime set
           if (!first_segment.has("core:datetime")) {
             // Then set one
-            GR_LOG_INFO(d_logger, "No core:datetime found, using host ts instead");
+            d_logger->info("No core:datetime found, using host ts instead");
             first_segment.set("core:datetime", iso_8601_ts());
           }
           // clear pre_capture_data

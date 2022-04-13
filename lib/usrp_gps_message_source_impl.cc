@@ -144,7 +144,7 @@ namespace gr {
         gps_time = d_usrp->get_mboard_sensor("gps_time", d_mboard).to_int();
         gps_locked = d_usrp->get_mboard_sensor("gps_locked", d_mboard).to_bool();
       } catch(const uhd::value_error &e) {
-        // GR_LOG_DEBUG(d_logger, "UHD timeout getting GPS sensors: " << e.what());
+        d_logger->debug("UHD timeout getting GPS sensors: {:s}", e.what());
         return;
       }
       const std::string gps_gpgga = d_usrp->get_mboard_sensor("gps_gpgga", d_mboard).to_pp_string();
@@ -159,7 +159,7 @@ namespace gr {
 
       // Extract and parse fields
       if(tokens[2].empty() || tokens[4].empty()) {
-        GR_LOG_DEBUG(d_logger, "Got empty lat/lon, not emitting GPS message.");
+        d_logger->debug("Got empty lat/lon, not emitting GPS message.");
         return;
       }
       double lat = parse_nmea_latitude(tokens[2], tokens[3]);
@@ -173,11 +173,9 @@ namespace gr {
       // return a pmt which we can use to emit a message
       pmt::pmt_t values = pmt::make_dict();
 
-      // GR_LOG_INFO(d_logger,
-      //              "gps time: " << gps_time << ", gps_locked: " << gps_locked << ", latitude: " << lat
-      //                           << ", longitude: " << lon << ", altitude: " << alt
-      //                           << ", fix quality: " << fix_quality << ", hdop: " << hdop
-      //                           << ", num_sats: " << num_sats << ", gps_gpgga: " << gps_gpgga);
+      d_logger->info(
+        "gps time: {}, gps_locked: {}, latitude: {}, longitude: {}, altitude: {}, fix_quality: {}, hdop: {}, num_sats: {}, gps_gpgga: {}",
+        gps_time, gps_locked, lat, lon, alt, fix_quality, hdop, num_sats, gps_gpgga);
       values = pmt::dict_add(values, pmt::intern("gps_time"), pmt::from_uint64(gps_time));
       values = pmt::dict_add(values, pmt::intern("gps_locked"), pmt::from_bool(gps_locked));
       values = pmt::dict_add(values, pmt::intern("latitude"), pmt::from_double(lat));
@@ -202,7 +200,7 @@ namespace gr {
         try {
           boost::this_thread::sleep_until(next_tick);
         } catch(const boost::thread_interrupted &e) {
-          GR_LOG_INFO(d_logger, "poll_thread interrupted, exiting");
+          d_logger->info("poll_thread interrupted, exiting");
           return;
         }
       }

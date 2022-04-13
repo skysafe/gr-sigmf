@@ -100,8 +100,7 @@ namespace gr {
       d_num_samples_in_file = std::ftell(d_data_fp) / d_input_file_sample_size_bytes;
       D(d_num_samples_in_file);
       
-
-      // GR_LOG_DEBUG(d_logger, "Samps in file: " << d_num_samples_in_file);
+      d_logger->debug("Samps in file: {}", d_num_samples_in_file);
 
       std::fseek(d_data_fp, 0, SEEK_SET);
 
@@ -136,12 +135,12 @@ namespace gr {
     source_impl::on_command_message(pmt::pmt_t msg)
     {
       if(!pmt::is_dict(msg)) {
-        GR_LOG_WARN(d_logger, boost::format("Command message is not a dict: %s") % msg);
+        d_logger->warn("Command message is not a dict: {:s}", msg);
         return;
       }
       pmt::pmt_t command_pmt = pmt::dict_ref(msg, COMMAND, pmt::get_PMT_NIL());
       if(pmt::eqv(command_pmt, pmt::get_PMT_NIL())) {
-        GR_LOG_WARN(d_logger, boost::format("Command key not found in dict: %s") % msg);
+        d_logger->warn("Command key not found in dict: {:s}", msg);
         return;
       }
       std::string command_str = pmt::symbol_to_string(command_pmt);
@@ -149,13 +148,13 @@ namespace gr {
       if(command_str == "set_begin_tag") {
         pmt::pmt_t tag = pmt::dict_ref(msg, TAG_KEY, pmt::get_PMT_NIL());
         if(pmt::eqv(tag, pmt::get_PMT_NIL())) {
-          GR_LOG_ERROR(d_logger, boost::format("Tag key not found in dict: %s") % msg);
+          d_logger->error("Tag key not found in dict: {:s}", msg);
           return;
         }
         set_begin_tag(tag);
       }
 
-      GR_LOG_DEBUG(d_logger, "Received command message");
+      d_logger->debug("Received command message");
     }
 
 
@@ -230,15 +229,10 @@ namespace gr {
       add_tags_from_meta_list(d_captures, offset);
       add_tags_from_meta_list(d_annotations, offset);
 
-      GR_LOG_DEBUG(d_logger, "tags to output: ");
       for(auto it = d_tags_to_output.begin(); it != d_tags_to_output.end(); it++) {
         auto key = it->first;
         auto tag_to_output = it->second;
-        // GR_LOG_DEBUG(d_logger, "key = " << key << ", ");
-        // GR_LOG_DEBUG(d_logger, "val = " << tag_to_output.value << ", ");
-        // GR_LOG_DEBUG(d_logger, "offset = " << tag_to_output.offset << ", ");
       }
-      GR_LOG_DEBUG(d_logger, "End of tags to output");
     }
 
     void
@@ -330,7 +324,6 @@ namespace gr {
     source_impl::multi_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
       D(noutput_items);
-      GR_LOG_DEBUG(d_logger, "MULTI!!");
       // Copy the output bufs for convenience
       for(size_t i = 0; i < d_num_channels; i++) {
         d_output_bufs[i] = static_cast<char *>(output_items[i]);
@@ -430,8 +423,6 @@ namespace gr {
     int
     source_impl::single_channel_work(int noutput_items, gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
     {
-
-      GR_LOG_DEBUG(d_logger, "SINGLE!!");
       char *output_buf = static_cast<char *>(output_items[0]);
       int items_read;
 
