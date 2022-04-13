@@ -26,6 +26,7 @@
 #include <sigmf/meta_namespace.h>
 #include <sigmf/source.h>
 #include "type_converter.h"
+#include "resizable_buffer.h"
 
 namespace gr {
   namespace sigmf {
@@ -55,8 +56,7 @@ namespace gr {
       size_t d_input_file_sample_size_bytes;
 
       // Buffer to hold data from the file before deinterlacing
-      char* d_multichannel_deinterlace_buffer;
-
+      resizable_byte_buffer_t d_multichannel_deinterlace_buffer;
 
       uint64_t d_num_channels;
 

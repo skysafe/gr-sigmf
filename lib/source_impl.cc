@@ -63,7 +63,7 @@ namespace gr {
     : gr::sync_block("source",
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(float))), // This get's overwritten below
-      d_data_fp(0), d_meta_fp(0), d_repeat(repeat), d_file_begin(true),
+      d_data_fp(0), d_meta_fp(0), d_multichannel_deinterlace_buffer(0xFFFF), d_repeat(repeat), d_file_begin(true),
       d_add_begin_tag(pmt::PMT_NIL), d_repeat_count(0),
       d_data_path(to_data_path(filename)), d_meta_path(meta_path_from_data(d_data_path))
     {
@@ -348,8 +348,7 @@ namespace gr {
       uint64_t start_offset_abs = nitems_written(0);
 
       emit_tags(start_offset_abs, output_size_samples);
-      // TODO: This should be done smareter so we aren't calling malloc on every work call, but that's an optimization for later
-      d_multichannel_deinterlace_buffer = static_cast<char*>(std::malloc(output_size_samples * d_input_file_sample_size_bytes * d_num_channels));
+      d_multichannel_deinterlace_buffer.ensure_size(output_size_samples * d_input_file_sample_size_bytes * d_num_channels);
 
       while(output_base_remaining > 0) {
 
@@ -375,14 +374,14 @@ namespace gr {
         D(output_base_remaining);
         // Read as many items as possible and convert them before deinterlacing
         items_read =
-          d_convert_func(d_multichannel_deinterlace_buffer, d_input_base_size, output_base_remaining, d_data_fp);
+          d_convert_func(d_multichannel_deinterlace_buffer.data(), d_input_base_size, output_base_remaining, d_data_fp);
 
         std::cout << "items read: " << items_read << std::endl;
         output_base_remaining -= items_read;
         for(size_t item_index = 0; item_index < items_read; item_index++) {
           int target_output_buf = item_index % d_num_channels;
           int target_output_index = item_index / d_num_channels;
-          std::memcpy(d_output_bufs[target_output_buf], &d_multichannel_deinterlace_buffer[item_index * d_output_sample_size_bytes], d_output_sample_size_bytes);
+          std::memcpy(d_output_bufs[target_output_buf], &(d_multichannel_deinterlace_buffer.data()[item_index * d_output_sample_size_bytes]), d_output_sample_size_bytes);
           d_output_bufs[target_output_buf] += d_output_sample_size_bytes;
         }
 

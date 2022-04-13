@@ -28,6 +28,7 @@
 #include <filesystem>
 #include <vector>
 #include <unordered_map>
+#include "resizable_buffer.h"
 
 #include <sigmf/meta_namespace.h>
 #include <sigmf/sink.h>
@@ -113,6 +114,8 @@ namespace gr {
 
       // Convenience vector for input buffers
       std::vector<char*> d_input_bufs;
+
+      resizable_byte_buffer_t d_interlaced_buffer;
 
       // The offset of the start of the current recording from
       // what the block believes
