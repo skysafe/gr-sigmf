@@ -146,11 +146,7 @@ namespace gr {
       void close_impl();
 
       public:
-      sink_impl(std::string type,
-                std::string filename,
-                sigmf_time_mode time_mode,
-                bool append,
-		int num_channels);
+      sink_impl(std::string type, std::string filename, sigmf_time_mode time_mode, bool append, int num_channels);
       ~sink_impl();
 
       void open(const char *filename);
