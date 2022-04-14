@@ -49,20 +49,6 @@ check_valid_uhd_format(const std::string &str)
   return (str == "fc64" || str == "fc32" || str == "sc16" || str == "sc8");
 }
 
-size_t
-format_str_to_size(const std::string &format_str)
-{
-  std::regex format_regex("(r|c)(\\w)(\\d+)_(le|be)");
-  std::smatch result;
-  if(std::regex_search(format_str, result, format_regex)) {
-    int multiplier = result[1] == "c" ? 2 : 1;
-    int num_bits = boost::lexical_cast<int>(result[3]);
-    return (num_bits / 8) * multiplier;
-  } else {
-    return 0;
-  }
-}
-
 /**
  * Convert a number specifiying an amount in hertz to a nice string
  */
@@ -399,7 +385,8 @@ main(int argc, char *argv[])
   // connect blocks
   uint64_t samples_for_duration;
   if(vm.count("duration")) {
-    size_t sample_size = format_str_to_size(sigmf_format);
+    auto format_detail = gr::sigmf::parse_format_str(sigmf_format);
+    size_t sample_size = format_detail.sample_size;
     samples_for_duration =
       static_cast<uint64_t>(std::ceil(duration_seconds * sample_rate));
     std::cout << "samples_for_duration: " << samples_for_duration << std::endl;
