@@ -863,7 +863,6 @@ namespace gr {
       char *file_source_buf;
       int total_output_items = noutput_items * d_num_channels;
       d_interlaced_buffer.ensure_size(d_itemsize * total_output_items);
-      D(noutput_items);
       if (d_num_channels > 1) {
           // interlace into a buffer
           char *interlaced_buffer = d_interlaced_buffer.data();
@@ -879,7 +878,6 @@ namespace gr {
       }
       while(nwritten < total_output_items) {
         int count = std::fwrite(file_source_buf, d_itemsize, total_output_items - nwritten, d_fp);
-        D(count);
         if(count == 0) {
           if(std::ferror(d_fp)) {
             std::stringstream s;
