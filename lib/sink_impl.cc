@@ -320,12 +320,27 @@ namespace gr {
       uint64_t sample_count = 0;
 
       if(pmt::dict_has_key(msg, LATITUDE) && pmt::dict_has_key(msg, LONGITUDE)) {
-        pmt::pmt_t lat = pmt::dict_ref(msg, LATITUDE, pmt::PMT_NIL);
         pmt::pmt_t lon = pmt::dict_ref(msg, LONGITUDE, pmt::PMT_NIL);
-        set_annotation_meta(sample_start, sample_count, "core:latitude", lat);
-        set_annotation_meta(sample_start, sample_count, "core:longitude", lon);
-        set_annotation_meta(sample_start, sample_count, "core:generator", pmt::string_to_symbol("USRP GPS Message"));
+        pmt::pmt_t lat = pmt::dict_ref(msg, LATITUDE, pmt::PMT_NIL);
+        pmt::pmt_t alt = pmt::dict_ref(msg, ALTITUDE, pmt::PMT_NIL);
+        set_geolocation(lon, lat, alt);
       }
+    }
+
+    void
+    sink_impl::set_geolocation(pmt::pmt_t lon, pmt::pmt_t lat, pmt::pmt_t alt) {
+      // Create it and set it
+      auto geojson_point = pmt::make_dict();
+      geojson_point = pmt::dict_add(geojson_point, pmt::mp("type"), pmt::mp("Point"));
+      bool have_alt = !pmt::is_null(alt) && alt != pmt::get_PMT_NIL();
+      auto coordinates_list = pmt::make_vector(have_alt ? 3 : 2, pmt::from_double(0));
+      pmt::vector_set(coordinates_list, 0, lon);
+      pmt::vector_set(coordinates_list, 1, lat);
+      if (have_alt) {
+        pmt::vector_set(coordinates_list, 2, alt);
+      }
+      geojson_point = pmt::dict_add(geojson_point, pmt::mp("coordinates"), coordinates_list);
+      d_global.set("core:geolocation", geojson_point);
     }
 
     std::string

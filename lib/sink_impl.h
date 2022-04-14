@@ -44,6 +44,7 @@ namespace gr {
     static const pmt::pmt_t SYSTEM = pmt::string_to_symbol("system");
     static const pmt::pmt_t LATITUDE = pmt::string_to_symbol("latitude");
     static const pmt::pmt_t LONGITUDE = pmt::string_to_symbol("longitude");
+    static const pmt::pmt_t ALTITUDE = pmt::string_to_symbol("altitude");
 
     class sink_impl : public sink {
       private:
@@ -142,6 +143,8 @@ namespace gr {
       std::string iso_8601_ts();
       std::string convert_uhd_time_to_iso8601(pmt::pmt_t uhd_time);
       std::string convert_full_fracs_pair_to_iso8601(uint64_t seconds, double frac_seconds);
+
+      void set_geolocation(pmt::pmt_t lon, pmt::pmt_t lat, pmt::pmt_t alt);
 
       void close_impl();
 

@@ -954,7 +954,7 @@ class qa_sink(gr_unittest.TestCase):
             data_temp_name) is not None,
             "Bad temp data name")
 
-    def test_gps_annotation(self):
+    def test_gps_to_geolocation(self):
         src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
         data_file, json_file = self.temp_file_names()
         file_sink = sigmf.sink("cf32_le",
@@ -966,9 +966,9 @@ class qa_sink(gr_unittest.TestCase):
         tb.msg_connect(sender, "out", file_sink, "gps")
 
         coords = [
-            (12.345, -67.89),
             (55.555, -110.111),
             (33.123, 33.123),
+            (12.345, -67.89),
         ]
 
         tb.start()
@@ -981,15 +981,54 @@ class qa_sink(gr_unittest.TestCase):
         tb.stop()
         tb.wait()
         metadata = json.load(open(json_file, "r"))
-        # should be 3 annotations
-        self.assertEqual(len(metadata["annotations"]), len(coords))
-        # And they should be these and in this order
-        for ii, point in enumerate(coords):
-            lat, lon = point
-            annotation = metadata["annotations"][ii]
-            self.assertEqual(annotation["core:latitude"], lat)
-            self.assertEqual(annotation["core:longitude"], lon)
-            self.assertIn("GPS", annotation["core:generator"])
+        # There should be a single top level location object in global
+        location = metadata["global"]["core:geolocation"]
+        assert location == {
+                "type": "Point",
+                "coordinates": [
+                -67.89,
+                12.345
+                ]
+            }
+
+    def test_gps_to_geolocation_with_alt(self):
+        src = analog.sig_source_c(0, analog.GR_CONST_WAVE, 0, 0, (1 + 1j))
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+
+        sender = msg_sender()
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.msg_connect(sender, "out", file_sink, "gps")
+
+        coords = [
+            (55.555, -110.111, 0),
+            (33.123, 33.123, 20),
+            (12.345, -67.89, 4000.234),
+        ]
+
+        tb.start()
+        for lat, lon, alt in coords:
+            sender.send_msg({
+                "latitude": lat,
+                "longitude": lon,
+                "altitude": alt,
+            })
+            sleep(.05)
+        tb.stop()
+        tb.wait()
+        metadata = json.load(open(json_file, "r"))
+        # There should be a single top level location object in global
+        location = metadata["global"]["core:geolocation"]
+        assert location == {
+                "type": "Point",
+                "coordinates": [
+                -67.89,
+                12.345,
+                4000.234
+                ]
+            }
 
     def test_close_via_pmt(self):
         '''Ensure that a close sent via pmt is handled even if the work
