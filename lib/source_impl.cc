@@ -63,7 +63,7 @@ namespace gr {
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(float))), // This get's overwritten below
       d_data_fp(0), d_meta_fp(0), d_multichannel_deinterlace_buffer(0xFFFF), d_repeat(repeat), d_file_begin(true),
-      d_add_begin_tag(pmt::PMT_NIL), d_repeat_count(0),
+      d_add_begin_tag(pmt::PMT_NIL), d_repeat_count(0), d_last_target_buf(0),
       d_data_path(to_data_path(filename)), d_meta_path(meta_path_from_data(d_data_path))
     {
 
@@ -328,19 +328,21 @@ namespace gr {
         d_output_bufs[i] = static_cast<char *>(output_items[i]);
       }
 
-      char *output_buf = static_cast<char *>(output_items[0]);
       int items_read;
 
       // This is in samples
       int output_size_samples = noutput_items;
 
       // This is in base units
-      int output_base_remaining = output_size_samples * d_output_num_samps_to_base;
+      int output_base_remaining = output_size_samples * d_output_num_samps_to_base * d_num_channels;
 
       uint64_t start_offset_abs = nitems_written(0);
 
       emit_tags(start_offset_abs, output_size_samples);
-      d_multichannel_deinterlace_buffer.ensure_size(output_size_samples * d_input_file_sample_size_bytes * d_num_channels);
+      auto good_resize = d_multichannel_deinterlace_buffer.ensure_size(output_size_samples * d_output_sample_size_bytes * d_num_channels);
+      if (!good_resize) {
+        throw std::runtime_error("oh no!!!!");
+      }
 
       while(output_base_remaining > 0) {
 
@@ -370,14 +372,19 @@ namespace gr {
 
         output_base_remaining -= items_read;
         for(size_t item_index = 0; item_index < items_read; item_index++) {
-          int target_output_buf = item_index % d_num_channels;
-          int target_output_index = item_index / d_num_channels;
-          std::memcpy(d_output_bufs[target_output_buf], &(d_multichannel_deinterlace_buffer.data()[item_index * d_output_sample_size_bytes]), d_output_sample_size_bytes);
-          d_output_bufs[target_output_buf] += d_output_sample_size_bytes;
+          int target_output_buf = (item_index + d_last_target_buf) % d_num_channels;
+          std::cout << "STUFF: " << std::endl;
+          std::cout << "target_output_buf = " << target_output_buf << std::endl;
+          std::cout << "data_value = " << reinterpret_cast<uint16_t*>(d_multichannel_deinterlace_buffer.data())[item_index] << std::endl;
+          std::cout << std::endl;
+          std::memcpy(d_output_bufs[target_output_buf], &(d_multichannel_deinterlace_buffer.data()[item_index * d_output_base_size]), d_output_base_size);
+          d_output_bufs[target_output_buf] += d_output_base_size;
         }
+        d_last_target_buf = items_read % d_num_channels;
+        D(d_last_target_buf);
 
         // advance output pointer
-        output_buf += items_read * d_output_base_size;
+        // output_buf += items_read * d_output_base_size;
 
         if(output_base_remaining == 0) {
           break;
@@ -397,25 +404,26 @@ namespace gr {
         }
         d_repeat_count++;
         d_file_begin = true;
+        d_last_target_buf = 0;
       }
 
       // EOF or error
       if(output_base_remaining > 0) {
 
         // we didn't read anything; say we're done
-        if((output_base_remaining / d_output_num_samps_to_base) == noutput_items) {
+        if((output_base_remaining / d_output_num_samps_to_base) / d_num_channels == noutput_items) {
           return -1;
         }
 
         // else return partial result
         else {
-	  D(noutput_items - (output_base_remaining / d_output_num_samps_to_base));
+          D(noutput_items - (output_base_remaining / d_output_num_samps_to_base));
 
-          return (noutput_items - (output_base_remaining / d_output_num_samps_to_base)) / d_num_channels;
+          return noutput_items - ((output_base_remaining / d_output_num_samps_to_base) / d_num_channels);
         }
       }
       D(noutput_items);
-      return noutput_items / d_num_channels;
+      return noutput_items;
     }
 
     int

@@ -551,6 +551,33 @@ class qa_source (gr_unittest.TestCase):
         for sample in sink2_data:
             assert sample == (3 + 4j), "sink2 should only have 3+4j"
 
+    def test_mutlichannel_many_sizes(self):
+        for num_chans in range(2, 33):
+            type_str = "ru16_le"
+            test_data = []
+            for i in range(1000):
+                for chan in range(num_chans):
+                    test_data.append(chan)
+            data, meta_json, filename, meta_file = self.make_file_with_data(
+                test_data, f"multichannel_{num_chans}", type=type_str, global_data={"core:num_channels": num_chans})
+
+            file_source = sigmf.source(filename, type_str)
+            tb = gr.top_block()
+            sinks = []
+            for chan in range(num_chans):
+                sink = blocks.vector_sink_s()
+                tb.connect((file_source, chan), (sink, 0))
+                sinks.append(sink)
+
+            tb.start()
+            tb.wait()
+            for chan in range(num_chans):
+                sink_data = sinks[chan].data()
+                assert len(sink_data) == 1000, "sink size should be 1000"
+                for sample in sink_data:
+                    assert sample == chan
+
+
     def test_metadata_only(self):
         data, meta_json, filename, meta_file = self.make_file("just_meta", global_data = {"metadata_only":True})
         os.remove(filename)

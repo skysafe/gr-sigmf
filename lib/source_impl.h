@@ -85,6 +85,8 @@ namespace gr {
 
       std::vector<char*> d_output_bufs;
 
+      uint64_t d_last_target_buf;
+
       boost::posix_time::ptime iso_string_to_ptime(const std::string &str);
 
       void on_command_message(pmt::pmt_t msg);
