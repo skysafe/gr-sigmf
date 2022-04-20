@@ -1255,6 +1255,60 @@ class qa_sink(gr_unittest.TestCase):
             assert meta["global"]["core:license"] == file_license
             assert meta["global"]["core:hw"] == hardware
 
+    def test_multichannel_sink_complex(self):
+        pass
+
+    def test_multichannel_many_channels(self):
+        N = 1000
+        samp_rate = 200000
+        for num_chan in range(2, 64):
+            src_blocks = []
+            for chan in range(num_chan):
+                src_data = [chan for i in range(500)]
+                vec_src = blocks.vector_source_s(src_data)
+                src_blocks.append(vec_src)
+
+            description = "This is a test of the sigmf sink."
+            data_file, json_file = self.temp_file_names()
+            file_sink = sigmf.sink("ru16_le",
+                                data_file, num_channels=num_chan)
+
+            file_sink.set_global_meta("core:sample_rate", samp_rate)
+            file_sink.set_global_meta("core:description", description)
+
+            # build flowgraph here
+            tb = gr.top_block()
+            for chan in range(num_chan):
+                src = src_blocks[chan]
+                tb.connect((src, 0), (file_sink, chan))
+            tb.run()
+            tb.wait()
+
+            output_file_size = os.path.getsize(data_file)
+            assert output_file_size == num_chan * 500 * 2
+
+            # check that data file equals data
+            read_data = []
+            with open(data_file, "rb") as f:
+                data_bytes = f.read()
+
+            count = 0
+            for i in range(0, len(data_bytes), 2):
+                val = struct.unpack('<H', data_bytes[i:i+2])[0]
+                expected_val = count % num_chan
+                count += 1
+                assert val == expected_val, "bad value"
+
+            # check that the metadata matches up
+            with open(json_file, "r") as f:
+                meta_str = f.read()
+                meta = json.loads(meta_str)
+                # Check global meta
+                print(meta["global"])
+                assert meta["global"]["core:datatype"] == "ru16_le"
+                assert meta["global"]["core:num_channels"] == num_chan
+                assert meta["global"]["core:description"] == description
+
     def test_tuple_meta_setting(self):
         N = 1000
         samp_rate = 200000
