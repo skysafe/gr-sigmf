@@ -526,7 +526,7 @@ class qa_source (gr_unittest.TestCase):
         # Make some test data
         type_str = "cf32_le"
         test_data = []
-        for i in range(0, 1000, 2):
+        for i in range(0, 10000, 2):
             test_data.append(1 + 2j)
             test_data.append(3 + 4j)
         data, meta_json, filename, meta_file = self.make_file_with_data(test_data, "multichannel_complex", type=type_str, global_data={"core:num_channels": 2})
@@ -544,7 +544,7 @@ class qa_source (gr_unittest.TestCase):
         sink2_data = sink2.data()
 
         assert len(sink1_data) == len(sink2_data), "sinks should be equal in size"
-        assert len(sink1_data) == 500, "sink size should be 500"
+        assert len(sink1_data) == 5000, "sink size should be 5000"
 
         for sample in sink1_data:
             assert sample == (1 + 2j), "sink1 should only have 1+2j"
