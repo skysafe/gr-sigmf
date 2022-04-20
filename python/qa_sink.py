@@ -1256,7 +1256,59 @@ class qa_sink(gr_unittest.TestCase):
             assert meta["global"]["core:hw"] == hardware
 
     def test_multichannel_sink_complex(self):
-        pass
+        N = 1000
+        samp_rate = 200000
+
+        src1_data = [1 + 2j for i in range(500)]
+        src2_data = [3 + 4j for i in range(500)]
+        src1 = blocks.vector_source_c(src1_data)
+        src2 = blocks.vector_source_c(src2_data)
+
+        description = "This is a test of the sigmf sink."
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file, num_channels=2)
+
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect((src1, 0), (file_sink, 0))
+        tb.connect((src2, 0), (file_sink, 1))
+        tb.run()
+        tb.wait()
+
+        output_file_size = os.path.getsize(data_file)
+        assert output_file_size == 2 * 500 * 4 * 2,  "bad size for output file"
+
+        # check that data file equals data
+        read_data = []
+        with open(data_file, "rb") as f:
+            data_bytes = f.read()
+
+        print(data_bytes)
+        count = 0
+        print(len(data_bytes))
+        for i in range(0, len(data_bytes), 8):
+            # print(i)
+            val_r = struct.unpack('<f', data_bytes[i:i+4])[0]
+            val_c = struct.unpack('<f', data_bytes[i+4:i+8])[0]
+            val = val_r + (val_c * 1j)
+            # print(val)
+            count += 1
+            if count % 2 == 0:
+                assert val == 3 + 4j, "bad value for 3 + 4j"
+            else:
+                assert val == 1 + 2j, "bad value for 1 + 2j"
+
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Check global meta
+            print(meta["global"])
+            assert meta["global"]["core:datatype"] == "cf32_le"
+            assert meta["global"]["core:num_channels"] == 2
 
     def test_multichannel_many_channels(self):
         N = 1000
