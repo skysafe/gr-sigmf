@@ -178,7 +178,7 @@ class qa_sink(gr_unittest.TestCase):
 
         # Inject a bunch of tags that should make annotation segments
         for i in range(100):
-            sleep(.001)
+            sleep(.005)
             frac, int_part = math.modf(time.time())
             injector.inject_tag = {
                 "test:a": i,
@@ -192,7 +192,7 @@ class qa_sink(gr_unittest.TestCase):
         metadata = json.load(open(json_file, "r"))
 
         # There should be 100 annotation segments
-        self.assertEqual(len(metadata["annotations"]), 100)
+        assert len(metadata["annotations"]) == 100, "There should be 100 segments"
         for i in range(100):
             self.assertEqual(metadata["annotations"][i]["test:a"], i)
             self.assertEqual(metadata["annotations"][i]["test:b"], True)
