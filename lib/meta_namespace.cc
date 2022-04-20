@@ -238,6 +238,12 @@ namespace pmt {
         pmt::pmt_t item = pmt::vector_ref(pmt_data, i);
         j[i] = item;
       }
+    } else if (pmt::is_tuple(pmt_data)) {
+      size_t num_items = pmt::length(pmt_data);
+      for(size_t i = 0; i < num_items; i++) {
+        pmt::pmt_t item = pmt::tuple_ref(pmt_data, i);
+        j[i] = item;
+      }
     } else if(pmt::is_symbol(pmt_data)) {
       j = pmt::symbol_to_string(pmt_data);
     } else if(pmt::is_uint64(pmt_data)) {

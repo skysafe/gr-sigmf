@@ -1255,6 +1255,38 @@ class qa_sink(gr_unittest.TestCase):
             assert meta["global"]["core:license"] == file_license
             assert meta["global"]["core:hw"] == hardware
 
+    def test_tuple_meta_setting(self):
+        N = 1000
+        samp_rate = 200000
+
+        data = sig_source_c(samp_rate, 1000, 1, N)
+        src = blocks.vector_source_c(data)
+
+        data_file, json_file = self.temp_file_names()
+        file_sink = sigmf.sink("cf32_le",
+                               data_file)
+
+        extra_stuff = tuple(["foo", "bar", 1, 2, 3, True])
+        file_sink.set_global_meta("core:sample_rate", samp_rate)
+        file_sink.set_global_meta("foo:extra", pmt.to_pmt(extra_stuff))
+        self.assertEqual(data_file, file_sink.get_data_path())
+
+        # And get_meta_path
+        self.assertEqual(json_file, file_sink.get_meta_path())
+
+        # build flowgraph here
+        tb = gr.top_block()
+        tb.connect(src, file_sink)
+        tb.run()
+        tb.wait()
+
+        # check that the metadata matches up
+        with open(json_file, "r") as f:
+            meta_str = f.read()
+            meta = json.loads(meta_str)
+
+            # Have to convert to list since json doesn't have tuples
+            assert meta["global"]["foo:extra"] == list(extra_stuff)
 
 if __name__ == '__main__':
     gr_unittest.run(qa_sink)
