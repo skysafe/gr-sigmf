@@ -368,7 +368,6 @@ namespace gr {
         items_read =
           d_convert_func(d_multichannel_deinterlace_buffer.data(), d_input_base_size, output_base_remaining, d_data_fp);
 
-        std::cout << "items read: " << items_read << std::endl;
         output_base_remaining -= items_read;
         for(size_t item_index = 0; item_index < items_read; item_index++) {
           int target_output_buf = item_index % d_num_channels;
