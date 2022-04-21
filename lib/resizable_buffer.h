@@ -63,7 +63,7 @@ namespace gr::sigmf {
           } else {
             T *new_data_ptr = static_cast<T *>(std::realloc(data_ptr, new_size * sizeof(T)));
             if(new_data_ptr == nullptr) {
-              new_data_ptr = std::malloc(new_size * sizeof(T));
+              new_data_ptr = static_cast<T*>(std::malloc(new_size * sizeof(T)));
               if (new_data_ptr == nullptr) {
                 return false;
               }
