@@ -374,10 +374,6 @@ namespace gr {
         size_t samples_read = items_read / d_output_num_samps_to_base;
         for(size_t sample_index = 0; sample_index < samples_read; sample_index++) {
           int target_output_buf = (sample_index + d_last_target_buf) % d_num_channels;
-          // std::cout << "STUFF: " << std::endl;
-          // std::cout << "target_output_buf = " << target_output_buf << std::endl;
-          // std::cout << "data_value = " << reinterpret_cast<uint16_t*>(d_multichannel_deinterlace_buffer.data())[item_index] << std::endl;
-          // std::cout << std::endl;
           std::memcpy(d_output_bufs[target_output_buf], &(d_multichannel_deinterlace_buffer.data()[sample_index * d_output_sample_size_bytes]), d_output_sample_size_bytes);
           d_output_bufs[target_output_buf] += d_output_sample_size_bytes;
         }
