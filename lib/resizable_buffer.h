@@ -23,7 +23,7 @@ namespace gr::sigmf {
         }
 
         // Copy ctor
-        resizable_buffer(const resizeable_buffer &other)
+        resizable_buffer(const resizable_buffer &other)
         : resizable_buffer(other.data_ptr, other.size)
         {
         }
