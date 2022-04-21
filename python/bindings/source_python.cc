@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(source.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(692a3a1e91b9075e6720c5fc39f47711)                     */
+/* BINDTOOL_HEADER_FILE_HASH(23725f19514acd2d22fbd66a002e5423)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -79,11 +79,3 @@ void bind_source(py::module& m)
 
 
 }
-
-
-
-
-
-
-
-
