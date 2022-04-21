@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2018 Scott Torborg, Paul Wicks, Caitlin Miller
+ * Copyright 2022 Scott Torborg, Paul Wicks, Caitlin Miller
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,4 +66,3 @@ namespace gr {
 } // namespace gr
 
 #endif /* INCLUDED_SIGMF_USRP_GPS_MESSAGE_SOURCE_H */
-
