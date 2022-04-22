@@ -27,6 +27,7 @@ namespace py = pybind11;
   void bind_source(py::module& m);
   void bind_annotation_sink(py::module& m);
   void bind_usrp_gps_message_source(py::module& m);
+  void bind_sigmf_utils(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -61,5 +62,6 @@ PYBIND11_MODULE(sigmf_python, m)
     bind_source(m);
     bind_annotation_sink(m);
     bind_usrp_gps_message_source(m);
+    bind_sigmf_utils(m);
     // ) END BINDING_FUNCTION_CALLS
 }

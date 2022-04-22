@@ -35,6 +35,7 @@ list(APPEND sigmf_python_files
     source_python.cc
     annotation_sink_python.cc
     usrp_gps_message_source_python.cc
+    sigmf_utils_python.cc
     python_bindings.cc)
 
 GR_PYBIND_MAKE_OOT(sigmf 
